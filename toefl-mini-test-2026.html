@@ -170,10 +170,10 @@
 <section id="speaking" class="hide">
   <div class="card">
     <div class="row" style="justify-content:space-between">
-      <h2 style="margin:0">Speaking <span class="pill">Listen and Repeat</span></h2>
-      <span>残り <span class="timer" id="sTimer">02:00</span></span>
+      <h2 style="margin:0">Speaking <span class="pill">Listen and Repeat ＋ Interview</span></h2>
+      <span>残り <span class="timer" id="sTimer">04:00</span></span>
     </div>
-    <p class="muted">「▶ お手本」を1回聞き、できるだけ正確に<b>復唱</b>。「🎤 録音」で話し「■ 停止」。採点は<b>回答後に自動</b>（音声認識で語を比較・推定）。音声認識は <b>Chrome / Edge 推奨</b>。</p>
+    <p class="muted">「▶ お手本／質問」を1回聞き、「🎤 録音」で話し「■ 停止」。採点は<b>回答後</b>（復唱は自動・語一致／InterviewはAI）。音声認識は <b>Chrome / Edge 推奨</b>。</p>
   </div>
   <div id="speakingArea"></div>
   <div class="row" style="justify-content:flex-end">
@@ -185,10 +185,10 @@
 <section id="writing" class="hide">
   <div class="card">
     <div class="row" style="justify-content:space-between">
-      <h2 style="margin:0">Writing <span class="pill">Build a Sentence</span></h2>
-      <span>残り <span class="timer" id="wTimer">03:00</span></span>
+      <h2 style="margin:0">Writing <span class="pill">Write an Email</span></h2>
+      <span>残り <span class="timer" id="wTimer">07:00</span></span>
     </div>
-    <p class="muted">文脈に合うよう、語のまとまりを空欄に正しい順で入れて文を完成。余分な語が混ざる問題もあります（本番仕様）。自動採点。</p>
+    <p class="muted">状況を読み、To／Subjectの相手にメールを書きます（3つの指示に触れる）。<b>回答後にAI(Sonnet)が採点</b>。</p>
   </div>
   <div id="writingArea"></div>
   <div class="row" style="justify-content:flex-end">
@@ -243,12 +243,12 @@
 <!-- INFO -->
 <section id="info" class="hide">
   <div class="card">
-    <h2>このアプリについて（2026新形式・全タスク）</h2>
-    <p>2026年1月改訂の公式Reading/Listening<b>全タスク</b>を実装しています（7/22本番準拠）。Writing/SpeakingのAI採点（Sonnet 4.6）はP2以降で追加予定。</p>
+    <h2>このアプリについて（2026新形式・4技能）</h2>
+    <p>2026年1月改訂の公式形式に準拠（7/22本番向け）。<b>通しミニ</b>は4技能（R→L→S→W）を回答20分で実施し、回答後に <b>Speaking InterviewとWriting EmailをAI(Sonnet 4.6)で採点</b>、R/L/復唱は機械採点。Reading/Listeningは<b>本番同様の2段階適応</b>。</p>
     <h3>出題タスク</h3>
-    <p class="muted">Reading: Complete the Words / Read in Daily Life / Read an Academic Passage。Listening: Listen and Choose a Response / Conversation / Announcement / Academic Talk。各タスクに難易度タグ（easy/med/hard）を付与（将来の二段階適応の基盤）。</p>
+    <p class="muted">Reading: Complete the Words / Read in Daily Life / Read an Academic Passage。Listening: Listen and Choose a Response / Conversation / Announcement / Academic Talk。Speaking: Listen and Repeat / Take an Interview。Writing: Build a Sentence / Write an Email / Academic Discussion。各問に難易度タグ（easy/med/hard）を持ち、二段階適応の経路判定に使用（UIには非表示）。</p>
     <h3>スコア推定について</h3>
-    <p class="muted">各セクションの正答率を自前の換算表で1.0–6.0バンドに変換（<b>推定・要調整</b>）。総合は2セクション平均を0.5刻みに丸め、0–120換算を併記。換算表は運用しながら調整。</p>
+    <p class="muted">各セクションの正答率を自前の換算表で1.0–6.0バンドに変換（<b>推定・要調整</b>）。通しミニの総合は実施した4技能のバンド平均を0.5刻みに丸め、0–120換算を併記。R/Lは経路（難／易）も加味。換算表は運用しながら調整。</p>
     <div style="overflow:auto"><table id="convTable"></table></div>
     <p class="muted">仕様の出典: ETS公式（Test Content / Blueprint & Specifications PDF / 公開サンプル実機）。問題はオリジナル作成。</p>
   </div>
