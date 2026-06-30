@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOEFL Mini Test 2026 — スコア推定アプリ</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#273449; --line:#334155;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --accent2:#22c55e;
+    --warn:#f59e0b; --bad:#ef4444; --good:#22c55e;
+    --jp:"Meiryo UI","Meiryo",sans-serif; --en:"Calibri","Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--jp);line-height:1.6}
+  .en{font-family:var(--en)}
+  header{position:sticky;top:0;z-index:10;background:rgba(15,23,42,.95);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px}
+  header h1{font-size:15px;margin:0;flex:1}
+  .badge{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:2px 8px;border-radius:99px}
+  nav{display:flex;gap:6px}
+  nav button{background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;
+    padding:6px 12px;font-size:13px;cursor:pointer;font-family:var(--jp)}
+  nav button.active{background:var(--accent);color:#04263a;border-color:var(--accent);font-weight:bold}
+  main{max-width:760px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  h2{font-size:18px;margin:0 0 10px}
+  h3{font-size:15px;margin:0 0 6px;color:var(--accent)}
+  h4{font-size:14px;margin:14px 0 4px;color:var(--accent)}
+  p{margin:8px 0}
+  .muted{color:var(--muted);font-size:13px}
+  button.primary{background:var(--accent);color:#04263a;border:none;border-radius:10px;padding:12px 18px;
+    font-size:15px;font-weight:bold;cursor:pointer;font-family:var(--jp)}
+  button.primary:hover{filter:brightness(1.08)}
+  button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:10px;
+    padding:10px 16px;cursor:pointer;font-family:var(--jp)}
+  button.play{background:var(--accent2);color:#04230f;border:none;border-radius:8px;padding:8px 14px;
+    font-weight:bold;cursor:pointer;font-family:var(--jp)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:99px;background:var(--card2);
+    border:1px solid var(--line);color:var(--muted)}
+  .lv{font-size:11px;padding:2px 7px;border-radius:99px;border:1px solid var(--line)}
+  .lv.easy{color:#22c55e;border-color:#22c55e} .lv.med{color:#f59e0b;border-color:#f59e0b} .lv.hard{color:#ef4444;border-color:#ef4444}
+  .box{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .passage{font-family:var(--en);font-size:15px;white-space:pre-wrap;max-height:320px;overflow:auto}
+  .q{border-top:1px solid var(--line);padding:14px 0}
+  .q:first-of-type{border-top:none}
+  .stem{font-weight:bold;margin-bottom:8px}
+  label.opt{display:block;border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:6px 0;
+    cursor:pointer;font-family:var(--en);font-size:15px}
+  label.opt:hover{background:var(--card2)}
+  label.opt.sel{border-color:var(--accent);background:rgba(56,189,248,.12)}
+  label.opt.correct{border-color:var(--good);background:rgba(34,197,94,.14)}
+  label.opt.wrong{border-color:var(--bad);background:rgba(239,68,68,.14)}
+  label.opt input{margin-right:8px}
+  .cloze{font-family:var(--en);font-size:16px;line-height:2.1}
+  .cloze input{font-family:var(--en);font-size:15px;width:60px;background:#0b1220;color:var(--text);
+    border:1px solid var(--accent);border-radius:5px;padding:2px 5px;margin:0 1px}
+  .cloze .pre{border-bottom:1px solid var(--muted);padding-bottom:1px}
+  .timer{font-variant-numeric:tabular-nums;font-weight:bold;color:var(--warn)}
+  .floatTimer{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:200;background:var(--card2);border:1px solid var(--warn);color:var(--warn);font-weight:bold;font-variant-numeric:tabular-nums;padding:7px 16px;border-radius:99px;box-shadow:0 2px 10px rgba(0,0,0,.45);font-size:15px}
+  .floatTimer.low{color:var(--bad);border-color:var(--bad)}
+  .scorebig{font-size:46px;font-weight:bold;color:var(--accent2);font-family:var(--en)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .stat{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+  .stat .v{font-size:24px;font-weight:bold;font-family:var(--en)}
+  .stat .l{font-size:12px;color:var(--muted)}
+  .est{font-size:11px;color:var(--warn);border:1px solid var(--warn);padding:1px 6px;border-radius:6px;margin-left:6px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}
+  th{color:var(--muted);font-weight:normal;font-size:12px}
+  .adv{background:rgba(56,189,248,.08);border:1px solid var(--accent);border-radius:10px;padding:12px;margin-top:8px}
+  .hide{display:none}
+  svg{width:100%;height:auto;display:block}
+  .foot{font-size:11px;color:var(--muted);text-align:center;margin:20px 0}
+  .ans{color:var(--good);font-family:var(--en);font-weight:bold}
+  .your{color:var(--bad);font-family:var(--en)}
+  .tasktag{font-size:12px;color:var(--accent);font-weight:bold}
+  .tile{display:inline-block;border:1px solid var(--accent);background:rgba(56,189,248,.1);color:var(--text);border-radius:8px;padding:6px 12px;margin:4px;cursor:pointer;font-family:var(--en);font-size:15px}
+  .tile.used{opacity:.35;pointer-events:none}
+  .bslot{display:inline-block;min-width:40px;text-align:center;border-bottom:2px solid var(--accent);padding:2px 8px;margin:0 3px;cursor:pointer;color:var(--muted)}
+  .bslot.filled{border:1px solid var(--accent2);border-radius:8px;background:rgba(34,197,94,.14);color:var(--text)}
+  button.play{background:var(--accent2);color:#04230f;border:none;border-radius:8px;padding:8px 14px;font-weight:bold;cursor:pointer;font-family:var(--jp)}
+  button.rec{background:var(--bad);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:bold;cursor:pointer;font-family:var(--jp)}
+  button.rec.on{background:#7f1d1d}
+</style>
+</head>
+<body>
+<header>
+  <h1>TOEFL Mini Test <span class="badge">2026新形式 / 4技能</span></h1>
+  <nav>
+    <button id="navHome" class="active" onclick="show('home')">ホーム</button>
+    <button id="navHist" onclick="show('history')">履歴</button>
+    <button id="navInfo" onclick="show('info')">仕様</button>
+  </nav>
+</header>
+<div id="floatTimer" class="floatTimer hide"></div>
+<main>
+
+<!-- HOME -->
+<section id="home">
+  <div class="card" style="text-align:center">
+    <h2>通しミニテスト（4技能）</h2>
+    <p>本番と同じ順番で受験します：<br><b>Reading → Listening → Speaking → Writing</b></p>
+    <p class="muted">所要 約20分 ／ 終了後にスコア（推定）を表示</p>
+    <p style="margin:20px 0"><button class="primary" style="font-size:17px;padding:14px 30px" onclick="startMini4()">テストを始める</button></p>
+    <p class="muted">🎤 マイクと🔊音量をオンにしてください（Speaking・Listeningで使用します）</p>
+  </div>
+
+  <details class="card">
+    <summary class="muted" style="cursor:pointer">その他（じっくり版・AI採点の設定・テストの詳細）</summary>
+    <div style="margin-top:14px">
+      <h4>R/L じっくり版</h4>
+      <p class="muted">Reading・Listeningだけを2モジュール適応でじっくり（約19分）。</p>
+      <p><button class="ghost" onclick="startTest('full')">R/L じっくり版を始める</button></p>
+
+      <h4 style="margin-top:16px">AI採点の接続（Speaking Interview ／ Writing Email）</h4>
+      <p class="muted">Apps Script の /exec URL を登録するとS/WをAI採点します（手順: P2セットアップ手順.md）。未登録でもR/L/復唱は採点されます。</p>
+      <input type="text" id="execUrl" placeholder="https://script.google.com/macros/s/＿＿＿/exec"
+        style="width:100%;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font-family:var(--en)">
+      <p style="margin-top:8px">
+        <button class="ghost" onclick="saveExec()">保存</button>
+        <button class="ghost" onclick="testExec()">接続テスト</button>
+        <button class="ghost" onclick="clearExec()">クリア</button></p>
+      <p class="muted" id="execStatus"></p>
+
+      <h4 style="margin-top:16px">テストの詳細</h4>
+      <p class="muted">R/Lは本番同様の2段階適応（モジュール1の出来で難化／易化）。回答20分（R 2.5分×2／L 2分×2／S 4分／W 7分）。回答後にSpeaking InterviewとWriting EmailをAI(Sonnet)で採点（従量課金・数円/回）、R/L/復唱は機械採点。スコアは推定値です。</p>
+      <p class="muted"><b>各セクションの出題数 ／ バンク保有数</b>（すべて毎回ランダム抽選）<br>
+      ・Reading: Complete the Words 2 ＋ Academic 2（2モジュール）／ バンク CtW 6・Academic 6・Daily 6（Daily Lifeはじっくり版で出題）<br>
+      ・Listening: Choose a Response 4 ＋ 長文 2（2モジュール）／ バンク 応答 72・長文（会話6・告知6・講義6）<br>
+      ・Speaking: Listen and Repeat 3（プール 10 から抽選）＋ Take an Interview 1（4 から）<br>
+      ・Writing: Write an Email 1（12 から）／ ※Build a Sentence 100問は単体Writingアプリ</p>
+    </div>
+  </details>
+</section>
+
+<!-- READING -->
+<section id="reading" class="hide">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">Reading <span class="pill" id="rModInfo"></span></h2>
+      <span>残り <span class="timer" id="rTimer">05:00</span></span>
+    </div>
+    <p class="muted" style="margin:6px 0 0">本番同様、<b>モジュール2に進むと前のモジュールには戻れません</b>。</p>
+  </div>
+  <div id="readingArea"></div>
+  <div class="row" style="justify-content:flex-end">
+    <button class="primary" id="readingNextBtn" onclick="readingNext()">モジュール2へ進む →</button>
+  </div>
+</section>
+
+<!-- LISTENING -->
+<section id="listening" class="hide">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">Listening <span class="pill" id="lModInfo"></span></h2>
+      <span>残り <span class="timer" id="lTimer">04:30</span></span>
+    </div>
+    <p class="muted">各「▶ 再生」で音声が流れます（スクリプト非表示）。本番同様、再生は1回が目安。<b>モジュール2に進むと前問には戻れません</b>。</p>
+  </div>
+  <div id="listeningArea"></div>
+  <div class="row" style="justify-content:flex-end">
+    <button class="primary" id="listeningNextBtn" onclick="listeningNext()">モジュール2へ進む →</button>
+  </div>
+</section>
+
+<!-- SPEAKING -->
+<section id="speaking" class="hide">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">Speaking <span class="pill">Listen and Repeat</span></h2>
+      <span>残り <span class="timer" id="sTimer">02:00</span></span>
+    </div>
+    <p class="muted">「▶ お手本」を1回聞き、できるだけ正確に<b>復唱</b>。「🎤 録音」で話し「■ 停止」。採点は<b>回答後に自動</b>（音声認識で語を比較・推定）。音声認識は <b>Chrome / Edge 推奨</b>。</p>
+  </div>
+  <div id="speakingArea"></div>
+  <div class="row" style="justify-content:flex-end">
+    <button class="primary" id="speakingNextBtn" onclick="speakingNext()">Writingへ進む →</button>
+  </div>
+</section>
+
+<!-- WRITING -->
+<section id="writing" class="hide">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">Writing <span class="pill">Build a Sentence</span></h2>
+      <span>残り <span class="timer" id="wTimer">03:00</span></span>
+    </div>
+    <p class="muted">文脈に合うよう、語のまとまりを空欄に正しい順で入れて文を完成。余分な語が混ざる問題もあります（本番仕様）。自動採点。</p>
+  </div>
+  <div id="writingArea"></div>
+  <div class="row" style="justify-content:flex-end">
+    <button class="primary" onclick="writingFinish()">採点する</button>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="hide">
+  <div class="card" style="text-align:center">
+    <h2>推定スコア</h2>
+    <div class="scorebig" id="overallBand">–</div>
+    <div class="muted">総合バンド（1.0–6.0） <span class="est">推定</span></div>
+    <div style="margin-top:6px">0–120換算（推定）: <b class="en" id="overall120">–</b> <span class="est">推定・要調整</span></div>
+  </div>
+  <div class="card">
+    <h3>セクション別</h3>
+    <div class="grid2">
+      <div class="stat"><div class="v en" id="rBand">–</div><div class="l">Reading band</div></div>
+      <div class="stat"><div class="v en" id="lBand">–</div><div class="l">Listening band</div></div>
+      <div class="stat"><div class="v en" id="sBand">–</div><div class="l">Speaking band</div></div>
+      <div class="stat"><div class="v en" id="wBand">–</div><div class="l">Writing band</div></div>
+    </div>
+    <p class="muted" id="rawLine" style="margin-top:10px"></p>
+  </div>
+  <div class="card"><h3>タスク別 正答</h3><div id="byTaskBox"></div></div>
+  <div class="card"><h3>アドバイス</h3><div id="advice"></div></div>
+  <div class="card"><h3>解答の確認</h3><div id="review"></div></div>
+  <div class="row" style="justify-content:space-between">
+    <button class="ghost" onclick="show('history')">履歴を見る</button>
+    <button class="primary" onclick="show('home')">ホームへ</button>
+  </div>
+  <p class="foot">スコアはすべて推定値です（公式スコアではありません）。</p>
+</section>
+
+<!-- HISTORY -->
+<section id="history" class="hide">
+  <div class="card">
+    <h2>スコア推移</h2>
+    <div id="chart"></div>
+    <p class="muted" id="histEmpty">まだ記録がありません。</p>
+  </div>
+  <div class="card">
+    <h3>記録一覧</h3>
+    <div style="overflow:auto"><table id="histTable"></table></div>
+    <p style="margin-top:10px"><button class="ghost" onclick="exportJSON()">JSONで書き出し</button>
+       <button class="ghost" onclick="clearHist()">全削除</button></p>
+    <p class="muted">端末内（localStorage）に保存。将来のクラウド同期で複数端末対応予定。</p>
+  </div>
+</section>
+
+<!-- INFO -->
+<section id="info" class="hide">
+  <div class="card">
+    <h2>このアプリについて（2026新形式・全タスク）</h2>
+    <p>2026年1月改訂の公式Reading/Listening<b>全タスク</b>を実装しています（7/22本番準拠）。Writing/SpeakingのAI採点（Sonnet 4.6）はP2以降で追加予定。</p>
+    <h3>出題タスク</h3>
+    <p class="muted">Reading: Complete the Words / Read in Daily Life / Read an Academic Passage。Listening: Listen and Choose a Response / Conversation / Announcement / Academic Talk。各タスクに難易度タグ（easy/med/hard）を付与（将来の二段階適応の基盤）。</p>
+    <h3>スコア推定について</h3>
+    <p class="muted">各セクションの正答率を自前の換算表で1.0–6.0バンドに変換（<b>推定・要調整</b>）。総合は2セクション平均を0.5刻みに丸め、0–120換算を併記。換算表は運用しながら調整。</p>
+    <div style="overflow:auto"><table id="convTable"></table></div>
+    <p class="muted">仕様の出典: ETS公式（Test Content / Blueprint & Specifications PDF / 公開サンプル実機）。問題はオリジナル作成。</p>
+  </div>
+</section>
+
+</main>
+
+<script src="Listening/choose-a-response_bank.js"></script>
+<script src="Listening/long-form_bank.js"></script>
+<script src="writing_bank.js"></script>
+<script>
+/* =========================================================
+   問題バンク（オリジナル・2026新形式の構造に準拠）
+   各タスクに level: easy / med / hard（将来の適応用タグ）
+   ========================================================= */
+
+/* ---- Reading: Complete the Words ---- 記法 [word|可視文字数] ---- */
+const READING_CTW = [
+{ id:"ctw-bees", taskType:"ctw", title:"Honey Bees", level:"easy",
+  text:"Honey bees live together in large colonies that can contain tens of thousands of insects. Most of the [bees|2] in a colony are workers, and [they|2] perform nearly all of the daily [tasks|3]. They [collect|4] nectar from [flowers|4] and carry it [back|2] to the hive. [Inside|3] the hive, the nectar is [slowly|3] changed into honey, [which|3] is stored as [food|2] for the winter." },
+{ id:"ctw-volcano", taskType:"ctw", title:"Volcanoes", level:"med",
+  text:"Volcanoes form when molten rock from deep inside the Earth rises to the surface. This molten rock is [called|3] magma [while|3] it is still underground. [Once|2] it reaches the [surface|4], it is [known|3] as lava. As the lava [cools|2] down, it [hardens|3] into solid rock. Over time, [many|2] thin [layers|3] of rock build up to [form|2] a mountain." },
+{ id:"ctw-exercise", taskType:"ctw", title:"Daily Exercise", level:"easy",
+  text:"Exercise is good for both the body and the mind. Many doctors say that walking is one of the [simplest|6] ways to stay [healthy|4]. A short walk every [morning|4] can improve your mood and give you [energy|4]. It also helps you [sleep|3] better at [night|3]." },
+{ id:"ctw-library", taskType:"ctw", title:"Public Libraries", level:"med",
+  text:"Public libraries offer much more than books these days. Many of them now [provide|4] free internet access and quiet spaces for [studying|5]. Some libraries also [organize|5] events such as reading clubs and [language|4] classes. These services are [especially|5] valuable for people who cannot [afford|2] them at home." },
+{ id:"ctw-photosynthesis", taskType:"ctw", title:"Photosynthesis", level:"hard",
+  text:"Plants survive by capturing energy from sunlight through a process called photosynthesis. Inside their leaves, a green [pigment|4] absorbs light and uses it to [convert|4] water and carbon dioxide into sugar. This [reaction|4] also releases oxygen, which most living things [require|4] to breathe. Because plants form the base of nearly every food chain, this process is [essential|4] to life on Earth." },
+{ id:"ctw-watercycle", taskType:"ctw", title:"The Water Cycle", level:"hard",
+  text:"Water constantly moves between the Earth's surface and the atmosphere in what is known as the water cycle. Heat from the Sun causes water to [evaporate|6] from oceans and lakes, turning it into invisible [vapor|3]. As this vapor rises and cools, it [condenses|6] into tiny droplets that form clouds. Eventually the droplets grow heavy and fall back as [precipitation|9], completing the [continuous|7] cycle." }
+];
+
+/* ---- Reading: Read in Daily Life ---- {text, q[]} ---- */
+const READING_DAILY = [
+{ id:"dl-library", taskType:"daily", title:"Email", level:"easy",
+  text:"From: City Library\nSubject: Your Reserved Book\n\nDear Mr. Tanaka,\nThe book you reserved, \"Modern Architecture,\" is now ready for pickup at the main desk. Please collect it within five days. After that, it will be returned to the shelves and offered to the next person on the waiting list. The library is open from 9 a.m. to 8 p.m. on weekdays.\nThank you.",
+  q:[{stem:"What is the main purpose of the email?",opts:["To recommend a new book","To tell a customer a reserved book is ready","To remind a customer to pay a fine","To announce new library hours"],a:1},
+     {stem:"What will happen if the book is not collected in five days?",opts:["It will be mailed to Mr. Tanaka","An extra fee will be charged","It will be offered to the next person waiting","The reservation will be extended"],a:2}]},
+{ id:"dl-pottery", taskType:"daily", title:"Notice", level:"easy",
+  text:"Riverside Community Center — Pottery Workshop\n\nJoin our beginner pottery class on Saturday, October 14, from 10 a.m. to noon. All materials are provided, but please wear old clothes, as the work can get messy. Spaces are limited to 12 people, so please sign up early at the front office. The fee is $15, payable on the day.",
+  q:[{stem:"What is the main purpose of the notice?",opts:["To advertise a beginner pottery class","To sell pottery made by students","To ask for volunteer teachers","To announce a change of location"],a:0},
+     {stem:"What are participants advised to do?",opts:["Bring their own clay","Pay online in advance","Wear old clothes","Arrive before 9 a.m."],a:2}]},
+{ id:"dl-gym", taskType:"daily", title:"Message", level:"med",
+  text:"Campus Gym Update\n\nHi everyone! The swimming pool will be closed this weekend for cleaning. The weight room and basketball courts will stay open as usual. If you have any questions, message the front desk through the app. Normal pool hours return on Monday.",
+  q:[{stem:"What is the message mainly about?",opts:["A new gym membership plan","A temporary pool closure","A basketball tournament","A change in gym fees"],a:1},
+     {stem:"What will remain open this weekend?",opts:["The swimming pool","The weight room and basketball courts","Nothing in the gym","Only the front desk"],a:1}]},
+{ id:"dl-water", taskType:"daily", title:"Notice", level:"med",
+  text:"Notice to All Residents — Water Shutoff\n\nThe water supply will be temporarily turned off on Tuesday, March 5, from 9 a.m. to 1 p.m. so that crews can repair a pipe in the basement. We recommend storing some water in advance for drinking and cooking. The elevators will continue to operate normally. We apologize for any inconvenience.",
+  q:[{stem:"What is the main purpose of the notice?",opts:["To announce a planned water shutoff","To introduce a new resident rule","To advertise plumbing services","To report a broken elevator"],a:0},
+     {stem:"What are residents advised to do?",opts:["Avoid using the elevators","Store water in advance","Leave the building by 9 a.m.","Pay a repair fee"],a:1}]},
+{ id:"dl-internship", taskType:"daily", title:"Email", level:"hard",
+  text:"From: Career Services\nSubject: Summer Internship — Next Steps\n\nDear Applicant,\nThank you for accepting the summer internship offer. Before you begin, you must complete two tasks by May 20. First, submit the signed agreement form attached to this email. Second, register for the online orientation, which is required for all interns and is offered on three different dates. The orientation must be completed before your first day. If you have questions, contact our office directly rather than replying to this message.",
+  q:[{stem:"Why was this email sent?",opts:["To offer an internship position","To explain steps an intern must take before starting","To reject an application","To cancel the orientation"],a:1},
+     {stem:"What must the applicant do before the first day?",opts:["Reply to the email","Pay a registration fee","Complete the online orientation","Visit the office in person"],a:2},
+     {stem:"What does the email say about questions?",opts:["They should be sent by reply","They should be directed to the office","They will be answered at orientation","They cannot be answered"],a:1}]},
+{ id:"dl-roommate", taskType:"daily", title:"Post", level:"hard",
+  text:"Looking for a Roommate — Posted by Jordan\n\nI'm a graduate student searching for someone to share a two-bedroom apartment near campus starting in September. The rent is $700 per month each, which includes water and electricity but not internet. I keep fairly regular hours and prefer a roommate who does the same. I have a small cat, so the apartment would not suit anyone with allergies. If you're interested, send me a message with a little about yourself.",
+  q:[{stem:"What is the main purpose of the post?",opts:["To sell furniture","To find someone to share an apartment","To advertise a pet for adoption","To offer tutoring near campus"],a:1},
+     {stem:"What is NOT included in the rent?",opts:["Water","Electricity","Internet","A second bedroom"],a:2},
+     {stem:"Who would the apartment be unsuitable for?",opts:["Graduate students","People with cat allergies","People who work regular hours","People starting in September"],a:1}]}
+];
+
+/* ---- Reading: Read an Academic Passage ---- {text, q[]} ---- */
+const READING_ACADEMIC = [
+{ id:"ap-coral", taskType:"academic", title:"Coral Reefs", level:"hard",
+  text:"Coral reefs are often called the rainforests of the sea because of the incredible variety of life they support. A coral reef is built by tiny animals called polyps, which produce hard skeletons of calcium carbonate. Over thousands of years, the skeletons of countless polyps accumulate to form the massive structures we see today.\n\nThe polyps depend on a special partnership. Inside their tissues live microscopic algae that use sunlight to produce food, much of which they share with the coral. In return, the coral provides the algae with shelter and nutrients. Without the algae, most corals could not survive.\n\nHowever, this partnership is fragile. When ocean temperatures rise even slightly, the stressed coral expels its algae, a process known as bleaching. Without the algae, the coral loses its main source of food and its color, turning ghostly white. If high temperatures persist, the coral eventually dies. Scientists warn that rising sea temperatures are now the greatest threat to reefs worldwide.",
+  q:[{stem:"What is the passage mainly about?",opts:["How coral reefs are formed and what threatens them","Why algae need sunlight to grow","How fish use coral reefs for shelter","The history of ocean exploration"],a:0},
+     {stem:"What do the algae provide to the coral?",opts:["A hard skeleton","Food made from sunlight","Protection from predators","Cooler water temperatures"],a:1},
+     {stem:"The word \"expels\" in paragraph 3 is closest in meaning to",opts:["forces out","feeds","attracts","colors"],a:0},
+     {stem:"What can be inferred about coral bleaching?",opts:["It makes coral grow faster","It is a sign that the coral is under stress","It only happens at night","It helps algae reproduce"],a:1}]},
+{ id:"ap-press", taskType:"academic", title:"The Printing Press", level:"hard",
+  text:"Before the fifteenth century, books in Europe were copied by hand, usually by monks working in monasteries. This process was extremely slow: a single book could take months or even years to complete, and as a result, books were rare and expensive. Only the wealthy and the church could afford them.\n\nThis changed dramatically around 1440, when Johannes Gutenberg developed a printing press that used movable metal type. Individual letters could be arranged to form a page, inked, and pressed onto paper, then rearranged to print the next page. A press could produce hundreds of copies in the time it had once taken to make a single handwritten book.\n\nThe effects were profound. As books became cheaper and more plentiful, literacy spread beyond the wealthy elite. New ideas in science, religion, and politics could travel quickly across the continent. Many historians argue that the printing press was one of the most important inventions in human history.",
+  q:[{stem:"What is the passage mainly about?",opts:["How the printing press changed the making and spread of books","Why monks lived in monasteries","How metal type is manufactured today","The religious beliefs of the fifteenth century"],a:0},
+     {stem:"Before the printing press, who usually copied books?",opts:["Wealthy merchants","Monks, by hand","Government officials","Trained machines"],a:1},
+     {stem:"The word \"profound\" in paragraph 3 is closest in meaning to",opts:["far-reaching","confusing","temporary","expensive"],a:0},
+     {stem:"Why does the author mention that literacy spread beyond the wealthy elite?",opts:["To show an important effect of the printing press","To argue that monks were poor","To explain how paper is made","To describe a religious ceremony"],a:0}]},
+{ id:"ap-penguins", taskType:"academic", title:"Penguins", level:"easy",
+  text:"Penguins are birds that cannot fly, but they are excellent swimmers. Their wings have changed over time into stiff, flat flippers that push them quickly through the water. A thick layer of fat under their skin keeps them warm in the cold seas where they live. Penguins also have waterproof feathers that trap a layer of air, helping them stay dry and warm. Most penguins live in the southern half of the world, and many gather in large groups to raise their young.",
+  q:[{stem:"What is the passage mainly about?",opts:["How penguins are adapted to life in the water and cold","Why penguins cannot fly","Where the largest birds live","How birds learn to swim"],a:0},
+     {stem:"How do a penguin's flippers help it?",opts:["They keep it warm","They help it push through the water","They keep it dry","They trap air"],a:1},
+     {stem:"What keeps penguins warm?",opts:["Their flippers","A thick layer of fat and waterproof feathers","Flying south","Living in groups"],a:1}]},
+{ id:"ap-moon", taskType:"academic", title:"The Moon", level:"easy",
+  text:"The Moon is the Earth's only natural satellite, and it travels around our planet about once a month. Although it looks bright in the night sky, the Moon does not produce any light of its own. Instead, it reflects light from the Sun. The same side of the Moon always faces the Earth, so people on Earth never see its far side without the help of spacecraft. The Moon's gravity also pulls on the Earth's oceans, which is one of the main causes of the tides.",
+  q:[{stem:"What is the passage mainly about?",opts:["Basic facts about the Moon and its effects","How spacecraft are built","Why the Sun produces light","The history of space travel"],a:0},
+     {stem:"Where does the Moon's light come from?",opts:["From its own surface","Reflected from the Sun","From the Earth","From the stars"],a:1},
+     {stem:"What does the Moon's gravity cause on Earth?",opts:["Earthquakes","The tides","The seasons","Daylight"],a:1}]},
+{ id:"ap-olympics", taskType:"academic", title:"The Olympic Games", level:"med",
+  text:"The modern Olympic Games began in 1896, but they were inspired by athletic festivals held in ancient Greece more than two thousand years earlier. The ancient games were held every four years in the town of Olympia to honor the Greek gods. Only free Greek men were allowed to compete, and winners were celebrated as heroes in their home cities. The modern games revived this four-year cycle but expanded it into an international event. Today, thousands of athletes from around the world compete in many sports, and both men and women take part.",
+  q:[{stem:"What is the passage mainly about?",opts:["The origins of the Olympic Games and how they changed","Why ancient Greeks honored their gods","How athletes train for competitions","The rules of ancient Greek sports"],a:0},
+     {stem:"Who could compete in the ancient games?",opts:["Anyone who traveled to Olympia","Only free Greek men","Men and women from many countries","Only winners from earlier games"],a:1},
+     {stem:"How are the modern games different from the ancient ones?",opts:["They are held less often","They include international athletes and women","They no longer have winners","They are held only in Greece"],a:1}]},
+{ id:"ap-sleep", taskType:"academic", title:"Sleep and Memory", level:"med",
+  text:"Scientists have long known that sleep is important for health, but recent research suggests it also plays a key role in memory. During the day, the brain takes in a huge amount of information. While a person sleeps, the brain appears to sort through these experiences, strengthening the connections that store important memories and weakening those that are less useful. Studies have shown that students who sleep well after studying tend to remember more than those who stay awake. For this reason, researchers warn that regularly losing sleep can make learning more difficult.",
+  q:[{stem:"What is the passage mainly about?",opts:["The connection between sleep and memory","Why students enjoy studying at night","How the brain takes in information during sleep","The different stages of sleep"],a:0},
+     {stem:"What does the brain do during sleep, according to the passage?",opts:["It stops all activity","It sorts through and strengthens important memories","It takes in new information","It forgets the day completely"],a:1},
+     {stem:"What do studies show about students who sleep well after studying?",opts:["They study less","They tend to remember more","They wake up tired","They learn more slowly"],a:1}]}
+];
+
+/* ---- Listening: Listen and Choose a Response ----
+   問題バンク(72問)は外部 Listening/choose-a-response_bank.js で
+   const LIS_RESPONSE として定義（build_bank.py が生成）。各問に audio/accent/gender を保持。 */
+
+/* ---- Listening 長文(会話/告知/講義) ----
+   LIS_CONVO / LIS_ANNOUNCE / LIS_TALK は外部 Listening/long-form_bank.js で定義
+   （build_long_bank.py が生成）。米語のみ・各itemに audio あり。会話は2話者を別ボイスで吹き分け。 */
+
+/* ============ 換算（推定・要調整） ============ */
+const CONV=[{min:0.95,band:6.0},{min:0.88,band:5.5},{min:0.80,band:5.0},{min:0.70,band:4.5},
+ {min:0.60,band:4.0},{min:0.50,band:3.5},{min:0.40,band:3.0},{min:0.30,band:2.5},
+ {min:0.20,band:2.0},{min:0.10,band:1.5},{min:0.0,band:1.0}];
+function pctToBand(p){for(const c of CONV){if(p>=c.min)return c.band;}return 1.0;}
+const BAND120={6.0:118,5.5:110,5.0:100,4.5:89,4.0:77,3.5:66,3.0:56,2.5:46,2.0:35,1.5:24,1.0:12};
+function bandTo120(b){return BAND120[b]??0;}
+function roundHalf(x){return Math.round(x*2)/2;}
+const TASK_JP={ctw:"Complete the Words（語形・語彙）",daily:"Read in Daily Life（実用文）",academic:"Read an Academic Passage（学術読解）",
+ response:"Listen and Choose a Response（応答）",conversation:"Conversation（会話）",announcement:"Announcement（告知）",talk:"Academic Talk（講義）"};
+
+/* ============ 状態・ユーティリティ ============ */
+let state={};
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function sample(a,n){const c=a.slice();for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]];}return c.slice(0,n);}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function parseCtw(text){
+  const parts=[];let last=0;const re=/\[([^\]|]+)\|(\d+)\]/g;let m;
+  while((m=re.exec(text))){if(m.index>last)parts.push({t:'text',s:text.slice(last,m.index)});
+    const w=m[1],pre=parseInt(m[2]);parts.push({t:'blank',full:w,pre:w.slice(0,pre),miss:w.slice(pre)});last=re.lastIndex;}
+  if(last<text.length)parts.push({t:'text',s:text.slice(last)});return parts;}
+
+/* ============ テスト開始・組み立て ============ */
+/* ===== 2モジュール適応（router→易/難モジュール＋経路別band換算） ===== */
+const ROUTER_THRESHOLD = 0.6;   // モジュール1の正答率≥60%→難モジュール（推定・要較正）
+const R_MOD_SEC = 5*60;         // Reading 1モジュール=5分（公式30分→簡易版の比例配分・推定）
+const L_MOD_SEC = 270;          // Listening 1モジュール=4.5分（公式29分→比例配分・推定）
+
+function pickByLevel(bank, level){ const p=bank.filter(x=>x.level===level); return (p.length?pick(p):pick(bank)); }
+function sampleByLevel(bank, level, n){ const p=bank.filter(x=>x.level===level); return sample(p.length>=n?p:bank, n); }
+function buildReadingModule(level){
+  const ctw=pickByLevel(READING_CTW, level);
+  return [ {kind:'ctw', t:ctw, parts:parseCtw(ctw.text)},
+           {kind:'text', t:pickByLevel(READING_DAILY, level)},
+           {kind:'text', t:pickByLevel(READING_ACADEMIC, level)} ];
+}
+function buildListeningModule(level){
+  const resp=sampleByLevel(LIS_RESPONSE, level, 3).map(t=>({kind:'audio',t}));
+  const long = level==='hard' ? pick(LIS_TALK) : (level==='easy' ? pick(LIS_ANNOUNCE) : pick(LIS_CONVO));
+  return [ ...resp, {kind:'audio', t:long} ];
+}
+/* 通しミニ用の短縮モジュール（2段階適応を維持しつつ各モジュールを軽量化） */
+function buildReadingModuleMini(level){
+  const ctw=pickByLevel(READING_CTW, level);
+  return [ {kind:'ctw', t:ctw, parts:parseCtw(ctw.text)},
+           {kind:'text', t:pickByLevel(READING_ACADEMIC, level)} ];
+}
+function buildListeningModuleMini(level){
+  const resp=sampleByLevel(LIS_RESPONSE, level, 2).map(t=>({kind:'audio',t}));
+  const long = level==='hard' ? pick(LIS_TALK) : (level==='easy' ? pick(LIS_ANNOUNCE) : pick(LIS_CONVO));
+  return [ ...resp, {kind:'audio', t:long} ];
+}
+function rdgModule(level){ return state.mode==='mini4' ? buildReadingModuleMini(level) : buildReadingModule(level); }
+function lisModule(level){ return state.mode==='mini4' ? buildListeningModuleMini(level) : buildListeningModule(level); }
+function rSecNow(){ return state.mode==='mini4' ? 150 : R_MOD_SEC; }   // mini4: Reading 2.5分/モジュール（×2=5分）
+function lSecNow(){ return state.mode==='mini4' ? 120 : L_MOD_SEC; }   // mini4: Listening 2分/モジュール（×2=4分）
+function pathBand(pct, path){           // 経路別換算（数値は推定・要較正）
+  let b=pctToBand(pct);
+  if(path==='easy') b=Math.min(b,4.0);  // 易経路はband上限≈4.0
+  else if(path==='hard') b=Math.max(b,3.5); // 難経路は下限≈3.5
+  return b;
+}
+function setModInfo(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; }
+
+function startTest(mode){
+  mode = mode || 'full';   // 'full' | 'reading' | 'listening'
+  state={ mode, stage:1, section:(mode==='listening')?'listening':'reading',
+          reading:null, listening:null, rMod:{}, lMod:{}, ans:{}, ctwResp:[], played:{} };
+  if(state.section==='listening') startListeningStage1();
+  else startReadingStage1();
+}
+function startReadingOnly(){ startTest('reading'); }
+function startListeningOnly(){ startTest('listening'); }
+
+function startReadingStage1(){
+  state.stage=1; state.ans={}; state.played={}; state.ctwResp=[];
+  state.reading=rdgModule('med');
+  setModInfo('rModInfo','Reading モジュール 1 / 2');
+  document.getElementById('readingNextBtn').textContent='モジュール2へ進む →';
+  renderReading(); show('reading'); window.scrollTo(0,0);
+  startTimer('r',rSecNow(),readingNext);
+}
+function readingNext(){
+  stopTimer();
+  if(state.stage===1){
+    captureCtw(); state.rMod.res1=scoreReadingItems(state.reading);
+    const pct=state.rMod.res1.n?state.rMod.res1.c/state.rMod.res1.n:0;
+    state.rMod.path = pct>=ROUTER_THRESHOLD ? 'hard' : 'easy';
+    state.stage=2; state.ans={}; state.played={}; state.ctwResp=[];
+    state.reading=rdgModule(state.rMod.path);
+    setModInfo('rModInfo','Reading モジュール 2 / 2');
+    document.getElementById('readingNextBtn').textContent=(state.mode==='reading')?'採点する':'Listeningへ進む →';
+    renderReading(); show('reading'); window.scrollTo(0,0);
+    startTimer('r',rSecNow(),readingNext);
+  } else {
+    captureCtw(); state.rMod.res2=scoreReadingItems(state.reading);
+    if(state.mode==='reading') finishTest();
+    else startListeningStage1();
+  }
+}
+function startListeningStage1(){
+  state.stage=1; state.ans={}; state.played={};
+  state.listening=lisModule('med');
+  setModInfo('lModInfo','Listening モジュール 1 / 2');
+  document.getElementById('listeningNextBtn').textContent='モジュール2へ進む →';
+  renderListening(); show('listening'); window.scrollTo(0,0);
+  startTimer('l',lSecNow(),listeningNext);
+}
+function listeningNext(){
+  stopAudio(); stopTimer();
+  if(state.stage===1){
+    state.lMod.res1=scoreListeningItems(state.listening);
+    const pct=state.lMod.res1.n?state.lMod.res1.c/state.lMod.res1.n:0;
+    state.lMod.path = pct>=ROUTER_THRESHOLD ? 'hard' : 'easy';
+    state.stage=2; state.ans={}; state.played={};
+    state.listening=lisModule(state.lMod.path);
+    setModInfo('lModInfo','Listening モジュール 2 / 2');
+    document.getElementById('listeningNextBtn').textContent=(state.mode==='mini4')?'Speakingへ進む →':'採点する';
+    renderListening(); show('listening'); window.scrollTo(0,0);
+    startTimer('l',lSecNow(),listeningNext);
+  } else {
+    state.lMod.res2=scoreListeningItems(state.listening);
+    if(state.mode==='mini4') startMini4Speaking();
+    else finishTest();
+  }
+}
+
+/* ---- レベルバッジ ---- */
+function lvBadge(l){const map={easy:'易',med:'中',hard:'難'};return `<span class="lv ${l}">${map[l]||''}</span>`;}
+
+/* ---- Reading描画 ---- */
+function renderReading(){
+  let html='';
+  state.reading.forEach((item,ri)=>{
+    const t=item.t;
+    html+=`<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <span class="tasktag">${TASK_JP[t.taskType].split('（')[0]}</span></div>`;
+    if(item.kind==='ctw'){
+      html+=`<p class="muted">空欄に語の<b>足りない文字</b>を入力（例 <span class="en">in___ → side</span>）。最初の1文はヒント。</p><div class="box cloze">`;
+      let bi=0;
+      item.parts.forEach(p=>{ if(p.t==='text') html+=`<span>${esc(p.s)}</span>`;
+        else { html+=`<span class="pre">${p.pre}</span><input id="ctw_${bi}" autocapitalize="off" autocomplete="off" spellcheck="false">`; bi++; } });
+      item._n=bi; html+=`</div>`;
+    } else {
+      html+=`<div class="box passage">${esc(t.text)}</div>`;
+      html+=t.q.map((q,qi)=>qMC(`r${ri}`,q,qi)).join('');
+    }
+    html+=`</div>`;
+  });
+  document.getElementById('readingArea').innerHTML=html;
+}
+
+/* ---- Listening描画 ---- */
+function renderListening(){
+  let html='';
+  state.listening.forEach((item,li)=>{
+    const t=item.t;
+    const label = t.taskType==='response' ? `発話 ${li+1}` : (t.title||TASK_JP[t.taskType]);
+    html+=`<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <span class="tasktag">${TASK_JP[t.taskType].split('（')[0]}</span></div>
+      <div class="row" style="margin-bottom:10px">
+        <button class="play" onclick="playIdx(${li},this)">▶ 再生（1回のみ）</button>
+        <span class="muted">${label}</span></div>`;
+    html+=t.q.map((q,qi)=>qMC(`l${li}`,q,qi)).join('');
+    html+=`</div>`;
+  });
+  document.getElementById('listeningArea').innerHTML=html;
+}
+
+/* ---- MC質問ブロック ---- */
+function qMC(key,q,qi){
+  return `<div class="q"><div class="stem"><span class="en">${esc(q.stem)}</span></div>`+
+    q.opts.map((o,j)=>`<label class="opt" id="${key}_${qi}_${j}"><input type="radio" name="${key}_${qi}" onchange="selMC('${key}',${qi},${j})"> ${esc(o)}</label>`).join('')+`</div>`;
+}
+function selMC(key,qi,j){
+  document.querySelectorAll(`[id^="${key}_${qi}_"]`).forEach(el=>el.classList.remove('sel'));
+  const el=document.getElementById(`${key}_${qi}_${j}`); if(el) el.classList.add('sel');
+  state.ans[`${key}_${qi}`]=j;
+}
+
+/* ---- 音声再生（実音声優先・本番準拠で1回のみ。mp3が無い場合はTTSへフォールバック） ----
+   実音声(long_*.mp3)は話者ごとに別ボイス。未生成時のTTSフォールバックも話者で声を分ける。 */
+function isFemaleVoiceName(name){ return /Jenny|Aria|Clara|Natasha|Sonia|Michelle|Ana|Zira|Samantha|Susan|female/i.test(name||''); }
+function pickTtsVoices(){
+  const vs=(window.speechSynthesis ? speechSynthesis.getVoices() : [])||[];
+  const en=vs.filter(v=>/^en(-|_)/i.test(v.lang||''));
+  const pool=en.length?en:vs;
+  const fem=pool.find(v=>isFemaleVoiceName(v.name));
+  const mal=pool.find(v=>/David|Guy|Mark|George|James|Fred|Daniel|Alex|Eric|Liam|William|Ryan|male/i.test(v.name) && v!==fem);
+  const a=fem||pool[0]||null;
+  const b=mal||pool.find(v=>v!==a)||a;
+  return [a,b];   // [女性役, 男性役]
+}
+function speakItem(t,btn,finalize){
+  if(!('speechSynthesis' in window)){ alert('この端末は音声非対応です。'); if(btn) btn.disabled=false; return; }
+  speechSynthesis.cancel();
+  if(btn) btn.disabled=true;
+  const turns = (t.turns && t.turns.length) ? t.turns : [{t:(t.script||''), voice:''}];
+  const [vF,vM]=pickTtsVoices();
+  let i=0;
+  const next=()=>{
+    if(i>=turns.length){ finalize&&finalize(); return; }
+    const turn=turns[i++];
+    const u=new SpeechSynthesisUtterance(turn.t||''); u.lang='en-US'; u.rate=0.95;
+    const v = isFemaleVoiceName(turn.voice) ? vF : vM;   // 話者で声を変える（会話=2話者）
+    if(v) u.voice=v;
+    u.onend=next;
+    speechSynthesis.speak(u);
+  };
+  next();
+}
+function playIdx(li,btn){
+  const item=state.listening[li]; if(!item) return;
+  if(!state.played) state.played={};
+  if(state.played[li]) return;                       // 1回再生の強制（再生済みは無効）
+  const finalize=()=>{ state.played[li]=true; if(btn){ btn.disabled=true; btn.textContent='再生済み'; } };
+  const src = item.t.audio ? ('Listening/'+item.t.audio) : null;
+  if(src){                                           // 実音声ファイル(話者別ボイス)があれば優先
+    if(btn) btn.disabled=true;
+    const a=new Audio(src);
+    a.onended=finalize;
+    a.onerror=()=>{ speakItem(item.t,btn,finalize); };   // mp3未生成→話者別TTSで代替（止めない）
+    a.play().catch(()=>{ speakItem(item.t,btn,finalize); });
+  } else {
+    speakItem(item.t,btn,finalize);                  // 音源指定なし→話者別TTS
+  }
+}
+function stopAudio(){ if('speechSynthesis' in window) speechSynthesis.cancel(); }
+
+/* ---- モジュール採点ヘルパー ---- */
+function captureCtw(){
+  const ctwItem=state.reading.find(x=>x.kind==='ctw');
+  state.ctwResp=[];
+  if(ctwItem){ for(let i=0;i<ctwItem._n;i++){const el=document.getElementById('ctw_'+i);state.ctwResp.push(el?el.value:'');} }
+}
+function mergeByTask(){ const out={}; for(const m of arguments){ if(!m)continue; for(const k in m){ out[k]=out[k]||{c:0,n:0}; out[k].c+=m[k].c; out[k].n+=m[k].n; } } return out; }
+function scoreReadingItems(items){
+  let c=0,n=0; const byTask={}; const review=[];
+  const add=(tt,cc,nn)=>{byTask[tt]=byTask[tt]||{c:0,n:0};byTask[tt].c+=cc;byTask[tt].n+=nn;};
+  items.forEach((item,ri)=>{
+    const t=item.t;
+    if(item.kind==='ctw'){
+      const blanks=item.parts.filter(p=>p.t==='blank'); let cc=0; const det=[];
+      blanks.forEach((b,i)=>{const v=norm(state.ctwResp[i]);const ok=v===norm(b.miss)||v===norm(b.full);if(ok)cc++;
+        det.push({pre:b.pre,miss:b.miss,full:b.full,got:state.ctwResp[i]||'',ok});});
+      c+=cc;n+=blanks.length; add('ctw',cc,blanks.length); review.push(ctwReview(t.title,det));
+    } else {
+      let cc=0; const det=[];
+      t.q.forEach((q,qi)=>{const got=state.ans[`r${ri}_${qi}`];const ok=got===q.a;if(ok)cc++;det.push({q,got,ok});});
+      c+=cc;n+=t.q.length; add(t.taskType,cc,t.q.length); review.push(mcReview(t.title||TASK_JP[t.taskType],det));
+    }
+  });
+  return {c,n,byTask,review};
+}
+function scoreListeningItems(items){
+  let c=0,n=0; const byTask={}; const review=[];
+  const add=(tt,cc,nn)=>{byTask[tt]=byTask[tt]||{c:0,n:0};byTask[tt].c+=cc;byTask[tt].n+=nn;};
+  items.forEach((item,li)=>{
+    const t=item.t; let cc=0; const det=[];
+    t.q.forEach((q,qi)=>{const got=state.ans[`l${li}_${qi}`];const ok=got===q.a;if(ok)cc++;det.push({q,got,ok});});
+    c+=cc;n+=t.q.length; add(t.taskType,cc,t.q.length); review.push(mcReview((t.title||('Response '+(li+1))),det));
+  });
+  return {c,n,byTask,review};
+}
+
+/* ===================== 通しミニ（4技能・約15–18分・全機械採点・課金なし） ===================== */
+const LR_POOL = [
+ {target:"The library is open until nine o'clock tonight."},
+ {target:"She decided to study abroad after finishing her degree."},
+ {target:"Although it was raining, the team continued the experiment."},
+ {target:"Please remember to submit your assignment before Friday."},
+ {target:"The new museum exhibit attracts thousands of visitors each week."},
+ {target:"He could not attend the meeting because his train was delayed."},
+ {target:"Renewable energy is becoming more affordable around the world."},
+ {target:"The professor explained the difficult theory clearly and patiently."},
+ {target:"We should book the tickets early to avoid the crowds."},
+ {target:"Reading widely helps you build a stronger vocabulary."}
+];
+const IV_ITEMS_MINI = [
+ {q:"What is a subject you enjoyed studying in school, and why did you like it?"},
+ {q:"Some students prefer studying alone, while others prefer studying in groups. Which do you prefer, and why?"},
+ {q:"Describe a place you would like to visit, and explain what you would do there."},
+ {q:"Do you think it is better to plan things in advance or to act spontaneously? Explain your view."}
+];
+let mini={};
+function shuffleArr(a){return sample(a,a.length);}
+
+function startMini4(){
+  mini={ ivTranscript:'', emailText:'' };
+  state={ mode:'mini4', stage:1, section:'reading', reading:null, listening:null, rMod:{}, lMod:{}, ans:{}, ctwResp:[], played:{} };
+  startReadingStage1();   // R→(2段階)→L→(2段階)→Speaking→Writing→finishMini4
+}
+function startMini4Listening(){
+  state.ans={}; state.played={};
+  state.listening = buildListeningModule('med');
+  setModInfo('lModInfo','通しミニ Listening（2/4）');
+  document.getElementById('listeningNextBtn').textContent='Speakingへ進む →';
+  renderListening(); show('listening'); window.scrollTo(0,0);
+  startTimer('l',4*60,listeningNext);
+}
+
+/* ----- Speaking: Listen and Repeat（語一致・推定） ----- */
+const SR_MINI = window.SpeechRecognition || window.webkitSpeechRecognition;
+let lrRecog=null, lrKey=null; const SP={};
+function startMini4Speaking(){
+  for(const k in SP) delete SP[k];
+  mini.lrItems = sample(LR_POOL, 3);       // 毎回ランダムに3問抽選
+  mini.iv = pick(IV_ITEMS_MINI); mini.ivTranscript='';
+  const lrCards = mini.lrItems.map((it,i)=>`
+    <div class="card">
+      <div><b>Listen and Repeat ${i+1}</b></div>
+      <p class="muted">「▶ お手本」を1回聞いて、できるだけ正確に復唱（採点は回答後に自動）。</p>
+      <div class="row" style="margin:8px 0">
+        <button class="play" onclick="lrSpeak(${i},this)">▶ お手本</button>
+        <button class="rec" id="lrbtn_${i}" onclick="lrToggle(${i})">🎤 録音</button></div>
+      <div class="muted" id="lrtr_${i}" style="font-size:12px;min-height:16px"></div>
+    </div>`).join('');
+  const ivCard = `
+    <div class="card">
+      <div><b>Take an Interview</b> <span class="pill">AI採点（回答後）</span></div>
+      <div class="en" style="margin:6px 0;font-size:16px">${esc(mini.iv.q)}</div>
+      <p class="muted">質問を1回聞いて、自分の意見を話してください（録音→回答後にAIが採点）。</p>
+      <div class="row" style="margin:8px 0">
+        <button class="play" onclick="ivSpeak(this)">▶ 質問</button>
+        <button class="rec" id="ivbtn" onclick="ivToggle()">🎤 録音</button></div>
+      <div class="muted" id="ivtr" style="font-size:12px;min-height:16px"></div>
+    </div>`;
+  document.getElementById('speakingArea').innerHTML = lrCards + ivCard;
+  show('speaking'); window.scrollTo(0,0);
+  startTimer('s',4*60,speakingNext);
+}
+function ivSpeak(btn){ if(!('speechSynthesis' in window))return; speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(mini.iv.q); u.lang='en-US'; u.rate=0.95;
+  if(btn){btn.disabled=true;u.onend=()=>btn.disabled=false;} speechSynthesis.speak(u); }
+function ivToggle(){ const btn=document.getElementById('ivbtn');
+  if(lrRecog&&lrKey==='iv'){ try{lrRecog.stop();}catch(e){} return; }
+  if(!SR_MINI){ document.getElementById('ivtr').textContent='この端末は音声認識に非対応です。Chrome または Edge で受験してください。'; return; }
+  if(lrRecog){try{lrRecog.stop();}catch(e){}}
+  const r=new SR_MINI(); r.lang='en-US'; r.interimResults=true; r.continuous=true; let fin='';
+  r.onresult=e=>{ let itm=''; for(let k=e.resultIndex;k<e.results.length;k++){const t=e.results[k][0].transcript; if(e.results[k].isFinal)fin+=t+' '; else itm+=t;}
+    const v=(fin+itm).trim(); document.getElementById('ivtr').textContent=v; mini.ivTranscript=v; };
+  r.onend=()=>{ btn.classList.remove('on'); btn.textContent='🎤 録音'; lrRecog=null; };
+  lrRecog=r; lrKey='iv'; btn.classList.add('on'); btn.textContent='■ 停止'; r.start(); }
+function ivManual(){ const v=document.getElementById('ivman').value.trim(); document.getElementById('ivtr').textContent=v; mini.ivTranscript=v; }
+function lrSpeak(i,btn){ if(!('speechSynthesis' in window))return; speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(mini.lrItems[i].target); u.lang='en-US'; u.rate=0.95;
+  if(btn){btn.disabled=true;u.onend=()=>btn.disabled=false;} speechSynthesis.speak(u); }
+function lrToggle(i){ const btn=document.getElementById('lrbtn_'+i); const out='lrtr_'+i;
+  if(lrRecog&&lrKey===i){ try{lrRecog.stop();}catch(e){} return; }
+  if(!SR_MINI){ document.getElementById(out).textContent='この端末は音声認識に非対応です。Chrome または Edge で受験してください。'; return; }
+  if(lrRecog){try{lrRecog.stop();}catch(e){}}
+  const r=new SR_MINI(); r.lang='en-US'; r.interimResults=true; r.continuous=true; let fin='';
+  r.onresult=e=>{ let itm=''; for(let k=e.resultIndex;k<e.results.length;k++){const t=e.results[k][0].transcript; if(e.results[k].isFinal)fin+=t+' '; else itm+=t;}
+    const v=(fin+itm).trim(); document.getElementById(out).textContent=v; SP[i]=SP[i]||{}; SP[i].transcript=v; };
+  r.onerror=e=>{ document.getElementById(out).textContent+=' [認識エラー]'; };
+  r.onend=()=>{ btn.classList.remove('on'); btn.textContent='🎤 録音'; lrRecog=null; };
+  lrRecog=r; lrKey=i; btn.classList.add('on'); btn.textContent='■ 停止'; r.start(); }
+function lrManual(i){ const v=document.getElementById('lrman_'+i).value.trim(); document.getElementById('lrtr_'+i).textContent=v; SP[i]=SP[i]||{}; SP[i].transcript=v; }
+function lrTok(s){ return (s||'').toLowerCase().replace(/[^a-z0-9'\s]/g,' ').split(/\s+/).filter(Boolean); }
+function lrWordScore(target,said){   // 語一致→0–5（本番同様、個別ボタンなしで回答後に自動採点）
+  const T=lrTok(target), S=lrTok(said); let si=0,mt=0;
+  for(const w of T){ for(let k=si;k<S.length;k++){ if(S[k]===w){mt++;si=k+1;break;} } }
+  const r=T.length?mt/T.length:0;
+  return r>=.97?5:r>=.9?4.5:r>=.8?4:r>=.7?3.5:r>=.6?3:r>=.5?2.5:r>=.4?2:r>=.25?1.5:r>=.1?1:0.5;
+}
+function speakingNext(){
+  if(lrRecog){try{lrRecog.stop();}catch(e){}}
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  stopTimer();
+  let sum=0,n=0; (mini.lrItems||[]).forEach((it,i)=>{ const said=(SP[i]&&SP[i].transcript)||''; if(said.trim()){ const sc=lrWordScore(it.target,said); SP[i]=SP[i]||{}; SP[i].score=sc; sum+=sc; n++; } });
+  mini.lrAvg = n?sum/n:null; mini.lrN=n;
+  if(!mini.ivTranscript){ const el=document.getElementById('ivtr'); if(el) mini.ivTranscript=el.textContent.trim(); }
+  startMini4Writing();
+}
+
+/* ----- Writing: Write an Email（AI採点・公式形式） ----- */
+function emailDisplayText(it){ if(!it)return'';
+  if(it.scenario) return it.scenario+'\n\nWrite an email to the address shown below. In your email, do the following:\n• '+it.bullets.join('\n• ')+'\n\nWrite as much as you can and in complete sentences.';
+  return it.prompt||''; }
+function emailScoringText(it){ const base=emailDisplayText(it); return (it&&it.to)?base+'\n\n(Email — To: '+it.to+' / Subject: '+(it.subject||'')+')':base; }
+function startMini4Writing(){
+  mini.email = pick(window.WBANK_EMAIL||[]); mini.emailText='';
+  document.getElementById('writingArea').innerHTML =
+    `<div class="card">
+       <div class="box passage" style="white-space:pre-wrap">${esc(emailDisplayText(mini.email))}</div>
+       <div class="box en" style="margin-top:8px"><b>To:</b> ${esc(mini.email?mini.email.to||'':'')}<br><b>Subject:</b> ${esc(mini.email?mini.email.subject||'':'')}</div>
+       <h4 style="margin-top:10px">あなたのメール</h4>
+       <textarea id="miniEmailText" style="width:100%;min-height:150px;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:var(--en);font-size:15px" placeholder="Write your email here..."></textarea>
+       <p class="muted">本番の制限時間は7分。回答後にAI(Sonnet)がルーブリック採点します。</p>
+     </div>`;
+  show('writing'); window.scrollTo(0,0);
+  startTimer('w',7*60,writingFinish);
+}
+function writingFinish(){
+  stopTimer();
+  const el=document.getElementById('miniEmailText'); mini.emailText = el?el.value.trim():'';
+  finishMini4();
+}
+/* ----- AI採点 接続設定 ----- */
+function saveExec(){ const u=document.getElementById('execUrl').value.trim();
+  if(u&&!/^https:\/\//.test(u)){ document.getElementById('execStatus').textContent='https:// で始まるURLを入力してください。'; return; }
+  localStorage.setItem('toefl_w_exec',u);
+  document.getElementById('execStatus').textContent = u?'保存しました（AI採点: 有効）':'空で保存（AI採点: 無効）'; }
+function clearExec(){ localStorage.removeItem('toefl_w_exec'); document.getElementById('execUrl').value='';
+  document.getElementById('execStatus').textContent='クリアしました（AI採点: 無効）'; }
+async function testExec(){
+  const u=(document.getElementById('execUrl').value.trim())||localStorage.getItem('toefl_w_exec');
+  const st=document.getElementById('execStatus');
+  if(!u){ st.textContent='URLを入力してください。'; return; }
+  st.textContent='接続テスト中…';
+  try{ const r=await fetch(u,{method:'GET'}); const d=await r.json();
+    st.textContent = (d&&d.ok) ? ('✅ 接続OK（'+(d.message||'running')+'）。AI採点が使えます。') : ('⚠ 想定外の応答: '+JSON.stringify(d)); }
+  catch(e){ st.textContent='❌ 接続失敗: '+e.message+'（デプロイ・アクセス権限「全員」・URLを確認）'; }
+}
+function initExec(){ const u=localStorage.getItem('toefl_w_exec'); const el=document.getElementById('execUrl'); if(el)el.value=u||'';
+  const st=document.getElementById('execStatus'); if(st)st.textContent=u?'AI採点: 有効（URL登録済み）':'AI採点: 未接続（URL未登録）'; }
+
+async function aiScore(url,task,prompt,response){
+  const r=await fetch(url,{method:'POST',body:JSON.stringify({task:task,prompt:prompt,response:response})});
+  const data=await r.json(); if(!data.ok) throw new Error(data.error||'API error');
+  const m=(data.raw||'').match(/\{[\s\S]*\}/); if(!m) throw new Error('AI応答の解析失敗');
+  return JSON.parse(m[0]);   // {score, band, summary, ...}
+}
+async function finishMini4(){
+  stopAudio(); stopTimer();
+  const EMPTY={c:0,n:0,byTask:{},review:[]};
+  const rA=state.rMod.res1||EMPTY, rB=state.rMod.res2||EMPTY;
+  const lA=state.lMod.res1||EMPTY, lB=state.lMod.res2||EMPTY;
+  const rRes={c:rA.c+rB.c, n:rA.n+rB.n, byTask:mergeByTask(rA.byTask,rB.byTask), review:rA.review.concat(rB.review)};
+  const lRes={c:lA.c+lB.c, n:lA.n+lB.n, byTask:mergeByTask(lA.byTask,lB.byTask), review:lA.review.concat(lB.review)};
+  const rBand=rRes.n?pathBand(rRes.c/rRes.n,state.rMod.path):null;   // 2段階適応・経路別換算
+  const lBand=lRes.n?pathBand(lRes.c/lRes.n,state.lMod.path):null;
+  const lrBand=mini.lrN?pctToBand((mini.lrAvg||0)/5):null;
+  show('result'); window.scrollTo(0,0);
+  document.getElementById('overallBand').textContent='…';
+  document.getElementById('rawLine').textContent='AI採点中…（Speaking InterviewとWriting EmailをAIで採点しています）';
+  // ---- AI採点（Interview / Email） ----
+  let ivBand=null, wBand=null, aiNote='';
+  const url=localStorage.getItem('toefl_w_exec');
+  if(url){
+    try{
+      if(mini.ivTranscript){ const p=await aiScore(url,'interview',mini.iv.q,mini.ivTranscript);
+        ivBand=(p.band!=null)?p.band:(p.score!=null?pctToBand(p.score/5):null); mini.ivFb=p; }
+      if(mini.emailText){ const p=await aiScore(url,'email',emailScoringText(mini.email),mini.emailText);
+        wBand=(p.band!=null)?p.band:(p.score!=null?pctToBand(p.score/5):null); mini.emailFb=p; }
+    }catch(e){ aiNote='AI採点エラー: '+e.message+'（設定の /exec URL とキーを確認してください）'; }
+  } else {
+    aiNote='AI採点未接続: 「設定」相当のApps Script /exec URL（localStorage: toefl_w_exec）が未登録のため、Speaking InterviewとWritingは未採点です。';
+  }
+  const sBands=[lrBand,ivBand].filter(b=>b!=null);
+  const sBand=sBands.length?roundHalf(sBands.reduce((a,b)=>a+b,0)/sBands.length):null;
+  const bands=[rBand,lBand,sBand,wBand].filter(b=>b!=null);
+  const overall=bands.length?roundHalf(bands.reduce((a,b)=>a+b,0)/bands.length):0;
+  const o120=bandTo120(overall);
+  document.getElementById('overallBand').textContent=overall.toFixed(1);
+  document.getElementById('overall120').textContent=o120;
+  document.getElementById('rBand').textContent=rBand!=null?rBand.toFixed(1):'–';
+  document.getElementById('lBand').textContent=lBand!=null?lBand.toFixed(1):'–';
+  document.getElementById('sBand').textContent=sBand!=null?sBand.toFixed(1):'–';
+  document.getElementById('wBand').textContent=wBand!=null?wBand.toFixed(1):'–';
+  document.getElementById('rawLine').innerHTML=
+    `R ${rRes.c}/${rRes.n}　L ${lRes.c}/${lRes.n}　S(LR ${mini.lrAvg!=null?mini.lrAvg.toFixed(1):'–'}/5${ivBand!=null?'・Interview '+ivBand.toFixed(1):''})　W ${wBand!=null?'band '+wBand.toFixed(1):(mini.emailText?'未採点':'未記入')}`
+    + (aiNote?`<br><span class="ng">${esc(aiNote)}</span>`:'');
+  const byTask=mergeByTask(rRes.byTask,lRes.byTask);
+  document.getElementById('byTaskBox').innerHTML=
+    `<table><tr><th>タスク</th><th>正答</th><th>正答率</th></tr>`+
+    Object.entries(byTask).map(([k,v])=>`<tr><td>${TASK_JP[k]}</td><td class="en">${v.c}/${v.n}</td><td class="en">${v.n?Math.round(v.c/v.n*100):0}%</td></tr>`).join('')+`</table>`;
+  let aiFb='';
+  if(mini.ivFb){ aiFb+=`<h4>Speaking（Interview）${mini.ivFb.score!=null?'　'+mini.ivFb.score+'/5':''}</h4><p>${esc(mini.ivFb.summary||'')}</p>`; }
+  if(mini.emailFb){ aiFb+=`<h4>Writing（Email）${mini.emailFb.score!=null?'　'+mini.emailFb.score+'/5':''}</h4><p>${esc(mini.emailFb.summary||'')}</p>`; }
+  document.getElementById('advice').innerHTML=aiFb+buildAdvice(byTask,rBand,lBand);
+  document.getElementById('review').innerHTML=(rRes.review||[]).concat(lRes.review||[]).join('');
+  saveRecord({date:new Date().toISOString(),mode:'mini4',rBand,lBand,overall,o120,
+    rPct:rRes.n?rRes.c/rRes.n:null,lPct:lRes.n?lRes.c/lRes.n:null,sBand,wBand});
+}
+
+/* ---- 採点 ---- */
+function norm(s){return (s||'').trim().toLowerCase().replace(/[.,!?'"]/g,'');}
+function finishTest(){
+  stopAudio(); stopTimer();
+  const hasR=state.mode!=='listening', hasL=state.mode!=='reading';
+  const EMPTY={c:0,n:0,byTask:{},review:[]};
+  let rC=0,rN=0,rByTask={},rReview=[],rPath=null;
+  if(hasR){
+    const a=state.rMod.res1||EMPTY, b=state.rMod.res2||EMPTY;
+    rC=a.c+b.c; rN=a.n+b.n; rByTask=mergeByTask(a.byTask,b.byTask);
+    rReview=a.review.concat(b.review); rPath=state.rMod.path;
+  }
+  let lC=0,lN=0,lByTask={},lReview=[],lPath=null;
+  if(hasL){
+    const a=state.lMod.res1||EMPTY, b=state.lMod.res2||EMPTY;
+    lC=a.c+b.c; lN=a.n+b.n; lByTask=mergeByTask(a.byTask,b.byTask);
+    lReview=a.review.concat(b.review); lPath=state.lMod.path;
+  }
+  const byTask=mergeByTask(rByTask,lByTask);
+  const reviewBlocks=rReview.concat(lReview);
+  const rBand=hasR?pathBand(rN?rC/rN:0,rPath):null;
+  const lBand=hasL?pathBand(lN?lC/lN:0,lPath):null;
+  const bands=[rBand,lBand].filter(b=>b!=null);
+  const overall=roundHalf(bands.reduce((a,b)=>a+b,0)/bands.length), o120=bandTo120(overall);
+
+  document.getElementById('overallBand').textContent=overall.toFixed(1);
+  document.getElementById('overall120').textContent=o120;
+  document.getElementById('rBand').textContent=hasR?rBand.toFixed(1):'–';
+  document.getElementById('lBand').textContent=hasL?lBand.toFixed(1):'–';
+  const pathJP=p=>p==='hard'?'難':(p==='easy'?'易':'–');
+  document.getElementById('rawLine').textContent=
+    [ hasR?`Reading 正答 ${rC}/${rN}（${rN?Math.round(rC/rN*100):0}%・${pathJP(rPath)}経路）`:null,
+      hasL?`Listening 正答 ${lC}/${lN}（${lN?Math.round(lC/lN*100):0}%・${pathJP(lPath)}経路）`:null ].filter(Boolean).join(' ／ ');
+
+  document.getElementById('byTaskBox').innerHTML=
+    `<table><tr><th>タスク</th><th>正答</th><th>正答率</th></tr>`+
+    Object.entries(byTask).map(([k,v])=>`<tr><td>${TASK_JP[k]}</td><td class="en">${v.c}/${v.n}</td><td class="en">${v.n?Math.round(v.c/v.n*100):0}%</td></tr>`).join('')+`</table>`;
+
+  document.getElementById('advice').innerHTML=buildAdvice(byTask,rBand,lBand);
+  document.getElementById('review').innerHTML=reviewBlocks.join('');
+
+  saveRecord({date:new Date().toISOString(),mode:state.mode,rBand,lBand,overall,o120,
+    rPct:hasR&&rN?rC/rN:null,lPct:hasL&&lN?lC/lN:null,rPath,lPath});
+  show('result');
+}
+
+/* ---- アドバイス ---- */
+function buildAdvice(byTask,rBand,lBand){
+  const tips={
+    ctw:"語尾（-tion/-ment/-ence 等）と文法手がかりから素早く語を特定し、綴りまで正確に。",
+    daily:"メール・告知は「目的・対象・次の行動」を意識。選択肢の小さな違いに注意。",
+    academic:"各段落の主旨を一言で要約しながら読む。語彙は文脈推測、推論は本文の根拠に厳密に。",
+    response:"短い発話への自然な応答。含み・婉曲・申し出など語用論的表現に慣れる。",
+    conversation:"会話は「誰が・何を・なぜ」を追う。話者の意図・提案・次の行動をメモ。",
+    announcement:"告知は「何が・いつ・どうすべきか」を一度で掴む練習を。",
+    talk:"講義は主旨＋要点を整理。例や因果（compare/contrast, cause-effect）に注意。"
+  };
+  const weak=Object.entries(byTask).filter(([k,v])=>v.n>0&&v.c/v.n<0.6).map(([k])=>k);
+  let html='';
+  if(!weak.length){html+=`<div class="adv">全タスクでバランス良く正解できています。次は難易度を上げるか問題数を増やして挑戦を。</div>`;}
+  else{
+    html+=`<p>今回つまずいたタスク:</p><ul>${weak.map(k=>`<li>${TASK_JP[k]}（${byTask[k].c}/${byTask[k].n}）</li>`).join('')}</ul>`;
+    html+=`<div class="adv"><b>次の一手</b><ul>${weak.map(k=>`<li>${TASK_JP[k].split('（')[0]}: ${tips[k]}</li>`).join('')}</ul></div>`;
+  }
+  if(rBand!=null&&lBand!=null&&rBand-lBand>=1) html+=`<p class="muted">ReadingよりListeningが弱め。音声で要点を一度で掴む練習（シャドーイング・ディクテーション）を増やすと効果的。</p>`;
+  if(rBand!=null&&lBand!=null&&lBand-rBand>=1) html+=`<p class="muted">ListeningよりReadingが弱め。時間を測って実用文・学術文・語彙に取り組みましょう。</p>`;
+  return html;
+}
+
+/* ---- レビュー描画 ---- */
+function ctwReview(title,det){
+  return `<h4>${esc(title)} — Complete the Words</h4>`+det.map((b,i)=>
+    `<div style="padding:4px 0">${i+1}. <span class="pre en">${b.pre}</span><span class="ans">${b.miss}</span> ${b.ok?'✅':'❌'} ${b.ok?'':`（あなた: <span class="your">${esc(b.got||'（空欄）')}</span> → 正: <span class="ans">${b.full}</span>）`}</div>`).join('');
+}
+function mcReview(title,det){
+  return `<h4>${esc(title)}</h4>`+det.map((d,i)=>{
+    const opts=d.q.opts.map((o,j)=>{let c='opt';if(j===d.q.a)c+=' correct';else if(j===d.got)c+=' wrong';return `<div class="${c}" style="cursor:default"><span class="en">${esc(o)}</span></div>`;}).join('');
+    return `<div class="q"><div class="stem"><span class="en">${esc(d.q.stem)}</span> ${d.ok?'✅':'❌'}</div>${opts}</div>`;}).join('');
+}
+
+/* ---- タイマー ---- */
+let timerId=null;
+function startTimer(key,secs,onEnd){
+  const el=document.getElementById({r:'rTimer',l:'lTimer',s:'sTimer',w:'wTimer'}[key]); let t=secs;
+  const ft=document.getElementById('floatTimer');
+  const tick=()=>{ const txt=`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+    if(el) el.textContent=txt;
+    if(ft){ ft.textContent='残り '+txt; ft.classList.remove('hide'); ft.classList.toggle('low',t<=30); }
+    if(t<=0){stopTimer();onEnd();return;} t--;};
+  tick(); timerId=setInterval(tick,1000);
+}
+function stopTimer(){ if(timerId){clearInterval(timerId);timerId=null;} }
+
+/* ---- 履歴 ---- */
+const LS_KEY='toefl_mini_2026';
+function loadHist(){try{return JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch(e){return[];}}
+function saveRecord(r){const h=loadHist();h.push(r);localStorage.setItem(LS_KEY,JSON.stringify(h));}
+function clearHist(){if(confirm('すべての記録を削除しますか？')){localStorage.removeItem(LS_KEY);renderHistory();}}
+function exportJSON(){const b=new Blob([JSON.stringify(loadHist(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='toefl_mini_2026_history.json';a.click();}
+function renderHistory(){
+  const h=loadHist(); document.getElementById('histEmpty').style.display=h.length?'none':'block';
+  const t=document.getElementById('histTable');
+  if(!h.length){t.innerHTML='';document.getElementById('chart').innerHTML='';return;}
+  t.innerHTML=`<tr><th>日時</th><th>総合</th><th>0–120</th><th>R</th><th>L</th></tr>`+
+    h.slice().reverse().map(r=>{const d=new Date(r.date);
+      const ds=`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      const fb=v=>(v==null?'–':v.toFixed(1));
+      return `<tr><td>${ds}</td><td><b class="en">${r.overall.toFixed(1)}</b></td><td class="en">${r.o120}</td><td class="en">${fb(r.rBand)}</td><td class="en">${fb(r.lBand)}</td></tr>`;}).join('');
+  drawChart(h);
+}
+function drawChart(h){
+  const W=700,H=240,pad=34,n=h.length;
+  const xs=i=>n<=1?pad:pad+i*(W-2*pad)/(n-1);
+  const ys=b=>H-pad-(b-1)/5*(H-2*pad);
+  const line=h.map((r,i)=>`${xs(i)},${ys(r.overall)}`).join(' ');
+  const dots=h.map((r,i)=>`<circle cx="${xs(i)}" cy="${ys(r.overall)}" r="4" fill="#22c55e"/>`).join('');
+  let grid='';for(let b=1;b<=6;b++){const y=ys(b);grid+=`<line x1="${pad}" y1="${y}" x2="${W-pad}" y2="${y}" stroke="#334155"/><text x="6" y="${y+4}" fill="#94a3b8" font-size="11">${b}.0</text>`;}
+  document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${grid}
+    <polyline points="${line}" fill="none" stroke="#22c55e" stroke-width="2"/>${dots}
+    <text x="${W-pad}" y="14" text-anchor="end" fill="#94a3b8" font-size="11">総合バンド(推定)の推移</text></svg>`;
+}
+
+/* ---- 換算表 ---- */
+function renderConvTable(){
+  document.getElementById('convTable').innerHTML=`<tr><th>正答率</th><th>band</th><th>0–120(推定)</th></tr>`+
+    CONV.map(c=>`<tr><td class="en">${Math.round(c.min*100)}%以上</td><td class="en">${c.band.toFixed(1)}</td><td class="en">${bandTo120(c.band)}</td></tr>`).join('');
+}
+
+/* ---- 画面切替 ---- */
+function show(id){
+  stopTimer();   // 画面切替で必ずタイマー停止（ホーム等へ移動時にカウントダウンが残るのを防ぐ。各セクションは直後にstartTimerで再開）
+  var _ft=document.getElementById('floatTimer'); if(_ft) _ft.classList.add('hide');   // 採点中セクションのstartTimerが再表示
+  ['home','reading','listening','speaking','writing','result','history','info'].forEach(s=>document.getElementById(s).classList.toggle('hide',s!==id));
+  document.getElementById('navHome').classList.toggle('active',id==='home');
+  document.getElementById('navHist').classList.toggle('active',id==='history');
+  document.getElementById('navInfo').classList.toggle('active',id==='info');
+  stopAudio();
+  if(id==='history')renderHistory();
+  if(id==='info')renderConvTable();
+  window.scrollTo(0,0);
+}
+renderConvTable();
+initExec();
+if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=function(){ speechSynthesis.getVoices(); }; }  // 2声取得のためボイス一覧をウォームアップ
+
+/* ---- 入口ハブからの技能別ディープリンク (#reading / #listening) ---- */
+(function(){
+  var h=(location.hash||'').replace('#','');
+  if(h==='reading') startReadingOnly();
+  else if(h==='listening') startListeningOnly();
+})();
+</script>
+</body>
+</html>

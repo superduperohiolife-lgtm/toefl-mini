@@ -1,0 +1,35 @@
+1
+00:00:00,000 --> 00:00:03,000
+Didn't I just see you in the library an hour ago?
+
+2
+00:00:03,000 --> 00:00:17,770
+Where is the nearest bus stop?
+
+3
+00:00:17,770 --> 00:00:52,290
+How do I contact customer service?
+
+4
+00:00:52,290 --> 00:00:54,290
+I'm afraid I'm not available this evening.
+
+5
+00:00:54,290 --> 00:01:07,940
+Isn't the post office open today?
+
+6
+00:01:07,940 --> 00:01:30,400
+If you need me, just text.
+
+7
+00:01:30,400 --> 00:01:33,400
+So the store is open for business all weekend?
+
+8
+00:01:33,400 --> 00:01:58,890
+Did you attend the seminar?
+
+9
+00:01:58,890 --> 00:02:12,230
+Conversation, announcement, and academic talk.

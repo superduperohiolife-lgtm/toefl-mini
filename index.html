@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOEFL iBT 模試 — 入口</title>
+<style>
+  :root{
+    --bg:#0f172a;--card:#1e293b;--card2:#273449;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;
+    --accent:#38bdf8;--accent2:#22c55e;--warn:#f59e0b;--bad:#ef4444;
+    --r:#38bdf8;--l:#a78bfa;--w:#22c55e;--s:#f59e0b;
+    --jp:"Meiryo UI","Meiryo",sans-serif;--en:"Calibri","Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--jp);line-height:1.6;min-height:100vh}
+  .en{font-family:var(--en)}
+  header{padding:22px 16px 6px;text-align:center}
+  header h1{font-size:22px;margin:0}
+  header .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  .countdown{display:inline-block;margin-top:10px;font-size:13px;color:var(--warn);
+    border:1px solid var(--warn);padding:3px 12px;border-radius:99px}
+  main{max-width:760px;margin:0 auto;padding:16px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .card{display:block;text-decoration:none;color:var(--text);background:var(--card);
+    border:1px solid var(--line);border-left-width:5px;border-radius:14px;padding:18px;
+    transition:transform .12s ease,filter .12s ease}
+  .card:hover{transform:translateY(-2px);filter:brightness(1.08)}
+  .card.r{border-left-color:var(--r)} .card.l{border-left-color:var(--l)}
+  .card.w{border-left-color:var(--w)} .card.s{border-left-color:var(--s)}
+  .card .ico{font-size:26px}
+  .card h2{font-size:18px;margin:6px 0 2px}
+  .card .en2{font-size:12px;color:var(--muted);font-family:var(--en);letter-spacing:.3px}
+  .card .desc{font-size:13px;color:var(--muted);margin-top:8px}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;
+    background:var(--card2);border:1px solid var(--line);color:var(--muted);margin-top:10px}
+  .tag.auto{color:var(--accent2);border-color:rgba(34,197,94,.4)}
+  .tag.ai{color:var(--accent);border-color:rgba(56,189,248,.4)}
+  .card.soon{opacity:.55;cursor:not-allowed}
+  .card.soon:hover{transform:none;filter:none}
+  .tag.soon{color:var(--warn);border-color:rgba(245,158,11,.4)}
+  .foot{font-size:11px;color:var(--muted);text-align:center;margin:22px 0 8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>TOEFL iBT 模試</h1>
+  <div class="sub">4技能スコア推定 ／ 2026年公式形式準拠</div>
+  <div class="countdown" id="countdown"></div>
+</header>
+<main>
+  <div class="card" style="border-left:5px solid var(--warn);margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h2 style="font-size:18px;margin:0">総合スコア（推定）</h2>
+      <button onclick="renderScore()" style="background:transparent;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--jp);font-size:12px">更新</button>
+    </div>
+    <div id="scoreBody"></div>
+  </div>
+
+  <div class="grid">
+
+    <a class="card r" href="toefl-mini-test-2026.html#reading">
+      <div class="ico">📖</div>
+      <h2>Reading</h2>
+      <div class="en2">READING</div>
+      <div class="desc">Complete the Words／Read in Daily Life／Read an Academic Passage</div>
+      <span class="tag auto">自動採点</span>
+    </a>
+
+    <a class="card l" href="toefl-mini-test-2026.html#listening">
+      <div class="ico">🎧</div>
+      <h2>Listening</h2>
+      <div class="en2">LISTENING</div>
+      <div class="desc">Choose a Response／Conversation／Announcement／Academic Talk</div>
+      <span class="tag auto">自動採点</span>
+    </a>
+
+    <a class="card w" href="toefl-writing-2026.html">
+      <div class="ico">✍️</div>
+      <h2>Writing</h2>
+      <div class="en2">WRITING</div>
+      <div class="desc">Build a Sentence／Write an Email／Academic Discussion</div>
+      <span class="tag auto">自動</span> <span class="tag ai">AI採点(Sonnet 4.6)</span>
+    </a>
+
+    <a class="card s" href="toefl-speaking-2026.html">
+      <div class="ico">🎙️</div>
+      <h2>Speaking</h2>
+      <div class="en2">SPEAKING</div>
+      <div class="desc">Listen and Repeat／Take an Interview</div>
+      <span class="tag auto">自動</span> <span class="tag ai">AI採点(Sonnet 4.6)</span>
+    </a>
+
+  </div>
+  <p class="foot">スコアはすべて推定値です（公式スコアではありません）。R/L＝模試アプリ（共通）／ W・S＝AI採点アプリ。</p>
+</main>
+<script>
+  // 本番テスト日 2026-07-22 までの日数を表示（日付から自動算出）
+  (function(){
+    var exam = new Date(2026,6,22); // 月は0始まり=7月
+    var today = new Date(); today.setHours(0,0,0,0);
+    var days = Math.round((exam - today)/86400000);
+    var el = document.getElementById('countdown');
+    if(days > 0) el.textContent = '本番まで あと ' + days + ' 日（2026/07/22）';
+    else if(days === 0) el.textContent = '本番当日です（2026/07/22）';
+    else el.textContent = '本番日: 2026/07/22';
+  })();
+
+  /* ===== 総合スコア集計（各アプリの最新localStorage結果を統合・推定） ===== */
+  // 保存キー: mini-test(R/L)=toefl_mini_2026 / Writing=toefl_w_subs / Speaking=toefl_spk
+  var BAND120={ '6':118,'5.5':110,'5':100,'4.5':89,'4':77,'3.5':66,'3':56,'2.5':46,'2':35,'1.5':24,'1':12 };
+  function loadJSON(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+  function avg(a){ return a.length? a.reduce(function(x,y){return x+y;},0)/a.length : null; }
+  function latestRL(){ var h=loadJSON('toefl_mini_2026')||[]; var r=null,l=null;
+    for(var i=h.length-1;i>=0;i--){ if(r==null&&h[i].rBand!=null)r=h[i].rBand; if(l==null&&h[i].lBand!=null)l=h[i].lBand; if(r!=null&&l!=null)break; }
+    return {r:r,l:l}; }
+  function sectionBand(key,fields){ var o=loadJSON(key); if(!o)return null; var b=[];
+    fields.forEach(function(f){ if(o[f]&&o[f].band!=null) b.push(o[f].band); }); return avg(b); }
+  function renderScore(){
+    var rl=latestRL();
+    var w=sectionBand('toefl_w_subs',['email','disc']);   // AI採点された2タスクの平均
+    var s=sectionBand('toefl_spk',['lr','iv']);
+    var secs=[['Reading',rl.r],['Listening',rl.l],['Writing',w],['Speaking',s]];
+    var have=secs.map(function(x){return x[1];}).filter(function(v){return v!=null;});
+    var body=document.getElementById('scoreBody');
+    if(!have.length){ body.innerHTML='<div class="desc" style="margin-top:6px">まだ結果がありません。各セクションを受験すると、最新結果から総合バンドを推定します。</div>'; return; }
+    var overall=Math.round(avg(have)*2)/2;
+    var o120=BAND120[String(overall)]||'–';
+    var chip=function(n,v){ return '<span style="display:inline-block;border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin:6px 6px 0 0;font-size:13px">'+n+': <b class="en">'+(v==null?'–':v.toFixed(1))+'</b></span>'; };
+    body.innerHTML='<div style="font-size:34px;font-weight:bold;color:var(--warn);font-family:var(--en);margin-top:4px">'+overall.toFixed(1)+'<span style="font-size:14px;color:var(--muted)"> / 6.0</span></div>'
+      +'<div style="color:var(--muted);font-size:12px">0–120換算(推定): <b class="en">'+o120+'</b>　※受験済みセクションのみの平均</div>'
+      +'<div style="margin-top:6px">'+secs.map(function(x){return chip(x[0],x[1]);}).join('')+'</div>'
+      +'<div style="color:var(--muted);font-size:11px;margin-top:8px">各アプリの最新結果をこの端末(localStorage)から集計。すべて推定値です。Writing/Speakingは未受験だと「–」。</div>';
+  }
+  renderScore();
+</script>
+</body>
+</html>
