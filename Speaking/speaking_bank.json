@@ -1,0 +1,16 @@
+[
+  {"id":"lr_01","type":"lr","script":"The library is open until nine o'clock tonight.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_01.mp3"},
+  {"id":"lr_02","type":"lr","script":"She decided to study abroad after finishing her degree.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_02.mp3"},
+  {"id":"lr_03","type":"lr","script":"Although it was raining, the team continued the experiment.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_03.mp3"},
+  {"id":"lr_04","type":"lr","script":"Please remember to submit your assignment before Friday.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_04.mp3"},
+  {"id":"lr_05","type":"lr","script":"The new museum exhibit attracts thousands of visitors each week.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_05.mp3"},
+  {"id":"lr_06","type":"lr","script":"He could not attend the meeting because his train was delayed.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_06.mp3"},
+  {"id":"lr_07","type":"lr","script":"Renewable energy is becoming more affordable around the world.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_07.mp3"},
+  {"id":"lr_08","type":"lr","script":"The professor explained the difficult theory clearly and patiently.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_08.mp3"},
+  {"id":"lr_09","type":"lr","script":"We should book the tickets early to avoid the crowds.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_09.mp3"},
+  {"id":"lr_10","type":"lr","script":"Reading widely helps you build a stronger vocabulary.","voice":"en-US-JennyNeural","audio":"Speaking/audio/speak_lr_10.mp3"},
+  {"id":"iv_01","type":"iv","script":"What is a subject you enjoyed studying in school, and why did you like it?","voice":"en-US-GuyNeural","audio":"Speaking/audio/speak_iv_01.mp3"},
+  {"id":"iv_02","type":"iv","script":"Some students prefer studying alone, while others prefer studying in groups. Which do you prefer, and why?","voice":"en-US-GuyNeural","audio":"Speaking/audio/speak_iv_02.mp3"},
+  {"id":"iv_03","type":"iv","script":"Describe a place you would like to visit, and explain what you would do there.","voice":"en-US-GuyNeural","audio":"Speaking/audio/speak_iv_03.mp3"},
+  {"id":"iv_04","type":"iv","script":"Do you think it is better to plan things in advance or to act spontaneously? Explain your view.","voice":"en-US-GuyNeural","audio":"Speaking/audio/speak_iv_04.mp3"}
+]
