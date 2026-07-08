@@ -115,8 +115,8 @@
       <p class="muted">Reading・Listeningだけを2モジュール適応でじっくり（約19分）。</p>
       <p><button class="ghost" onclick="startTest('full')">R/L じっくり版を始める</button></p>
 
-      <h4 style="margin-top:16px">AI採点の接続（Speaking Interview ／ Writing Email）</h4>
-      <p class="muted">Apps Script の /exec URL を登録するとS/WをAI採点します（手順: P2セットアップ手順.md）。未登録でもR/L/復唱は採点されます。</p>
+      <h4 style="margin-top:16px">AI採点の接続（Speaking Interview ／ Writing Email・Discussion）</h4>
+      <p class="muted">Apps Script の /exec URL を登録するとS/WをAI採点します（手順: AI採点セットアップ手順_2026-07-08.md）。未登録でもR/L/復唱は採点されます。</p>
       <input type="text" id="execUrl" placeholder="https://script.google.com/macros/s/＿＿＿/exec"
         style="width:100%;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font-family:var(--en)">
       <p style="margin-top:8px">
@@ -245,7 +245,7 @@
 <section id="info" class="hide">
   <div class="card">
     <h2>このアプリについて（2026新形式・4技能）</h2>
-    <p>2026年1月改訂の公式形式に準拠（7/22本番向け）。<b>通しミニ</b>は4技能（R→L→S→W）を回答約25分で実施し、回答後に <b>Speaking InterviewとWriting EmailをAI(Sonnet 4.6)で採点</b>、R/L/復唱は機械採点。Reading/Listeningは<b>本番同様の2段階適応</b>。</p>
+    <p>2026年1月改訂の公式形式に準拠（7/22本番向け）。<b>通しミニ</b>は4技能（R→L→S→W）を回答約25分で実施し、回答後に <b>Speaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点</b>、R/L/復唱は機械採点。Reading/Listeningは<b>本番同様の2段階適応</b>。</p>
     <h3>出題タスク</h3>
     <p class="muted">Reading: Complete the Words / Read in Daily Life / Read an Academic Passage。Listening: Listen and Choose a Response / Conversation / Announcement / Academic Talk。Speaking: Listen and Repeat / Take an Interview。Writing: Build a Sentence / Write an Email / Academic Discussion。各問に難易度タグ（easy/med/hard）を持ち、二段階適応の経路判定に使用（UIには非表示）。</p>
     <h3>スコア推定について</h3>
@@ -865,7 +865,7 @@ async function finishMini4(){
   const lrBand=mini.lrN?pctToBand((mini.lrAvg||0)/5):null;
   show('result'); window.scrollTo(0,0);
   document.getElementById('overallBand').textContent='…';
-  document.getElementById('rawLine').textContent='AI採点中…（Speaking InterviewとWriting EmailをAIで採点しています）';
+  document.getElementById('rawLine').textContent='AI採点中…（Speaking InterviewとWriting（Email・Discussion）をAIで採点しています）';
   // ---- AI採点（Interview / Email） ----
   let ivBand=null, wBand=null, aiNote='';
   const url=localStorage.getItem('toefl_w_exec');
