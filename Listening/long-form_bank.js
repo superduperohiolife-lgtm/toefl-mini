@@ -54,8 +54,8 @@ const LIS_CONVO = [
         "opts": [
           "Choose a new topic",
           "Work with another student",
-          "Skip the assignment",
-          "Use the online library database"
+          "Search the open web more thoroughly",
+          "Look through an electronic collection of scholarly sources"
         ],
         "a": 3
       }
@@ -117,7 +117,7 @@ const LIS_CONVO = [
       {
         "stem": "What does the woman say she will do?",
         "opts": [
-          "Book a study room",
+          "Reserve a quiet room to practice in",
           "Cancel the meeting",
           "Email the professor",
           "Write the man's section"
@@ -609,7 +609,7 @@ const LIS_TALK = [
         "stem": "What happens to new memories during deep sleep?",
         "opts": [
           "They are erased",
-          "The brain replays them, making them more stable",
+          "The brain rehearses them, strengthening the connections",
           "They become weaker",
           "They move to short-term memory"
         ],
@@ -658,7 +658,7 @@ const LIS_TALK = [
           "The position of the sun",
           "The color of the sky",
           "The sound of the wind",
-          "The patterns of the stars"
+          "The arrangement of stars in the night sky"
         ],
         "a": 3
       },
@@ -668,7 +668,7 @@ const LIS_TALK = [
           "The position of the moon",
           "The warmth of the air",
           "Following roads",
-          "Their sense of the Earth's magnetic field"
+          "Their ability to detect Earth's magnetism"
         ],
         "a": 3
       }
@@ -798,7 +798,7 @@ const LIS_TALK = [
         "opts": [
           "They build mountains quickly",
           "They create deserts",
-          "They carve valleys and grind down rock",
+          "They wear away rock and shape valleys as they move",
           "They cause earthquakes"
         ],
         "a": 2
