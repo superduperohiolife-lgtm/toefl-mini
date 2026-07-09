@@ -62,6 +62,10 @@
   .floatTimer{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:200;background:var(--card2);border:1px solid var(--warn);color:var(--warn);font-weight:bold;font-variant-numeric:tabular-nums;padding:7px 16px;border-radius:99px;box-shadow:0 2px 10px rgba(0,0,0,.45);font-size:15px}
   .floatTimer.low{color:var(--bad);border-color:var(--bad)}
   .scorebig{font-size:46px;font-weight:bold;color:var(--accent2);font-family:var(--en)}
+  .spinner{display:inline-block;width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--accent2);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+  .scoring{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;margin:6px 0;background:var(--card2);border:1px solid var(--accent2);border-radius:10px;flex-wrap:wrap}
+  .scoring b{font-size:17px;color:var(--accent2)}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .stat{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
   .stat .v{font-size:24px;font-weight:bold;font-family:var(--en)}
@@ -173,7 +177,7 @@
       <h2 style="margin:0">Speaking <span class="pill">Listen and Repeat ＋ Interview</span></h2>
       <span>残り <span class="timer" id="sTimer">04:00</span></span>
     </div>
-    <p class="muted">各設問の「▶ 開始」でお手本／質問が<b>1回だけ</b>流れ、<b>直後に自動で録音</b>（復唱12秒／面接45秒）。再生し直し・準備時間はありません（本番同様）。採点は<b>回答後</b>（復唱は自動・語一致／InterviewはAI）。音声認識は <b>Chrome / Edge 推奨</b>。</p>
+    <p class="muted">各設問の「▶ 開始」でお手本／質問が<b>1回だけ</b>流れ、<b>直後に自動で録音</b>（復唱12秒／面接35秒）。再生し直し・準備時間はありません（本番同様）。採点は<b>回答後</b>（復唱は自動・語一致／InterviewはAI）。音声認識は <b>Chrome / Edge 推奨</b>。</p>
   </div>
   <div id="speakingArea"></div>
   <div class="row" style="justify-content:flex-end">
@@ -714,8 +718,8 @@ function startMini4Speaking(){
   const ivCard = `
     <div class="card">
       <div><b>Take an Interview</b> <span class="pill">AI採点（回答後）</span></div>
-      <div class="en" style="margin:6px 0;font-size:16px">${esc(mini.iv.q)}</div>
-      <p class="muted">「▶ 開始」で質問が<b>1回だけ</b>流れ、直後に<b>自動で録音（約45秒）</b>。再生し直し・準備時間はありません（本番同様）。</p>
+      <div class="muted" style="margin:6px 0">🔊 質問は<b>音声のみ</b>（画面に表示されません・本番同様）。内容は採点後のレビューで確認できます。</div>
+      <p class="muted">「▶ 開始」で質問が<b>1回だけ</b>流れ、直後に<b>自動で録音（約35秒）</b>。再生し直し・準備時間はありません（本番同様）。</p>
       <div class="row" style="margin:8px 0">
         <button class="play" id="ivbtn" onclick="ivStart()">▶ 開始（1回再生→自動録音）</button></div>
       <div class="muted" id="ivst" style="font-size:12px;min-height:16px"></div>
@@ -755,7 +759,7 @@ function lrStart(i){ const it=mini.lrItems[i];
     btn:document.getElementById('lrbtn_'+i), statusEl:document.getElementById('lrst_'+i),
     onText:v=>{ SP[i]=SP[i]||{}; SP[i].transcript=v; const el=document.getElementById('lrtr_'+i); if(el) el.textContent='🎤 認識語数 '+((v.match(/\S+/g)||[]).length)+'（内容は本番同様に非表示・採点後に確認できます）'; } }); }
 function ivStart(){
-  spkRun({ audio:mini.iv.audio, text:mini.iv.q, limitSec:45,
+  spkRun({ audio:mini.iv.audio, text:mini.iv.q, limitSec:35,
     btn:document.getElementById('ivbtn'), statusEl:document.getElementById('ivst'),
     onText:v=>{ mini.ivTranscript=v; const el=document.getElementById('ivtr'); if(el) el.textContent='🎤 認識語数 '+((v.match(/\S+/g)||[]).length)+'（内容は非表示・採点後に確認）'; } }); }
 function lrTok(s){ return (s||'').toLowerCase().replace(/[^a-z0-9'\s]/g,' ').split(/\s+/).filter(Boolean); }
@@ -864,8 +868,8 @@ async function finishMini4(){
   const lBand=lRes.n?pathBand(lRes.c/lRes.n,state.lMod.path):null;
   const lrBand=mini.lrN?pctToBand((mini.lrAvg||0)/5):null;
   show('result'); window.scrollTo(0,0);
-  document.getElementById('overallBand').textContent='…';
-  document.getElementById('rawLine').textContent='AI採点中…（Speaking InterviewとWriting（Email・Discussion）をAIで採点しています）';
+  document.getElementById('overallBand').innerHTML='<span class="spinner" style="width:38px;height:38px;border-width:4px"></span>';
+  document.getElementById('rawLine').innerHTML='<div class="scoring"><span class="spinner"></span><b>AI採点中</b><span class="muted">Speaking InterviewとWriting（Email・Discussion）を採点しています…（通常10〜30秒）</span></div>';
   // ---- AI採点（Interview / Email） ----
   let ivBand=null, wBand=null, aiNote='';
   const url=localStorage.getItem('toefl_w_exec');
