@@ -47,6 +47,7 @@
 <body>
 <header>
   <h1>TOEFL Speaking <span class="badge">2026 / 録音＋STT</span></h1>
+  <a class="ghost" href="index.html" style="text-decoration:none;display:inline-block">🏠 ハブ</a>
   <button class="ghost" onclick="show('settings')">⚙ 設定</button>
 </header>
 <main>
@@ -107,16 +108,17 @@
 <p class="foot">TOEFL Speaking 2026 — P4 / スコアは推定値です</p>
 </main>
 
+<script src="Speaking/speaking_bank.js"></script>
 <script>
-/* ===== タスク内容（オリジナル） ===== */
-const LR_ITEMS = [
+/* ===== タスク内容（実音声mp3付きバンク Speaking/speaking_bank.js を使用。未読込時はTTS文面で代替） ===== */
+const LR_ITEMS = window.SPK_LR || [
  {target:"The library is open until nine o'clock tonight."},
  {target:"She decided to study abroad after finishing her degree."},
- {target:"Although it was raining heavily, the team continued the experiment."},
- {target:"The professor explained that the results were difficult to interpret."},
- {target:"Renewable energy sources are becoming increasingly important around the world."}
+ {target:"Although it was raining, the team continued the experiment."},
+ {target:"Please remember to submit your assignment before Friday."},
+ {target:"The new museum exhibit attracts thousands of visitors each week."}
 ];
-const IV_ITEMS = [
+const IV_ITEMS = window.SPK_IV || [
  {q:"What is a subject you enjoyed studying in school, and why did you like it?"},
  {q:"Some students prefer studying alone, while others prefer studying in groups. Which do you prefer, and why?"},
  {q:"Describe a place you would like to visit, and explain what you would do there."},
@@ -125,33 +127,41 @@ const IV_ITEMS = [
 
 /* ===== STT (Web Speech API) ===== */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let activeRecog=null, activeKey=null;
 function sttAvailable(){return !!SR;}
-function startRec(key,btn,outId){
-  if(!SR){ document.getElementById(outId).textContent='この端末は音声認識に非対応です。下の「手動入力」を使ってください。'; return; }
-  if(activeRecog){ try{activeRecog.stop();}catch(e){} }
-  const r=new SR(); r.lang='en-US'; r.interimResults=true; r.continuous=true;
-  let finalText='';
-  r.onresult=e=>{ let interim=''; for(let i=e.resultIndex;i<e.results.length;i++){ const t=e.results[i][0].transcript; if(e.results[i].isFinal) finalText+=t+' '; else interim+=t; }
-    document.getElementById(outId).textContent=(finalText+interim).trim(); store(key,'transcript',(finalText+interim).trim()); };
-  r.onerror=e=>{ document.getElementById(outId).textContent+=' [認識エラー: '+e.error+']'; };
-  r.onend=()=>{ if(btn){btn.classList.remove('on');btn.textContent='🎤 録音';} activeRecog=null; };
-  activeRecog=r; activeKey=key; btn.classList.add('on'); btn.textContent='■ 停止'; r.start();
-}
-function toggleRec(key,btn,outId){
-  if(activeRecog && activeKey===key){ activeRecog.stop(); }
-  else { startRec(key,btn,outId); }
-}
 
-/* ===== TTS ===== */
-function speak(text,btn){ if(!('speechSynthesis' in window))return; speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text); u.lang='en-US'; u.rate=0.95;
-  if(btn){btn.disabled=true;u.onend=()=>btn.disabled=false;} speechSynthesis.speak(u); }
+/* ===== 1回再生→自動録音エンジン（カンニング防止：再生完了後にのみ録音開始・再生中は録音しない・再生し直し不可） ===== */
+let spkRecog=null, spkBusy=false, curAudio=null;
+function spkStop(){ if(spkRecog){try{spkRecog.stop();}catch(e){}} spkRecog=null; }
+/* 再生中の音声（Audio要素＋TTS）を確実に停止。重複再生防止の要 */
+function stopAudio(){
+  if(curAudio){ try{ curAudio.pause(); curAudio.currentTime=0; }catch(e){} curAudio.onended=null; curAudio.onerror=null; curAudio=null; }
+  if('speechSynthesis' in window){ try{ speechSynthesis.cancel(); }catch(e){} }
+}
+function spkRun(cfg){   // cfg:{audio,text,limitSec,btn,statusEl,onText}
+  if(spkBusy) return;
+  spkBusy=true;
+  const btn=cfg.btn; if(btn){ btn.disabled=true; btn.textContent='▶ 再生中…'; }
+  if(cfg.statusEl) cfg.statusEl.textContent='🔊 お手本/質問を再生中（1回のみ）…';
+  const startRecord=()=>{
+    if(!SR){ if(cfg.statusEl) cfg.statusEl.textContent='この端末は音声認識に非対応です。Chrome または Edge で受験してください。'; spkBusy=false; if(btn) btn.textContent='完了'; return; }
+    let remain=cfg.limitSec; let ivid=null;
+    const r=new SR(); r.lang='en-US'; r.interimResults=true; r.continuous=true; let fin='';
+    r.onresult=e=>{ let itm=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t+' '; else itm+=t; } cfg.onText((fin+itm).trim()); };
+    r.onerror=e=>{};
+    r.onend=()=>{ if(ivid) clearInterval(ivid); spkRecog=null; spkBusy=false; if(btn) btn.textContent='✅ 完了'; if(cfg.statusEl) cfg.statusEl.textContent='✅ 録音完了（下の「採点」を押してください）'; };
+    spkRecog=r; try{ r.start(); }catch(e){ spkBusy=false; if(btn) btn.textContent='✅ 完了'; return; }
+    const tick=()=>{ if(remain<=0){ spkStop(); return; } if(cfg.statusEl) cfg.statusEl.textContent='🔴 録音中… 残り '+remain+'秒'; remain--; };
+    tick(); ivid=setInterval(tick,1000);
+  };
+  const src=cfg.audio||null;
+  const doTTS=()=>{ if(!('speechSynthesis' in window)){ startRecord(); return; } stopAudio();
+    const u=new SpeechSynthesisUtterance(cfg.text); u.lang='en-US'; u.rate=0.95; u.onend=startRecord; u.onerror=startRecord; speechSynthesis.speak(u); };
+  if(src){ stopAudio(); const a=new Audio(src); curAudio=a; a.onended=()=>{ curAudio=null; startRecord(); }; a.onerror=doTTS; a.play().catch(doTTS); }
+  else doTTS();
+}
 
 /* ===== 状態 ===== */
 const ST={lr:{},iv:{}};
-function store(sec,field,val){const key=activeKeyParts(); if(!key)return; ST[key.sec][key.i]=ST[key.sec][key.i]||{}; ST[key.sec][key.i][field]=val;}
-function activeKeyParts(){ if(!activeKey)return null; const [sec,i]=activeKey.split('_'); return {sec,i:+i}; }
 function setVal(sec,i,field,val){ST[sec][i]=ST[sec][i]||{};ST[sec][i][field]=val;}
 
 /* ===== 共通: 正規化・語一致 ===== */
@@ -170,20 +180,20 @@ function renderLR(){
   document.getElementById('lrArea').innerHTML = LR_ITEMS.map((it,i)=>`
     <div class="box" style="margin-bottom:12px">
       <div class="row" style="justify-content:space-between"><b>Sentence ${i+1}</b></div>
+      <p class="muted">「▶ 開始」でお手本が<b>1回だけ</b>流れ、直後に<b>自動で録音（約12秒）</b>。再生し直しはできません（本番同様）。</p>
       <div class="row" style="margin:8px 0">
-        <button class="play" onclick="speak(LR_ITEMS[${i}].target,this)">▶ お手本</button>
-        <button class="rec" id="lrbtn_${i}" onclick="toggleRec('lr_${i}',this,'lrtr_${i}')">🎤 録音</button>
+        <button class="play" id="lrbtn_${i}" onclick="lrStart(${i})">▶ 開始（1回再生→自動録音）</button>
         <button class="ghost" onclick="scoreLR(${i})">採点</button>
       </div>
+      <div class="muted" id="lrst_${i}" style="min-height:18px"></div>
       <div class="muted">認識結果:</div><div class="trans" id="lrtr_${i}"></div>
-      <details style="margin-top:6px"><summary class="muted">手動入力（任意：ローカルWhisper等の文字起こしを貼る）</summary>
-        <textarea id="lrman_${i}" placeholder="認識がうまくいかない場合、ここに英文を貼る"></textarea>
-        <button class="ghost" onclick="useManual('lr',${i},'lrtr_${i}')">この内容で採点に使う</button></details>
       <div id="lrres_${i}"></div>
     </div>`).join('');
   document.getElementById('lrAgg').innerHTML='';
 }
-function useManual(sec,i,outId){const v=document.getElementById(sec+'man_'+i).value.trim();document.getElementById(outId).textContent=v;setVal(sec,i,'transcript',v);}
+function lrStart(i){ spkRun({ audio:LR_ITEMS[i].audio, text:LR_ITEMS[i].target, limitSec:12,
+  btn:document.getElementById('lrbtn_'+i), statusEl:document.getElementById('lrst_'+i),
+  onText:v=>{ document.getElementById('lrtr_'+i).textContent=v; setVal('lr',i,'transcript',v); } }); }
 function scoreLR(i){
   const said=(ST.lr[i]&&ST.lr[i].transcript)||document.getElementById('lrtr_'+i).textContent||'';
   if(!said.trim()){document.getElementById('lrres_'+i).innerHTML='<p class="muted">先に録音するか手動入力してください。</p>';return;}
@@ -202,19 +212,20 @@ function renderIV(){
     <div class="box" style="margin-bottom:12px">
       <div><b>Question ${i+1}</b></div>
       <div class="prompt" style="margin:6px 0">${esc(it.q)}</div>
+      <p class="muted">「▶ 開始」で質問が<b>1回だけ</b>流れ、直後に<b>自動で録音（約45秒）</b>。再生し直し・準備時間はありません（本番同様）。</p>
       <div class="row" style="margin:8px 0">
-        <button class="play" onclick="speak(IV_ITEMS[${i}].q,this)">▶ 質問を再生</button>
-        <button class="rec" id="ivbtn_${i}" onclick="toggleRec('iv_${i}',this,'ivtr_${i}')">🎤 録音</button>
+        <button class="play" id="ivbtn_${i}" onclick="ivStart(${i})">▶ 開始（1回再生→自動録音）</button>
         <button class="ghost" onclick="scoreIV(${i})">AI採点</button>
       </div>
+      <div class="muted" id="ivst_${i}" style="min-height:18px"></div>
       <div class="muted">認識結果:</div><div class="trans" id="ivtr_${i}"></div>
-      <details style="margin-top:6px"><summary class="muted">手動入力（任意）</summary>
-        <textarea id="ivman_${i}" placeholder="文字起こしを貼る"></textarea>
-        <button class="ghost" onclick="useManual('iv',${i},'ivtr_${i}')">この内容で採点に使う</button></details>
       <div id="ivres_${i}"></div>
     </div>`).join('');
   document.getElementById('ivAgg').innerHTML='';
 }
+function ivStart(i){ spkRun({ audio:IV_ITEMS[i].audio, text:IV_ITEMS[i].q, limitSec:45,
+  btn:document.getElementById('ivbtn_'+i), statusEl:document.getElementById('ivst_'+i),
+  onText:v=>{ document.getElementById('ivtr_'+i).textContent=v; setVal('iv',i,'transcript',v); } }); }
 const SPK_RUBRIC='Score this SPOKEN response (given as a transcript) on the official TOEFL iBT 2026 Speaking scale from 0 to 5. Consider: content development and relevance to the question, coherence and organization, grammar and vocabulary range/accuracy. Note: the transcript may contain minor speech-recognition errors—judge the ideas and language, not transcription artifacts.';
 function buildIVPrompt(i){
   const resp=(ST.iv[i]&&ST.iv[i].transcript)||document.getElementById('ivtr_'+i).textContent||'';
@@ -289,8 +300,8 @@ function updateStt(){const el=document.getElementById('sttStatus');if(el)el.text
 /* ===== 画面切替 ===== */
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function show(id){
-  if(activeRecog){try{activeRecog.stop();}catch(e){}}
-  if('speechSynthesis' in window)speechSynthesis.cancel();
+  spkStop();
+  stopAudio();
   ['home','lr','iv','settings'].forEach(s=>document.getElementById(s).classList.toggle('hide',s!==id));
   if(id==='lr')renderLR(); if(id==='iv')renderIV();
   if(id==='settings')document.getElementById('execUrl').value=localStorage.getItem('toefl_w_exec')||'';

@@ -814,7 +814,7 @@ function pickTtsVoices(){
 }
 function speakItem(t,btn,finalize){
   if(!('speechSynthesis' in window)){ alert('この端末は音声非対応です。'); if(btn) btn.disabled=false; return; }
-  speechSynthesis.cancel();
+  stopAudio();
   if(btn) btn.disabled=true;
   const turns = (t.turns && t.turns.length) ? t.turns : [{t:(t.script||''), voice:''}];
   const [vF,vM]=pickTtsVoices();
@@ -838,15 +838,21 @@ function playIdx(li,btn){
   const src = item.t.audio ? ('Listening/'+item.t.audio) : null;
   if(src){                                           // 実音声ファイル(話者別ボイス)があれば優先
     if(btn) btn.disabled=true;
-    const a=new Audio(src);
-    a.onended=finalize;
-    a.onerror=()=>{ speakItem(item.t,btn,finalize); };   // mp3未生成→話者別TTSで代替（止めない）
-    a.play().catch(()=>{ speakItem(item.t,btn,finalize); });
+    stopAudio();                                     // 直前の音声を止めてから再生（重複防止）
+    const a=new Audio(src); curAudio=a;
+    a.onended=()=>{ curAudio=null; finalize(); };
+    a.onerror=()=>{ curAudio=null; speakItem(item.t,btn,finalize); };   // mp3未生成→話者別TTSで代替（止めない）
+    a.play().catch(()=>{ curAudio=null; speakItem(item.t,btn,finalize); });
   } else {
     speakItem(item.t,btn,finalize);                  // 音源指定なし→話者別TTS
   }
 }
-function stopAudio(){ if('speechSynthesis' in window) speechSynthesis.cancel(); }
+let curAudio=null;
+/* 再生中の音声（Audio要素＋TTS）を確実に停止。重複再生防止の要 */
+function stopAudio(){
+  if(curAudio){ try{ curAudio.pause(); curAudio.currentTime=0; }catch(e){} curAudio.onended=null; curAudio.onerror=null; curAudio=null; }
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+}
 
 /* ---- モジュール採点ヘルパー ---- */
 function captureCtw(){
@@ -971,9 +977,9 @@ function spkRun(cfg){   // cfg:{audio,text,limitSec,btn,statusEl,onText}
     tick(); ivid=setInterval(tick,1000);
   };
   const src=cfg.audio||null;
-  const doTTS=()=>{ if(!('speechSynthesis' in window)){ startRecord(); return; } speechSynthesis.cancel();
+  const doTTS=()=>{ if(!('speechSynthesis' in window)){ startRecord(); return; } stopAudio();
     const u=new SpeechSynthesisUtterance(cfg.text); u.lang='en-US'; u.rate=0.95; u.onend=startRecord; u.onerror=startRecord; speechSynthesis.speak(u); };
-  if(src){ const a=new Audio(src); a.onended=startRecord; a.onerror=doTTS; a.play().catch(doTTS); }
+  if(src){ stopAudio(); const a=new Audio(src); curAudio=a; a.onended=()=>{ curAudio=null; startRecord(); }; a.onerror=doTTS; a.play().catch(doTTS); }
   else doTTS();
 }
 function lrStart(i){ const it=mini.lrItems[i];
@@ -1299,6 +1305,7 @@ function show(id){
   document.getElementById('navHome').classList.toggle('active',id==='home');
   document.getElementById('navHist').classList.toggle('active',id==='history');
   document.getElementById('navInfo').classList.toggle('active',id==='info');
+  if(typeof spkStop==='function') spkStop();   // 画面切替でSpeakingの録音(マイク)も停止
   stopAudio();
   if(id==='history')renderHistory();
   if(id==='info')renderConvTable();
