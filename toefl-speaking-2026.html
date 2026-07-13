@@ -130,33 +130,59 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 function sttAvailable(){return !!SR;}
 
 /* ===== 1回再生→自動録音エンジン（カンニング防止：再生完了後にのみ録音開始・再生中は録音しない・再生し直し不可） ===== */
-let spkRecog=null, spkBusy=false, curAudio=null;
-function spkStop(){ if(spkRecog){try{spkRecog.stop();}catch(e){}} spkRecog=null; }
+let spkRecog=null, spkBusy=false, curAudio=null, spkUtter=null;
+function spkStop(){ if(spkRecog){try{spkRecog.stop();}catch(e){}} }
+function spkAbort(){ if(spkRecog){try{spkRecog.abort();}catch(e){}} spkRecog=null; }
 /* 再生中の音声（Audio要素＋TTS）を確実に停止。重複再生防止の要 */
 function stopAudio(){
   if(curAudio){ try{ curAudio.pause(); curAudio.currentTime=0; }catch(e){} curAudio.onended=null; curAudio.onerror=null; curAudio=null; }
   if('speechSynthesis' in window){ try{ speechSynthesis.cancel(); }catch(e){} }
+}
+/* 認識のみ開始（お手本は再生しない）。2個目以降のSTT空振り対策の中核 */
+function beginRecognition(cfg, isRetry){
+  const btn=cfg.btn;
+  if(!SR){ if(cfg.statusEl) cfg.statusEl.textContent='この端末は音声認識に非対応です。Chrome または Edge で受験してください。'; spkBusy=false; if(btn){btn.disabled=false;btn.textContent='完了';} return; }
+  try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}  // 音声出力を解放してからマイクを掴む
+  spkAbort();  // 直前の認識が残っていると2個目以降が空振りするため確実に破棄
+  let remain=cfg.limitSec, ivid=null, got=false;
+  const r=new SR(); r.lang='en-US'; r.interimResults=true; r.continuous=true; let fin='';
+  r.onresult=e=>{ got=true; let itm=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t+' '; else itm+=t; } cfg.onText((fin+itm).trim()); };
+  r.onerror=e=>{ const err=(e&&e.error)||''; if(err && err!=='no-speech' && err!=='aborted' && cfg.statusEl){ cfg.statusEl.textContent='認識エラー（'+err+'）。マイク許可とChrome/Edgeをご確認ください。'; } };
+  r.onend=()=>{ if(ivid) clearInterval(ivid); spkRecog=null; spkBusy=false;
+    if(got){ if(btn){btn.disabled=true;btn.textContent='✅ 完了';} if(cfg.statusEl) cfg.statusEl.textContent='✅ 録音完了（下の「採点」を押してください）'; }
+    else { offerRerecord(cfg); } };
+  spkRecog=r;
+  try{ r.start(); }
+  catch(e){ spkAbort(); if(!isRetry){ setTimeout(()=>beginRecognition(cfg,true), 400); return; } offerRerecord(cfg); return; }
+  const tick=()=>{ if(remain<=0){ spkStop(); return; } if(cfg.statusEl) cfg.statusEl.textContent='🔴 録音中… 残り '+remain+'秒'; remain--; };
+  tick(); ivid=setInterval(tick,1000);
+}
+/* 空振り時：お手本を再生し直さず録音だけやり直す（カンニング防止を保ったまま復帰） */
+function offerRerecord(cfg){
+  spkBusy=false;
+  if(cfg.statusEl) cfg.statusEl.textContent='⚠️ 音声を認識できませんでした。「🎤 もう一度録音」を押してください（お手本は再生されません）。';
+  const btn=cfg.btn;
+  if(btn){ btn.disabled=false; btn.textContent='🎤 もう一度録音'; btn.onclick=()=>{ if(spkBusy) return; spkBusy=true; btn.disabled=true; btn.textContent='🔴 準備中…'; beginRecognition(cfg,false); }; }
 }
 function spkRun(cfg){   // cfg:{audio,text,limitSec,btn,statusEl,onText}
   if(spkBusy) return;
   spkBusy=true;
   const btn=cfg.btn; if(btn){ btn.disabled=true; btn.textContent='▶ 再生中…'; }
   if(cfg.statusEl) cfg.statusEl.textContent='🔊 お手本/質問を再生中（1回のみ）…';
-  const startRecord=()=>{
-    if(!SR){ if(cfg.statusEl) cfg.statusEl.textContent='この端末は音声認識に非対応です。Chrome または Edge で受験してください。'; spkBusy=false; if(btn) btn.textContent='完了'; return; }
-    let remain=cfg.limitSec; let ivid=null;
-    const r=new SR(); r.lang='en-US'; r.interimResults=true; r.continuous=true; let fin='';
-    r.onresult=e=>{ let itm=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t+' '; else itm+=t; } cfg.onText((fin+itm).trim()); };
-    r.onerror=e=>{};
-    r.onend=()=>{ if(ivid) clearInterval(ivid); spkRecog=null; spkBusy=false; if(btn) btn.textContent='✅ 完了'; if(cfg.statusEl) cfg.statusEl.textContent='✅ 録音完了（下の「採点」を押してください）'; };
-    spkRecog=r; try{ r.start(); }catch(e){ spkBusy=false; if(btn) btn.textContent='✅ 完了'; return; }
-    const tick=()=>{ if(remain<=0){ spkStop(); return; } if(cfg.statusEl) cfg.statusEl.textContent='🔴 録音中… 残り '+remain+'秒'; remain--; };
-    tick(); ivid=setInterval(tick,1000);
-  };
+  const go=()=>setTimeout(()=>beginRecognition(cfg,false), 300);  // 再生直後は少し待ってから録音開始
   const src=cfg.audio||null;
-  const doTTS=()=>{ if(!('speechSynthesis' in window)){ startRecord(); return; } stopAudio();
-    const u=new SpeechSynthesisUtterance(cfg.text); u.lang='en-US'; u.rate=0.95; u.onend=startRecord; u.onerror=startRecord; speechSynthesis.speak(u); };
-  if(src){ stopAudio(); const a=new Audio(src); curAudio=a; a.onended=()=>{ curAudio=null; startRecord(); }; a.onerror=doTTS; a.play().catch(doTTS); }
+  const doTTS=()=>{
+    if(!('speechSynthesis' in window)){ go(); return; }
+    stopAudio();
+    const u=new SpeechSynthesisUtterance(cfg.text); u.lang='en-US'; u.rate=0.95;
+    spkUtter=u;  // GC防止（Chromeでonendが発火しない事象への対策）
+    let fired=false; const fire=()=>{ if(fired) return; fired=true; go(); };
+    u.onend=fire; u.onerror=fire;
+    const est=Math.min(22000, 1800 + (cfg.text.split(/\s+/).length)*380);  // onendが来なくても必ず録音へ進む保険
+    setTimeout(fire, est);
+    try{ speechSynthesis.speak(u); }catch(e){ fire(); }
+  };
+  if(src){ stopAudio(); const a=new Audio(src); curAudio=a; a.onended=()=>{ curAudio=null; go(); }; a.onerror=doTTS; a.play().catch(doTTS); }
   else doTTS();
 }
 
@@ -300,8 +326,9 @@ function updateStt(){const el=document.getElementById('sttStatus');if(el)el.text
 /* ===== 画面切替 ===== */
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function show(id){
-  spkStop();
+  spkAbort();
   stopAudio();
+  spkBusy=false;
   ['home','lr','iv','settings'].forEach(s=>document.getElementById(s).classList.toggle('hide',s!==id));
   if(id==='lr')renderLR(); if(id==='iv')renderIV();
   if(id==='settings')document.getElementById('execUrl').value=localStorage.getItem('toefl_w_exec')||'';

@@ -623,6 +623,11 @@ function bandTo120(b){return BAND120[b]??0;}
 function roundHalf(x){return Math.round(x*2)/2;}
 const TASK_JP={ctw:"Complete the Words（語形・語彙）",daily:"Read in Daily Life（実用文）",academic:"Read an Academic Passage（学術読解）",
  response:"Listen and Choose a Response（応答）",conversation:"Conversation（会話）",announcement:"Announcement（告知）",talk:"Academic Talk（講義）"};
+/* タスク→4技能（R/L）。S/WはAI採点で別表示のためこの表には出ない */
+const TASK_SKILL={ctw:"Reading",daily:"Reading",academic:"Reading",response:"Listening",conversation:"Listening",announcement:"Listening",talk:"Listening"};
+/* 表・解説の並びを統一する正準順（Reading群→Listening群） */
+const TASK_ORDER=["ctw","daily","academic","response","conversation","announcement","talk"];
+function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,byTask[k]]).concat(Object.entries(byTask).filter(([k])=>TASK_ORDER.indexOf(k)<0));}
 
 /* ============ 状態・ユーティリティ ============ */
 let state={};
@@ -1144,8 +1149,8 @@ async function finishMini4(){
     + (aiNote?`<br><span class="ng">${esc(aiNote)}</span>`:'');
   const byTask=mergeByTask(rRes.byTask,lRes.byTask);
   document.getElementById('byTaskBox').innerHTML=
-    `<table><tr><th>タスク</th><th>正答</th><th>正答率</th></tr>`+
-    Object.entries(byTask).map(([k,v])=>`<tr><td>${TASK_JP[k]}</td><td class="en">${v.c}/${v.n}</td><td class="en">${v.n?Math.round(v.c/v.n*100):0}%</td></tr>`).join('')+`</table>`;
+    `<table><tr><th>技能</th><th>タスク</th><th>正答</th><th>正答率</th></tr>`+
+    orderedTasks(byTask).map(([k,v])=>`<tr><td>${TASK_SKILL[k]||""}</td><td>${TASK_JP[k]}</td><td class="en">${v.c}/${v.n}</td><td class="en">${v.n?Math.round(v.c/v.n*100):0}%</td></tr>`).join('')+`</table>`;
   let aiFb='';
   aiFb+=aiFbBlock('Speaking（Interview）', mini.ivFb);
   aiFb+=aiFbBlock('Writing（Email）', mini.emailFb);
@@ -1199,8 +1204,8 @@ function finishTest(){
       hasL?`Listening 正答 ${lC}/${lN}（${lN?Math.round(lC/lN*100):0}%・${pathJP(lPath)}経路）`:null ].filter(Boolean).join(' ／ ');
 
   document.getElementById('byTaskBox').innerHTML=
-    `<table><tr><th>タスク</th><th>正答</th><th>正答率</th></tr>`+
-    Object.entries(byTask).map(([k,v])=>`<tr><td>${TASK_JP[k]}</td><td class="en">${v.c}/${v.n}</td><td class="en">${v.n?Math.round(v.c/v.n*100):0}%</td></tr>`).join('')+`</table>`;
+    `<table><tr><th>技能</th><th>タスク</th><th>正答</th><th>正答率</th></tr>`+
+    orderedTasks(byTask).map(([k,v])=>`<tr><td>${TASK_SKILL[k]||""}</td><td>${TASK_JP[k]}</td><td class="en">${v.c}/${v.n}</td><td class="en">${v.n?Math.round(v.c/v.n*100):0}%</td></tr>`).join('')+`</table>`;
 
   document.getElementById('advice').innerHTML=buildAdvice(byTask,rBand,lBand);
   document.getElementById('review').innerHTML=reviewBlocks.join('');
@@ -1221,7 +1226,7 @@ function buildAdvice(byTask,rBand,lBand){
     announcement:"告知は「何が・いつ・どうすべきか」を一度で掴む練習を。",
     talk:"講義は主旨＋要点を整理。例や因果（compare/contrast, cause-effect）に注意。"
   };
-  const weak=Object.entries(byTask).filter(([k,v])=>v.n>0&&v.c/v.n<0.6).map(([k])=>k);
+  const weak=orderedTasks(byTask).filter(([k,v])=>v.n>0&&v.c/v.n<0.6).map(([k])=>k);
   let html='';
   if(!weak.length){html+=`<div class="adv">全タスクでバランス良く正解できています。次は難易度を上げるか問題数を増やして挑戦を。</div>`;}
   else{
@@ -1331,3 +1336,4 @@ if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.on
 </script>
 </body>
 </html>
+ 
