@@ -1667,11 +1667,13 @@ function aiFbBlock(title, fb){
 }
 async function finishMini4(){
   stopAudio(); stopTimer();
-  const EMPTY={c:0,n:0,byTask:{},review:[]};
+  const EMPTY={c:0,n:0,byTask:{},review:[],wrong:[]};
   const rA=state.rMod.res1||EMPTY, rB=state.rMod.res2||EMPTY;
   const lA=state.lMod.res1||EMPTY, lB=state.lMod.res2||EMPTY;
-  const rRes={c:rA.c+rB.c, n:rA.n+rB.n, byTask:mergeByTask(rA.byTask,rB.byTask), review:rA.review.concat(rB.review)};
-  const lRes={c:lA.c+lB.c, n:lA.n+lB.n, byTask:mergeByTask(lA.byTask,lB.byTask), review:lA.review.concat(lB.review)};
+  const rRes={c:rA.c+rB.c, n:rA.n+rB.n, byTask:mergeByTask(rA.byTask,rB.byTask), review:rA.review.concat(rB.review),
+              wrong:(rA.wrong||[]).concat(rB.wrong||[])};    // 誤答明細もモジュール1+2を合算する
+  const lRes={c:lA.c+lB.c, n:lA.n+lB.n, byTask:mergeByTask(lA.byTask,lB.byTask), review:lA.review.concat(lB.review),
+              wrong:(lA.wrong||[]).concat(lB.wrong||[])};
   const rBand=rRes.n?pathBand(rRes.c/rRes.n,state.rMod.path):null;   // 2段階適応・経路別換算
   const lBand=lRes.n?pathBand(lRes.c/lRes.n,state.lMod.path):null;
   const lrBand=mini.lrN?pctToBand((mini.lrAvg||0)/5):null;
