@@ -134,10 +134,10 @@
       <h4 style="margin-top:16px">テストの詳細</h4>
       <p class="muted">R/Lは本番同様の2段階適応（モジュール1の出来で難化／易化）。回答約30分（R 2.5分×2／L 2分×2／S 4分／W Email 7分＋Discussion 10分）。回答後にSpeaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点（従量課金・数円/回）、R/L/復唱は機械採点。スコアは推定値です。</p>
       <p class="muted"><b>各セクションの出題数 ／ バンク保有数</b>（すべて毎回ランダム抽選）<br>
-      ・Reading: Complete the Words 2 ＋ Academic 2（2モジュール）／ バンク CtW 27・Academic 27・Daily 27（各レベル9問。Daily Lifeはじっくり版で出題）<br>
-      ・Listening: Choose a Response 4 ＋ 長文 2（2モジュール）／ バンク 応答 72・長文（会話6・告知6・講義6）<br>
+      ・Reading: Complete the Words 2 ＋ Academic 1 ＋ Daily Life 1（モジュール1=Academic／モジュール2=Daily Life）／ バンク CtW 27・Academic 27・Daily 27（各レベル9問）<br>
+      ・Listening: Choose a Response 4 ＋ 長文 2（2モジュール）／ 長文の種別（会話／告知／講義）は毎回ランダム／ バンク 応答 72・長文（会話6・告知6・講義6）<br>
       ・Speaking: Listen and Repeat 3（プール 10 から抽選）＋ Take an Interview 1（4 から）<br>
-      ・Writing: Write an Email 1（12 から）＋ Academic Discussion 1（12 から）／ ※Build a Sentence 100問は単体Writingアプリ</p>
+      ・Writing: Write an Email 1（12 から）＋ Academic Discussion 1（12 から）／ ※Build a Sentence（100問）は<b>このアプリでは未実装</b>（単体Writingアプリで練習）</p>
     </div>
   </details>
 </section>
@@ -310,9 +310,10 @@
     <h2>このアプリについて（2026新形式・4技能）</h2>
     <p>2026年1月改訂の公式形式に準拠（7/22本番向け）。<b>通しミニ</b>は4技能（R→L→S→W）を回答約30分で実施し、回答後に <b>Speaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点</b>、R/L/復唱は機械採点。Reading/Listeningは<b>本番同様の2段階適応</b>。</p>
     <h3>出題タスク</h3>
-    <p class="muted">Reading: Complete the Words / Read in Daily Life / Read an Academic Passage。Listening: Listen and Choose a Response / Conversation / Announcement / Academic Talk。Speaking: Listen and Repeat / Take an Interview。Writing: Build a Sentence / Write an Email / Academic Discussion。各問に難易度タグ（easy/med/hard）を持ち、二段階適応の経路判定に使用（UIには非表示）。</p>
+    <p class="muted">Reading: Complete the Words / Read in Daily Life / Read an Academic Passage。Listening: Listen and Choose a Response / Conversation / Announcement / Academic Talk。Speaking: Listen and Repeat / Take an Interview。Writing: Write an Email / Academic Discussion（<b>Build a Sentence は未実装</b>）。各問に難易度タグ（easy/med/hard）を持ち、二段階適応の経路判定に使用（UIには非表示）。</p>
     <h3>スコア推定について</h3>
-    <p class="muted">各セクションの正答率を自前の換算表で1.0–6.0バンドに変換（<b>推定・要調整</b>）。通しミニの総合は実施した4技能のバンド平均を0.5刻みに丸め、0–120換算を併記。R/Lは経路（難／易）も加味。換算表は運用しながら調整。</p>
+    <p class="muted">各セクションの正答率を自前の換算表で1.0–6.0バンドに変換（<b>推定・要調整</b>）。通しミニの総合は4技能のバンド平均を0.5刻みに丸め、0–120換算を併記。R/Lは経路（難／易）で換算レンジが変わる（易経路 1.0–4.5／難経路 3.0–6.0・いずれも推定）。換算表は運用しながら調整。</p>
+    <p class="muted"><b>スキップ・未採点があるとき</b>: そのセクションは<b>0点ではなく計算から除外</b>され、総合は「<b>参考値（部分受験）</b>」と表示されます。技能を減らすほど平均は得意分野に寄って高く出るため、<b>4技能そろえて受験した回どうしでのみ比較してください</b>。推移グラフには完走した回だけを表示します。</p>
     <div style="overflow:auto"><table id="convTable"></table></div>
     <p class="muted">仕様の出典: ETS公式（Test Content / Blueprint & Specifications PDF / 公開サンプル実機）。問題はオリジナル作成。</p>
   </div>
