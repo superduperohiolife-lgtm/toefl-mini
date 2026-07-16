@@ -13,6 +13,12 @@
   }
   .skipbtn{opacity:.72;font-size:13px}
     .skipbtn:hover{opacity:1}
+    /* Build a Sentence の語チップ・空欄 */
+    .bschip{font-family:var(--en);font-size:16px;padding:6px 12px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:var(--card2);color:var(--text)}
+    .bschip.tile:hover{border-color:var(--accent)}
+    .bschip.filled{background:var(--accent);color:#04263a;border-color:var(--accent);font-weight:bold}
+    .bschip.usedup{opacity:.28;cursor:default;text-decoration:line-through}
+    .bsslot{display:inline-block;min-width:74px;height:34px;border-bottom:2px dashed var(--muted);vertical-align:middle}
     *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--jp);line-height:1.6}
   .en{font-family:var(--en)}
@@ -109,7 +115,7 @@
   <div class="card" style="text-align:center">
     <h2>通しミニテスト（4技能）</h2>
     <p>本番と同じ順番で受験します：<br><b>Reading → Listening → Speaking → Writing</b></p>
-    <p class="muted">所要 約30分 ／ 終了後にスコア（推定）を表示</p>
+    <p class="muted">所要 約33分 ／ 終了後にスコア（推定）を表示</p>
     <p style="margin:20px 0"><button class="primary" style="font-size:17px;padding:14px 30px" onclick="startPreCheck()">テストを始める</button></p>
     <p class="muted">🎤 マイクと🔊音量をオンにしてください（Speaking・Listeningで使用します）<br>開始前に<b>音声・マイクチェック</b>があります（本番同様）。</p>
   </div>
@@ -132,12 +138,12 @@
       <p class="muted" id="execStatus"></p>
 
       <h4 style="margin-top:16px">テストの詳細</h4>
-      <p class="muted">R/Lは本番同様の2段階適応（モジュール1の出来で難化／易化）。回答約30分（R 2.5分×2／L 2分×2／S 4分／W Email 7分＋Discussion 10分）。回答後にSpeaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点（従量課金・数円/回）、R/L/復唱は機械採点。スコアは推定値です。</p>
+      <p class="muted">R/Lは本番同様の2段階適応（モジュール1の出来で難化／易化）。回答約33分（R 2.5分×2／L 2分×2／S 4分／W Build a Sentence 3分＋Email 7分＋Discussion 10分）。回答後にSpeaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点（従量課金・数円/回）、R/L/復唱／Build a Sentenceは機械採点。スコアは推定値です。</p>
       <p class="muted"><b>各セクションの出題数 ／ バンク保有数</b>（すべて毎回ランダム抽選）<br>
       ・Reading: Complete the Words 2 ＋ Academic 1 ＋ Daily Life 1（モジュール1=Academic／モジュール2=Daily Life）／ バンク CtW 27・Academic 27・Daily 27（各レベル9問）<br>
       ・Listening: Choose a Response 4 ＋ 長文 2（2モジュール）／ 長文の種別（会話／告知／講義）は毎回ランダム／ バンク 応答 72・長文（会話6・告知6・講義6）<br>
       ・Speaking: Listen and Repeat 3（プール 10 から抽選）＋ Take an Interview 1（4 から）<br>
-      ・Writing: Write an Email 1（12 から）＋ Academic Discussion 1（12 から）／ ※Build a Sentence（100問）は<b>このアプリでは未実装</b>（単体Writingアプリで練習）</p>
+      ・Writing: Build a Sentence 5（100 から）＋ Write an Email 1（12 から）＋ Academic Discussion 1（12 から）／ 本番は BS 10問・約6分（通しミニは軽量版5問・3分）</p>
     </div>
   </details>
 </section>
@@ -310,7 +316,7 @@
     <h2>このアプリについて（2026新形式・4技能）</h2>
     <p>2026年1月改訂の公式形式に準拠（7/22本番向け）。<b>通しミニ</b>は4技能（R→L→S→W）を回答約30分で実施し、回答後に <b>Speaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点</b>、R/L/復唱は機械採点。Reading/Listeningは<b>本番同様の2段階適応</b>。</p>
     <h3>出題タスク</h3>
-    <p class="muted">Reading: Complete the Words / Read in Daily Life / Read an Academic Passage。Listening: Listen and Choose a Response / Conversation / Announcement / Academic Talk。Speaking: Listen and Repeat / Take an Interview。Writing: Write an Email / Academic Discussion（<b>Build a Sentence は未実装</b>）。各問に難易度タグ（easy/med/hard）を持ち、二段階適応の経路判定に使用（UIには非表示）。</p>
+    <p class="muted">Reading: Complete the Words / Read in Daily Life / Read an Academic Passage。Listening: Listen and Choose a Response / Conversation / Announcement / Academic Talk。Speaking: Listen and Repeat / Take an Interview。Writing: Build a Sentence / Write an Email / Academic Discussion。R/Lの各問に難易度タグ（easy/med/hard）を持ち、二段階適応の経路判定に使用（UIには非表示）。Writingは公式どおり<b>線形（非適応）</b>で、難易度による分岐はしません。</p>
     <h3>スコア推定について</h3>
     <p class="muted">各セクションの正答率を自前の換算表で1.0–6.0バンドに変換（<b>推定・要調整</b>）。通しミニの総合は4技能のバンド平均を0.5刻みに丸め、0–120換算を併記。R/Lは経路（難／易）で換算レンジが変わる（易経路 1.0–4.5／難経路 3.0–6.0・いずれも推定）。換算表は運用しながら調整。</p>
     <p class="muted"><b>スキップ・未採点があるとき</b>: そのセクションは<b>0点ではなく計算から除外</b>され、総合は「<b>参考値（部分受験）</b>」と表示されます。技能を減らすほど平均は得意分野に寄って高く出るため、<b>4技能そろえて受験した回どうしでのみ比較してください</b>。推移グラフには完走した回だけを表示します。</p>
@@ -1041,11 +1047,12 @@ function skipSection(sec){
   else if(sec==='speaking'){ mini.lrItems=[]; mini.lrAvg=null; mini.lrN=0; mini.iv=null; mini.ivTranscript=''; for(const k in SP) delete SP[k]; startMini4Writing(); }
 }
 function skipWritingTask(){
-  const isEmail = (mini.wStage==='email');
-  const name = isEmail ? 'Write an Email' : 'Write for an Academic Discussion';
+  const st=mini.wStage;
+  const name = st==='bs' ? 'Build a Sentence' : (st==='email' ? 'Write an Email' : 'Write for an Academic Discussion');
   if(!confirm(name+' をスキップします。\n\nこの課題は【採点対象外】になり、Writingスコアの計算から除外されます（0点にはなりません）。\n\nよろしいですか？')) return;
   stopTimer();
-  if(isEmail){ mini.skipEmail=true; mini.emailText=''; startMini4Discussion(); }
+  if(st==='bs'){ mini.skipBS=true; mini.bsC=null; mini.bsN=null; mini.bsAns={}; startMini4Email(); }
+  else if(st==='email'){ mini.skipEmail=true; mini.emailText=''; startMini4Discussion(); }
   else { mini.skipDisc=true; mini.discText=''; finishMini4(); }
 }
 /* （削除）startMini4Listening(): 呼び出し元ゼロのデッドコードだった。
@@ -1377,10 +1384,97 @@ function emailDisplayText(it){ if(!it)return'';
   if(it.scenario) return it.scenario+'\n\nWrite an email to the address shown below. In your email, do the following:\n• '+it.bullets.join('\n• ')+'\n\nWrite as much as you can and in complete sentences.';
   return it.prompt||''; }
 function emailScoringText(it){ const base=emailDisplayText(it); return (it&&it.to)?base+'\n\n(Email — To: '+it.to+' / Subject: '+(it.subject||'')+')':base; }
-function startMini4Writing(){          // ① Write an Email（7分）
+/* ===== ① Build a Sentence（公式: 10問・機械採点1点/問・約6分／通しミニは軽量版5問・3分） =====
+   公式形式: 文脈文＋骨組み（固定アンカー＋空欄）に語群を正しい順で並べる。使わないダミー語が混じる。
+   出典: TOEFL_4技能_詳細仕様書_公式検証.md:112（10問・1点・機械）／ question-blueprint_2026.md:18（Writingは線形・非適応）。
+   Writingは非適応なので難易度による経路選択はせず、100問からランダム抽選する。 */
+const BS_N = 5, BS_SEC = 3*60;
+function startMini4Writing(){          // ① Build a Sentence（Writingの先頭・公式の順番）
+  mini.wStage='bs';
+  mini.bsItems = sampleAvoid(window.WBANK_BS||[], BS_N, 'bs');
+  mini.bsAns = {};                      // {itemIdx: [語, ...]}（空欄に置かれた語）
+  mini.bsC=null; mini.bsN=null;
+  const pill=document.getElementById('wPill'); if(pill) pill.textContent='① Build a Sentence';
+  const intro=document.getElementById('wIntro'); if(intro) intro.innerHTML='文脈に合うように、<b>語のかたまりを正しい順に並べて</b>文を完成させます。語群には<b>使わない語が混ざっている</b>ことがあります（本番同様）。制限時間3分・<b>機械採点（1問1点）</b>。（次は Write an Email）';
+  const btn=document.getElementById('wSubmitBtn'); if(btn) btn.textContent='Write an Email へ →';
+  bsRender();
+  show('writing'); window.scrollTo(0,0);
+  startTimer('w',BS_SEC,bsFinish);
+}
+function bsShuffleSeeded(arr,seed){     // 語群の並びは再描画のたびに変わらないよう固定する
+  const a=arr.slice();
+  let s=seed*9301+49297;
+  for(let i=a.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor((s/233280)*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function bsTiles(it,i){                 // 正解語＋ダミー語（extra）をシャッフルした語群
+  if(!it._tiles){ const t=it.chunks.slice(1); if(it.extra) t.push(it.extra); it._tiles=bsShuffleSeeded(t, (it.id||i+1)*7+3); }
+  return it._tiles;
+}
+function bsRender(){
+  const html=(mini.bsItems||[]).map((it,i)=>{
+    const placed=mini.bsAns[i]||[];
+    const need=it.chunks.length-1;
+    const slots=[];
+    for(let k=0;k<need;k++){
+      const w=placed[k];
+      slots.push(w!=null
+        ? `<button class="bschip filled" onclick="bsRemove(${i},${k})" title="タップで戻す">${esc(w)}</button>`
+        : `<span class="bsslot"></span>`);
+    }
+    const used=placed.filter(x=>x!=null);
+    const tiles=bsTiles(it,i).map((w,ti)=>{
+      // 同じ語が複数回出る場合に備え、使用済み個数で判定する
+      const usedCount=used.filter(x=>x===w).length;
+      const totalCount=bsTiles(it,i).filter(x=>x===w).length;
+      const already=bsTiles(it,i).slice(0,ti).filter(x=>x===w).length;
+      const disabled = already < usedCount;
+      return `<button class="bschip tile${disabled?' usedup':''}" ${disabled?'disabled':''} onclick="bsPlace(${i},${ti})">${esc(w)}</button>`;
+    }).join('');
+    return `<div class="card">
+      <div><b>Build a Sentence ${i+1}</b> <span class="pill">機械採点 1点</span></div>
+      <p class="muted" style="margin:6px 0 8px">文脈: <span class="en">${esc(it.context||'')}</span></p>
+      <div class="box" style="padding:12px">
+        <div class="en" style="font-size:17px;display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+          <span style="opacity:.9"><b>${esc(it.chunks[0])}</b></span>${slots.join('')}
+        </div>
+      </div>
+      <p class="muted" style="margin:8px 0 4px;font-size:12px">語群（タップで空欄へ／置いた語をタップで戻す）</p>
+      <div class="row en" style="gap:6px;flex-wrap:wrap">${tiles}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('writingArea').innerHTML=html || '<p class="muted">問題を読み込めませんでした。</p>';
+}
+function bsPlace(i,tileIdx){
+  const it=mini.bsItems[i]; const w=bsTiles(it,i)[tileIdx];
+  const need=it.chunks.length-1;
+  const placed=(mini.bsAns[i]||[]).slice();
+  let k=-1; for(let x=0;x<need;x++){ if(placed[x]==null){ k=x; break; } }
+  if(k<0) return;                        // 空欄が埋まっている
+  placed[k]=w; mini.bsAns[i]=placed; bsRender();
+}
+function bsRemove(i,slotIdx){
+  const placed=(mini.bsAns[i]||[]).slice();
+  placed[slotIdx]=null; mini.bsAns[i]=placed; bsRender();
+}
+function bsScore(){                      // 完全一致で1点（公式: 機械採点・1点/問）
+  let c=0; const n=(mini.bsItems||[]).length;
+  (mini.bsItems||[]).forEach((it,i)=>{
+    const correct=it.chunks.slice(1);
+    const placed=(mini.bsAns[i]||[]).filter(x=>x!=null);
+    if(placed.length===correct.length && placed.every((w,k)=>w===correct[k])) c++;
+  });
+  return {c,n};
+}
+function bsFinish(){
+  stopTimer();
+  const r=bsScore(); mini.bsC=r.c; mini.bsN=r.n;
+  startMini4Email();
+}
+function startMini4Email(){            // ② Write an Email（7分）
   mini.wStage='email';
   mini.email = pickAvoid(window.WBANK_EMAIL||[], 'email'); mini.emailText='';
-  const pill=document.getElementById('wPill'); if(pill) pill.textContent='① Write an Email';
+  const pill=document.getElementById('wPill'); if(pill) pill.textContent='② Write an Email';
   const intro=document.getElementById('wIntro'); if(intro) intro.innerHTML='状況を読み、To／Subjectの相手にメールを書きます（3つの指示に触れる）。制限時間7分。<b>回答後にAI(Sonnet)が採点</b>。（次はAcademic Discussion）';
   const btn=document.getElementById('wSubmitBtn'); if(btn) btn.textContent='Academic Discussionへ →';
   document.getElementById('writingArea').innerHTML =
@@ -1395,17 +1489,19 @@ function startMini4Writing(){          // ① Write an Email（7分）
   startTimer('w',7*60,writingFinishEmail);
 }
 function writingSubmit(){               // フッター「採点する/次へ」ボタンの振り分け
-  if(mini.wStage==='email') writingFinishEmail(); else writingFinishDisc();
+  if(mini.wStage==='bs') bsFinish();
+  else if(mini.wStage==='email') writingFinishEmail();
+  else writingFinishDisc();
 }
 function writingFinishEmail(){
   stopTimer();
   const el=document.getElementById('miniEmailText'); mini.emailText = el?el.value.trim():'';
   startMini4Discussion();
 }
-function startMini4Discussion(){        // ② Write for an Academic Discussion（10分）
+function startMini4Discussion(){        // ③ Write for an Academic Discussion（10分）
   mini.wStage='disc';
   mini.disc = pickAvoid(window.WBANK_DISC||[], 'disc'); mini.discText='';
-  const pill=document.getElementById('wPill'); if(pill) pill.textContent='② Write for an Academic Discussion';
+  const pill=document.getElementById('wPill'); if(pill) pill.textContent='③ Write for an Academic Discussion';
   const intro=document.getElementById('wIntro'); if(intro) intro.innerHTML='教授の問いと学生2名の投稿を読み、自分の意見を<b>100語以上</b>で投稿します。制限時間10分。<b>回答後にAI(Sonnet)が採点</b>。';
   const btn=document.getElementById('wSubmitBtn'); if(btn) btn.textContent='採点する';
   document.getElementById('writingArea').innerHTML =
@@ -1493,6 +1589,8 @@ async function finishMini4(){
      Writingが丸ごとnull→総合が上振れしていた（部分受験の歪みを誘発）。
      allSettled なので1本失敗しても他は生き残る。直列3回（最大90秒）→並列（最大30秒程度）にもなる。 */
   let ivBand=null, wBand=null, aiNote='';
+  // Build a Sentence は機械採点（1点/問）。AI接続の有無に関係なく先に算出する。
+  const bsBand = (mini.bsN) ? pctToBand(mini.bsC/mini.bsN) : null;
   const url=localStorage.getItem('toefl_w_exec');
   if(url){
     const toBand=p=>(p && p.band!=null)?p.band:((p && p.score!=null)?pctToBand(p.score/5):null);
@@ -1512,11 +1610,13 @@ async function finishMini4(){
       if(k==='email'){ emBand=toBand(p); mini.emailFb=p; }
       if(k==='discussion'){ dsBand=toBand(p); mini.discFb=p; }
     });
-    const wB=[emBand,dsBand].filter(b=>b!=null);   // Writing band = Email/Discussion 平均（採点できた方だけで平均）
+    const wB=[bsBand,emBand,dsBand].filter(b=>b!=null);   // Writing band = BS/Email/Discussion 平均（採点できたものだけで平均）
     wBand=wB.length?roundHalf(wB.reduce((a,b)=>a+b,0)/wB.length):null;
     if(errs.length) aiNote='AI採点エラー（'+errs.join(' ／ ')+'）。該当タスクのみ未採点です。/exec URL とキーを確認してください。';
   } else {
-    aiNote='AI採点未接続: Apps Script /exec URL（localStorage: toefl_w_exec）が未登録のため、Speaking InterviewとWriting（Email・Discussion）は未採点です。';
+    // AI未接続でも Build a Sentence は機械採点なのでWritingスコアに反映する
+    wBand = (bsBand!=null) ? bsBand : null;
+    aiNote='AI採点未接続: Apps Script /exec URL（localStorage: toefl_w_exec）が未登録のため、Speaking InterviewとWriting（Email・Discussion）は未採点です。Build a Sentenceは機械採点のため反映されています。';
   }
   const sBands=[lrBand,ivBand].filter(b=>b!=null);
   const sBand=sBands.length?roundHalf(sBands.reduce((a,b)=>a+b,0)/sBands.length):null;
@@ -1531,7 +1631,7 @@ async function finishMini4(){
     {k:'R', name:'Reading',   band:rBand, skipped:!!sk.reading},
     {k:'L', name:'Listening', band:lBand, skipped:!!sk.listening},
     {k:'S', name:'Speaking',  band:sBand, skipped:!!sk.speaking},
-    {k:'W', name:'Writing',   band:wBand, skipped:!!(mini.skipEmail&&mini.skipDisc)}
+    {k:'W', name:'Writing',   band:wBand, skipped:!!(mini.skipBS&&mini.skipEmail&&mini.skipDisc)}
   ];
   const scored=secs.filter(s=>s.band!=null);
   const skipped=secs.filter(s=>s.skipped);
@@ -1564,6 +1664,8 @@ async function finishMini4(){
     `R ${sk.reading?'—':rRes.c+'/'+rRes.n}${skipTag(sk.reading)}　L ${sk.listening?'—':lRes.c+'/'+lRes.n}${skipTag(sk.listening)}　`
     + `S(${sk.speaking?'—':'LR '+(mini.lrAvg!=null?mini.lrAvg.toFixed(1):'–')+'/5'+(ivBand!=null?'・Interview '+ivBand.toFixed(1):'')})${skipTag(sk.speaking)}　`
     + `W ${wBand!=null?'band '+wBand.toFixed(1):((mini.emailText||mini.discText)?'未採点':'未記入')}`
+    + (mini.bsN?'（BS '+mini.bsC+'/'+mini.bsN+'）':'')
+    + (mini.skipBS?'　<span style="color:var(--warn)">BS⏭</span>':'')
     + (mini.skipEmail?'　<span style="color:var(--warn)">Email⏭</span>':'')
     + (mini.skipDisc?'　<span style="color:var(--warn)">Discussion⏭</span>':'')
     + (aiNote?`<br><span class="ng">${esc(aiNote)}</span>`:'');
@@ -1602,6 +1704,29 @@ async function finishMini4(){
 
   // Writing
   let wrtHtml='';
+  if(mini.skipBS){
+    wrtHtml+='<div style="margin:12px 0"><h4 style="margin:0">Build a Sentence</h4><p class="muted">⏭ スキップ（採点対象外）</p></div>';
+  }else if(mini.bsN){
+    // 1問ずつ「文脈／あなたの並べ方／正解」を並べる。誤答だけ正解を強調する。
+    let rows='';
+    (mini.bsItems||[]).forEach((it,i)=>{
+      const correct=it.chunks.slice(1);
+      const placed=(mini.bsAns[i]||[]).filter(x=>x!=null);
+      const ok = placed.length===correct.length && placed.every((w,k)=>w===correct[k]);
+      const mine = placed.length? esc(it.chunks[0]+' '+placed.join(' ')) : '<span class="muted">（未回答）</span>';
+      rows+=`<div style="padding:8px 0;border-top:1px solid var(--line)">
+        <div><b>${i+1}.</b> ${ok?'<span style="color:var(--good)">✅ 正解</span>':'<span style="color:var(--bad)">❌ 不正解</span>'}
+          <span class="muted" style="font-size:12px">　文脈: <span class="en">${esc(it.context||'')}</span></span></div>
+        <div class="en" style="margin-top:3px">あなた: ${mine}</div>
+        ${ok?'':`<div class="en" style="margin-top:2px;color:var(--good)">正解: ${esc(it.chunks[0]+' '+correct.join(' '))}</div>`}
+        ${(!ok&&it.extra)?`<div class="muted" style="font-size:12px;margin-top:2px">※「${esc(it.extra)}」は使わないダミー語でした</div>`:''}
+      </div>`;
+    });
+    wrtHtml+=`<div style="margin:12px 0;padding:10px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px">
+      <h4 style="margin:0 0 8px">Build a Sentence　<span class="en">${mini.bsC}/${mini.bsN}</span> <span class="pill">機械採点 1点/問</span></h4>
+      ${rows}
+    </div>`;
+  }
   wrtHtml+= mini.skipEmail ? '<div style="margin:12px 0"><h4 style="margin:0">Write an Email</h4><p class="muted">⏭ スキップ（採点対象外）</p></div>'
     : taskCard('Write an Email', null, esc(emailDisplayText(mini.email)),
         mini.emailText?esc(mini.emailText):'<span class="muted">（未記入・採点対象外）</span>',
