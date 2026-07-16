@@ -272,8 +272,14 @@
     <p class="muted" id="rawLine" style="margin-top:10px"></p>
   </div>
   <div class="card"><h3>タスク別 正答</h3><div id="byTaskBox"></div></div>
-  <div class="card"><h3>アドバイス</h3><div id="advice"></div></div>
-  <div class="card"><h3>解答の確認</h3><div id="review"></div></div>
+  <div class="card"><h3>Reading / Listening のアドバイス</h3><div id="advice"></div></div>
+  <div class="card" id="spkCard"><h3>Speaking の結果</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 8px">問題 → あなたの回答 → アドバイス の順に並んでいます。</p>
+    <div id="spkResult"></div></div>
+  <div class="card" id="wrtCard"><h3>Writing の結果</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 8px">問題 → あなたの回答 → アドバイス の順に並んでいます。</p>
+    <div id="wrtResult"></div></div>
+  <div class="card"><h3>Reading / Listening の解答確認</h3><div id="review"></div></div>
   <div class="row" style="justify-content:space-between">
     <button class="ghost" onclick="show('history')">履歴を見る</button>
     <button class="ghost" onclick="startPreCheck()">もう一度受験</button>
@@ -1564,20 +1570,49 @@ async function finishMini4(){
   document.getElementById('byTaskBox').innerHTML=
     `<table><tr><th>技能</th><th>タスク</th><th>正答</th><th>正答率</th></tr>`+
     orderedTasks(byTask).map(([k,v])=>`<tr><td>${TASK_SKILL[k]||""}</td><td>${TASK_JP[k]}</td><td class="en">${v.c}/${v.n}</td><td class="en">${v.n?Math.round(v.c/v.n*100):0}%</td></tr>`).join('')+`</table>`;
-  let aiFb='';
-  aiFb+=aiFbBlock('Speaking（Interview）', mini.ivFb);
-  aiFb+=aiFbBlock('Writing（Email）', mini.emailFb);
-  aiFb+=aiFbBlock('Writing（Academic Discussion）', mini.discFb);
-  document.getElementById('advice').innerHTML=aiFb+buildAdvice(byTask,rBand,lBand);
-  // ---- レビュー: Speaking認識結果・Writing本文は「試験後」にここで初めて表示（本番は試験中非表示） ----
-  let spkRev='<h4>Speaking（あなたの発話の認識結果）</h4>';
-  (mini.lrItems||[]).forEach((it,i)=>{ const said=(SP[i]&&SP[i].transcript)||'';
-    spkRev+=`<div style="padding:5px 0;border-top:1px solid var(--line)">Listen &amp; Repeat ${i+1}${SP[i]&&SP[i].score!=null?'（'+SP[i].score+'/5）':''}<br>お手本: <span class="en">${esc(it.target)}</span><br>認識: <span class="en">${esc(said||'（無音）')}</span></div>`; });
-  spkRev+=`<div style="padding:5px 0;border-top:1px solid var(--line)">Take an Interview<br>Q: <span class="en">${esc(mini.iv?mini.iv.q:'')}</span><br>あなた（認識）: <span class="en">${esc(mini.ivTranscript||'（無音）')}</span></div>`;
-  let wRev='<h4>Writing（あなたの回答）</h4>';
-  wRev+=`<div style="padding:5px 0;border-top:1px solid var(--line)"><b>Email</b><br><span class="en" style="white-space:pre-wrap">${esc(mini.emailText||'（未記入）')}</span></div>`;
-  wRev+=`<div style="padding:5px 0;border-top:1px solid var(--line)"><b>Academic Discussion</b><br><span class="en" style="white-space:pre-wrap">${esc(mini.discText||'（未記入）')}</span></div>`;
-  document.getElementById('review').innerHTML=(rRes.review||[]).concat(lRes.review||[]).join('')+spkRev+wRev;
+  document.getElementById('advice').innerHTML=buildAdvice(byTask,rBand,lBand);
+
+  /* ---- Speaking / Writing の結果は「タスクごとに 問題→あなたの回答→アドバイス」で1つにまとめる ----
+     旧実装は「アドバイス」カードにAI講評だけを集め、発話や本文は別カードの「解答の確認」に置いていたため、
+     指摘を読んでから自分が何を言ったのかを別の場所へ探しに行く必要があり、対応が取れなかった。 */
+  const box=(label,inner,en)=>`<div style="margin:6px 0"><b>${label}</b><div class="box${en?' en':''}" style="white-space:pre-wrap;margin-top:3px">${inner}</div></div>`;
+  const taskCard=(title,score,promptHtml,answerHtml,fbHtml)=>
+    `<div style="margin:12px 0;padding:10px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px">
+       <h4 style="margin:0 0 8px">${title}${score!=null?'　<span class="en">'+score+'</span>':''}</h4>
+       ${promptHtml?box('問題',promptHtml,true):''}
+       ${box('あなたの回答',answerHtml,true)}
+       ${fbHtml?`<div style="margin:8px 0 0"><b>アドバイス</b>${fbHtml}</div>`:''}
+     </div>`;
+
+  // Speaking
+  let spkHtml='';
+  if(sk.speaking){ spkHtml='<p class="muted">⏭ スキップ（採点対象外）</p>'; }
+  else {
+    (mini.lrItems||[]).forEach((it,i)=>{ const said=(SP[i]&&SP[i].transcript)||'';
+      spkHtml+=taskCard('Listen and Repeat '+(i+1), (SP[i]&&SP[i].score!=null)?SP[i].score+'/5':null,
+        esc(it.target), said?esc(said):'<span class="muted">（無音・採点対象外）</span>', ''); });
+    if(mini.iv){
+      spkHtml+=taskCard('Take an Interview', null, esc(mini.iv.q),
+        mini.ivTranscript?esc(mini.ivTranscript):'<span class="muted">（無音・採点対象外）</span>',
+        mini.ivFb?aiFbBlock('AI採点', mini.ivFb):'<p class="muted" style="margin:4px 0">未採点（無音、またはAI採点が未接続）。</p>');
+    }
+  }
+  document.getElementById('spkResult').innerHTML=spkHtml;
+
+  // Writing
+  let wrtHtml='';
+  wrtHtml+= mini.skipEmail ? '<div style="margin:12px 0"><h4 style="margin:0">Write an Email</h4><p class="muted">⏭ スキップ（採点対象外）</p></div>'
+    : taskCard('Write an Email', null, esc(emailDisplayText(mini.email)),
+        mini.emailText?esc(mini.emailText):'<span class="muted">（未記入・採点対象外）</span>',
+        mini.emailFb?aiFbBlock('AI採点', mini.emailFb):'<p class="muted" style="margin:4px 0">未採点（未記入、またはAI採点が未接続）。</p>');
+  wrtHtml+= mini.skipDisc ? '<div style="margin:12px 0"><h4 style="margin:0">Write for an Academic Discussion</h4><p class="muted">⏭ スキップ（採点対象外）</p></div>'
+    : taskCard('Write for an Academic Discussion', null, esc((mini.disc&&mini.disc.prompt)||''),
+        mini.discText?esc(mini.discText):'<span class="muted">（未記入・採点対象外）</span>',
+        mini.discFb?aiFbBlock('AI採点', mini.discFb):'<p class="muted" style="margin:4px 0">未採点（未記入、またはAI採点が未接続）。</p>');
+  document.getElementById('wrtResult').innerHTML=wrtHtml;
+
+  document.getElementById('review').innerHTML=(rRes.review||[]).concat(lRes.review||[]).join('')
+    || '<p class="muted">（Reading / Listening をスキップしたため、確認する解答はありません）</p>';
   saveRecord({date:new Date().toISOString(),mode:'mini4',rBand,lBand,overall,o120,
     rPct:rRes.n?rRes.c/rRes.n:null,lPct:lRes.n?lRes.c/lRes.n:null,sBand,wBand,
     partial, scoredCount:scored.length,                       // 部分受験の記録（履歴で完走分と区別する）
