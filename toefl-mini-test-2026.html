@@ -1003,7 +1003,10 @@ function scoreReadingItems(items){
     } else {
       let cc=0; const det=[];
       t.q.forEach((q,qi)=>{const got=state.ans[`r${ri}_${qi}`];const ok=got===q.a;if(ok)cc++;det.push({q,got,ok});
-        if(!ok) wrong.push({sec:'R',task:t.taskType,level:t.level,itemId:t.id||t.title||'',ask:q.q||'',correct:(q.c&&q.c[q.a])||q.a,got:(got!=null&&q.c)?q.c[got]:'（未回答）'});});
+        // 設問オブジェクトは {stem, opts, a}（R/L共通）。選択肢のテキストで残さないと後から傾向分析できない
+        if(!ok) wrong.push({sec:'R',task:t.taskType,level:t.level,itemId:t.id||t.title||'',
+          ask:q.stem||'', correct:(q.opts&&q.opts[q.a])!=null?q.opts[q.a]:String(q.a),
+          got:(got!=null&&q.opts&&q.opts[got]!=null)?q.opts[got]:'（未回答）'});});
       c+=cc;n+=t.q.length; add(t.taskType,cc,t.q.length); review.push(mcReview(t.title||TASK_JP[t.taskType],det));
     }
   });
@@ -1015,7 +1018,11 @@ function scoreListeningItems(items){
   items.forEach((item,li)=>{
     const t=item.t; let cc=0; const det=[];
     t.q.forEach((q,qi)=>{const got=state.ans[`l${li}_${qi}`];const ok=got===q.a;if(ok)cc++;det.push({q,got,ok});
-      if(!ok) wrong.push({sec:'L',task:t.taskType,level:t.level,itemId:t.id||t.title||'',ask:q.q||'',correct:(q.c&&q.c[q.a])||q.a,got:(got!=null&&q.c)?q.c[got]:'（未回答）'});});
+      // Choose a Response は stem が「Choose the best response.」固定なので、聞こえた英文(script)も残す
+      if(!ok) wrong.push({sec:'L',task:t.taskType,level:t.level,itemId:t.id||t.title||'',
+        ask:q.stem||'', script:t.script||'',
+        correct:(q.opts&&q.opts[q.a])!=null?q.opts[q.a]:String(q.a),
+        got:(got!=null&&q.opts&&q.opts[got]!=null)?q.opts[got]:'（未回答）'});});
     c+=cc;n+=t.q.length; add(t.taskType,cc,t.q.length); review.push(mcReview((t.title||('Response '+(li+1))),det));
   });
   return {c,n,byTask,review,wrong};
