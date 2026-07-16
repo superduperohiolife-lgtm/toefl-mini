@@ -11,7 +11,9 @@
     --warn:#f59e0b; --bad:#ef4444; --good:#22c55e;
     --jp:"Meiryo UI","Meiryo",sans-serif; --en:"Calibri","Segoe UI",sans-serif;
   }
-  *{box-sizing:border-box}
+  .skipbtn{opacity:.72;font-size:13px}
+    .skipbtn:hover{opacity:1}
+    *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--jp);line-height:1.6}
   .en{font-family:var(--en)}
   header{position:sticky;top:0;z-index:10;background:rgba(15,23,42,.95);backdrop-filter:blur(6px);
@@ -146,6 +148,7 @@
     <h2>音声・マイクチェック</h2>
     <p class="muted">本番のTOEFLと同じく、テスト開始前に<b>音が聞こえるか</b>と<b>マイクが使えるか</b>を確認します。<br>
     <b>①②の両方が ✅ になるとテストを開始できます。</b>ここで問題を見つけておけば、Speakingの途中で困ることがありません。</p>
+    <div id="ckDeviceWarn" class="hide" style="margin-top:12px;padding:10px;border:1px solid var(--bad);border-radius:8px;background:rgba(239,68,68,.08)"></div>
   </div>
 
   <div class="card">
@@ -194,7 +197,8 @@
     <p class="muted" style="margin:6px 0 0">本番同様、<b>モジュール2に進むと前のモジュールには戻れません</b>。</p>
   </div>
   <div id="readingArea"></div>
-  <div class="row" style="justify-content:flex-end">
+  <div class="row" style="justify-content:space-between">
+    <button class="ghost skipbtn" onclick="skipSection('reading')">⏭ Readingをスキップ（採点対象外）</button>
     <button class="primary" id="readingNextBtn" onclick="readingNext()">モジュール2へ進む →</button>
   </div>
 </section>
@@ -209,7 +213,8 @@
     <p class="muted">各「▶ 再生」で音声が流れます（スクリプト非表示）。本番同様、再生は1回が目安。<b>モジュール2に進むと前問には戻れません</b>。</p>
   </div>
   <div id="listeningArea"></div>
-  <div class="row" style="justify-content:flex-end">
+  <div class="row" style="justify-content:space-between">
+    <button class="ghost skipbtn" onclick="skipSection('listening')">⏭ Listeningをスキップ（採点対象外）</button>
     <button class="primary" id="listeningNextBtn" onclick="listeningNext()">モジュール2へ進む →</button>
   </div>
 </section>
@@ -221,10 +226,11 @@
       <h2 style="margin:0">Speaking <span class="pill">Listen and Repeat ＋ Interview</span></h2>
       <span>残り <span class="timer" id="sTimer">04:00</span></span>
     </div>
-    <p class="muted">各設問の「▶ 開始」でお手本／質問が<b>1回だけ</b>流れ、<b>直後に自動で録音</b>（復唱12秒／面接35秒）。再生し直し・準備時間はありません（本番同様）。採点は<b>回答後</b>（復唱は自動・語一致／InterviewはAI）。音声認識は <b>Chrome / Edge 推奨</b>。</p>
+    <p class="muted">各設問の「▶ 開始」でお手本／質問が<b>1回だけ</b>流れ、<b>直後に自動で録音</b>（復唱12秒／面接35秒）。再生し直し・準備時間はありません（本番同様）。採点は<b>回答後</b>（復唱は自動・語一致／InterviewはAI）。音声認識は <b>パソコンの Chrome / Edge が必要</b>（iPad・iPhoneは全ブラウザがWebKitのため2問目以降が動きません）。</p>
   </div>
   <div id="speakingArea"></div>
-  <div class="row" style="justify-content:flex-end">
+  <div class="row" style="justify-content:space-between">
+    <button class="ghost skipbtn" onclick="skipSection('speaking')">⏭ Speakingをスキップ（採点対象外）</button>
     <button class="primary" id="speakingNextBtn" onclick="speakingNext()">Writingへ進む →</button>
   </div>
 </section>
@@ -239,7 +245,8 @@
     <p class="muted" id="wIntro">状況を読み、To／Subjectの相手にメールを書きます（3つの指示に触れる）。制限時間7分。<b>回答後にAI(Sonnet)が採点</b>。（次はAcademic Discussion）</p>
   </div>
   <div id="writingArea"></div>
-  <div class="row" style="justify-content:flex-end">
+  <div class="row" style="justify-content:space-between">
+    <button class="ghost skipbtn" id="wSkipBtn" onclick="skipWritingTask()">⏭ この課題をスキップ（採点対象外）</button>
     <button class="primary" id="wSubmitBtn" onclick="writingSubmit()">Academic Discussionへ →</button>
   </div>
 </section>
@@ -249,8 +256,9 @@
   <div class="card" style="text-align:center">
     <h2>推定スコア</h2>
     <div class="scorebig" id="overallBand">–</div>
-    <div class="muted">総合バンド（1.0–6.0） <span class="est">推定</span></div>
+    <div class="muted" id="overallLabel">総合バンド（1.0–6.0） <span class="est">推定</span></div>
     <div style="margin-top:6px">0–120換算（推定）: <b class="en" id="overall120">–</b> <span class="est">推定・要調整</span></div>
+    <div id="partialWarn" class="hide" style="margin-top:12px;padding:10px;border:1px solid var(--warn);border-radius:8px;background:rgba(245,158,11,.08);text-align:left"></div>
   </div>
   <div class="card">
     <h3>セクション別</h3>
@@ -681,8 +689,13 @@ function sample(a,n){const c=a.slice();for(let i=c.length-1;i>0;i--){const j=Mat
 function _idOf(x){ if(!x) return ''; return x.id || x.q || x.prompt || x.target || (x.t&&(x.t.id||x.t.q)) || JSON.stringify(x).slice(0,60); }
 function _recent(key){ try{ return JSON.parse(localStorage.getItem('recent_'+key)||'[]'); }catch(e){ return []; } }
 function _remember(key,id,keep){ let a=_recent(key).filter(y=>y!==id); a.unshift(id); try{ localStorage.setItem('recent_'+key, JSON.stringify(a.slice(0,keep))); }catch(e){} }
-function pickAvoid(bank,key){ if(!bank||!bank.length) return undefined; const keep=Math.min(bank.length-1,3); const rec=_recent(key); let pool=bank.filter(x=>rec.indexOf(_idOf(x))<0); if(!pool.length) pool=bank; const c=pick(pool); _remember(key,_idOf(c),keep); return c; }
-function sampleAvoid(bank,n,key){ if(!bank) return []; if(bank.length<=n) return sample(bank,bank.length); const rec=_recent(key); let pool=bank.filter(x=>rec.indexOf(_idOf(x))<0); if(pool.length<n) pool=bank; const c=sample(pool,n); c.forEach(x=>_remember(key,_idOf(x),n)); return c; }
+/* 避け窓＝バンクのおよそ半分。旧実装は「直近3件」固定で、バンクが小さいと抽選にならなかった
+   （例: Take an Interview は bank=4・keep=3 → 候補が常に1件＝完全な決定論的4巡回で順番を暗記できた）。
+   ただし候補が枯れないよう、pickAvoidは最低2件、sampleAvoidは最低n件を必ず残す。 */
+function _keepPick(len){ return Math.max(1, Math.min(len-2, Math.floor(len/2))); }
+function _keepSample(len,n){ return Math.max(n, Math.min(len-n, Math.floor(len/2))); }
+function pickAvoid(bank,key){ if(!bank||!bank.length) return undefined; const keep=_keepPick(bank.length); const rec=_recent(key); let pool=bank.filter(x=>rec.indexOf(_idOf(x))<0); if(!pool.length) pool=bank; const c=pick(pool); _remember(key,_idOf(c),keep); return c; }
+function sampleAvoid(bank,n,key){ if(!bank) return []; if(bank.length<=n) return sample(bank,bank.length); const keep=_keepSample(bank.length,n); const rec=_recent(key); let pool=bank.filter(x=>rec.indexOf(_idOf(x))<0); if(pool.length<n) pool=bank; const c=sample(pool,n); c.forEach(x=>_remember(key,_idOf(x),keep)); return c; }
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function parseCtw(text){
   const parts=[];let last=0;const re=/\[([^\]|]+)\|(\d+)\]/g;let m;
@@ -692,7 +705,13 @@ function parseCtw(text){
 
 /* ============ テスト開始・組み立て ============ */
 /* ===== 2モジュール適応（router→易/難モジュール＋経路別band換算） ===== */
-const ROUTER_THRESHOLD = 0.6;   // モジュール1の正答率≥60%→難モジュール（推定・要較正）
+/* ルーター: 正答率ではなく「正解数」で判定する。
+   旧実装は正答率≥0.6だったが、通しミニのListeningはモジュール1がわずか4問しかなく、
+   取りうる正答率が 0/25/50/75/100% のみ → 0.6という境界は存在せず実効75%だった。
+   R(9〜13問)とL(4問)で同じ「60%」と称しながら厳しさが違う状態だったため、必要正解数で明示する。 */
+const ROUTER_THRESHOLD = 0.6;   // 参考値（表示用）。実判定は routerGoesHard() の必要正解数で行う
+function routerNeed(n){ return Math.ceil(n*ROUTER_THRESHOLD); }        // n問中この数以上でhard
+function routerGoesHard(c,n){ return n>0 && c>=routerNeed(n); }
 const R_MOD_SEC = 5*60;         // Reading 1モジュール=5分（公式30分→簡易版の比例配分・推定）
 const L_MOD_SEC = 270;          // Listening 1モジュール=4.5分（公式29分→比例配分・推定）
 
@@ -706,29 +725,59 @@ function buildReadingModule(level){
 }
 function buildListeningModule(level){
   const resp=sampleByLevel(LIS_RESPONSE, level, 3, 'resp_'+level).map(t=>({kind:'audio',t}));
-  const long = level==='hard' ? pickAvoid(LIS_TALK,'talk') : (level==='easy' ? pickAvoid(LIS_ANNOUNCE,'announce') : pickAvoid(LIS_CONVO,'convo'));
-  return [ ...resp, {kind:'audio', t:long} ];
+  return [ ...resp, {kind:'audio', t:pickLong(level)} ];   // 種別は3種からランダム（経路と切り離す）
 }
 /* 通しミニ用の短縮モジュール（2段階適応を維持しつつ各モジュールを軽量化） */
+/* Complete the Words は毎モジュール固定。もう1問は Academic / Daily Life から交互に出す。
+   旧実装は Academic 固定で、Read in Daily Life（バンク27問）が通しミニで一度も出題されなかった。 */
 function buildReadingModuleMini(level){
   const ctw=pickByLevel(READING_CTW, level, 'ctw_'+level);
+  const useDaily = (state.stage===2);   // モジュール1=Academic / モジュール2=Daily（1回の受験で両方に触れる）
+  const second = useDaily ? pickByLevel(READING_DAILY, level, 'daily_'+level)
+                          : pickByLevel(READING_ACADEMIC, level, 'acad_'+level);
   return [ {kind:'ctw', t:ctw, parts:parseCtw(ctw.text)},
-           {kind:'text', t:pickByLevel(READING_ACADEMIC, level, 'acad_'+level)} ];
+           {kind:'text', t:second} ];
+}
+/* 長文タスクの種別を「経路」から切り離す。
+   旧実装は level が種別を決めており（med→必ずConversation / easy→必ずAnnouncement / hard→必ずAcademic Talk）、
+   1回の受験で3種のうち2種しか出ず、しかも「Talkが出た＝自分はhard経路」と受験者に経路が漏れていた。
+   種別は3種からランダム、難易度は level で選ぶ（該当levelが無ければ pickByLevel が全体にフォールバック）。 */
+const LIS_LONG_BANKS = ()=>[
+  {task:'convo',    bank:(typeof LIS_CONVO!=='undefined')?LIS_CONVO:[]},
+  {task:'announce', bank:(typeof LIS_ANNOUNCE!=='undefined')?LIS_ANNOUNCE:[]},
+  {task:'talk',     bank:(typeof LIS_TALK!=='undefined')?LIS_TALK:[]}
+].filter(x=>x.bank && x.bank.length);
+function pickLong(level){
+  const cands=LIS_LONG_BANKS();
+  if(!cands.length) return undefined;
+  const usedKey='longtask';
+  const rec=_recent(usedKey);
+  let pool=cands.filter(x=>rec.indexOf(x.task)<0);   // 直前に出た種別は避ける
+  if(!pool.length) pool=cands;
+  const chosen=pick(pool);
+  _remember(usedKey, chosen.task, Math.max(1,cands.length-1));
+  return pickByLevel(chosen.bank, level, chosen.task+'_'+level);
 }
 function buildListeningModuleMini(level){
   const resp=sampleByLevel(LIS_RESPONSE, level, 2, 'resp_'+level).map(t=>({kind:'audio',t}));
-  const long = level==='hard' ? pickAvoid(LIS_TALK,'talk') : (level==='easy' ? pickAvoid(LIS_ANNOUNCE,'announce') : pickAvoid(LIS_CONVO,'convo'));
-  return [ ...resp, {kind:'audio', t:long} ];
+  return [ ...resp, {kind:'audio', t:pickLong(level)} ];
 }
 function rdgModule(level){ return state.mode==='mini4' ? buildReadingModuleMini(level) : buildReadingModule(level); }
 function lisModule(level){ return state.mode==='mini4' ? buildListeningModuleMini(level) : buildListeningModule(level); }
 function rSecNow(){ return state.mode==='mini4' ? 150 : R_MOD_SEC; }   // mini4: Reading 2.5分/モジュール（×2=5分）
 function lSecNow(){ return state.mode==='mini4' ? 120 : L_MOD_SEC; }   // mini4: Listening 2分/モジュール（×2=4分）
-function pathBand(pct, path){           // 経路別換算（数値は推定・要較正）
-  let b=pctToBand(pct);
-  if(path==='easy') b=Math.min(b,4.0);  // 易経路はband上限≈4.0
-  else if(path==='hard') b=Math.max(b,3.5); // 難経路は下限≈3.5
-  return b;
+/* 経路別換算（数値は推定・要較正）。
+   旧実装は easy=min(b,4.0) / hard=max(b,3.5) というクリップだったため、
+   easy経路は60〜100%が全部4.0、hard経路は0〜50%が全部3.5となり、
+   その範囲で努力が一切スコアに反映されない「識別不能レンジ」ができていた。
+   クリップをやめ、経路ごとに連続なレンジへ線形写像する（順序が保たれ、範囲内で必ず差がつく）。
+     easy経路 → band 1.0〜4.5 ／ hard経路 → band 3.0〜6.0 ／ 経路不明 → 素の換算
+   境界の重なり（3.0〜4.5）は、易で満点＞難で全滅 を避けるために意図的に設けている。 */
+function _lerpBand(pct, lo, hi){ const b=lo+(hi-lo)*Math.max(0,Math.min(1,pct)); return Math.round(b*2)/2; }
+function pathBand(pct, path){
+  if(path==='easy') return _lerpBand(pct, 1.0, 4.5);
+  if(path==='hard') return _lerpBand(pct, 3.0, 6.0);
+  return pctToBand(pct);
 }
 function setModInfo(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; }
 
@@ -754,8 +803,7 @@ function readingNext(){
   stopTimer();
   if(state.stage===1){
     captureCtw(); state.rMod.res1=scoreReadingItems(state.reading);
-    const pct=state.rMod.res1.n?state.rMod.res1.c/state.rMod.res1.n:0;
-    state.rMod.path = pct>=ROUTER_THRESHOLD ? 'hard' : 'easy';
+    state.rMod.path = routerGoesHard(state.rMod.res1.c, state.rMod.res1.n) ? 'hard' : 'easy';
     state.stage=2; state.ans={}; state.played={}; state.ctwResp=[];
     state.reading=rdgModule(state.rMod.path);
     setModInfo('rModInfo','Reading モジュール 2 / 2');
@@ -780,8 +828,7 @@ function listeningNext(){
   stopAudio(); stopTimer();
   if(state.stage===1){
     state.lMod.res1=scoreListeningItems(state.listening);
-    const pct=state.lMod.res1.n?state.lMod.res1.c/state.lMod.res1.n:0;
-    state.lMod.path = pct>=ROUTER_THRESHOLD ? 'hard' : 'easy';
+    state.lMod.path = routerGoesHard(state.lMod.res1.c, state.lMod.res1.n) ? 'hard' : 'easy';
     state.stage=2; state.ans={}; state.played={};
     state.listening=lisModule(state.lMod.path);
     setModInfo('lModInfo','Listening モジュール 2 / 2');
@@ -963,18 +1010,40 @@ let mini={};
 function shuffleArr(a){return sample(a,a.length);}
 
 function startMini4(){
-  mini={ ivTranscript:'', emailText:'' };
-  state={ mode:'mini4', stage:1, section:'reading', reading:null, listening:null, rMod:{}, lMod:{}, ans:{}, ctwResp:[], played:{} };
+  mini={ ivTranscript:'', emailText:'', skipEmail:false, skipDisc:false };
+  state={ mode:'mini4', stage:1, section:'reading', reading:null, listening:null, rMod:{}, lMod:{}, ans:{}, ctwResp:[], played:{},
+          skip:{reading:false, listening:false, speaking:false} };
   startReadingStage1();   // R→(2段階)→L→(2段階)→Speaking→Writing→finishMini4
 }
-function startMini4Listening(){
-  state.ans={}; state.played={};
-  state.listening = buildListeningModule('med');
-  setModInfo('lModInfo','通しミニ Listening（2/4）');
-  document.getElementById('listeningNextBtn').textContent='Speakingへ進む →';
-  renderListening(); show('listening'); window.scrollTo(0,0);
-  startTimer('l',4*60,listeningNext);
+
+/* ===== スキップ（ページ単位・採点対象外） =====
+   目的: 特定のセクションだけ受験できるようにする（例: Speakingだけ練習したい）。
+   採点方針: スキップしたセクションは 0点ではなく「分母から除外」。
+   R/Lは2モジュール適応なので、片方だけ飛ばすと経路判定が壊れる → セクション単位で飛ばす。
+   Writingは Email / Discussion が独立した課題なので課題単位で飛ばせる。 */
+const SKIP_LABEL={reading:'Reading', listening:'Listening', speaking:'Speaking'};
+function skipSection(sec){
+  if(!state || state.mode!=='mini4'){    // R/Lじっくり版ではスキップの意味が無いので何もしない
+    if(!confirm(SKIP_LABEL[sec]+'をスキップしますか？')) return;
+  } else if(!confirm(SKIP_LABEL[sec]+' をスキップします。\n\nこのセクションは【採点対象外】になり、総合スコアの計算から除外されます（0点にはなりません）。\n\nよろしいですか？')) return;
+  stopAudio(); stopTimer(); spkAbort();
+  if(state.skip) state.skip[sec]=true;
+  if(sec==='reading'){ state.rMod={}; startListeningStage1(); }
+  else if(sec==='listening'){ state.lMod={}; if(state.mode==='mini4') startMini4Speaking(); else finishTest(); }
+  else if(sec==='speaking'){ mini.lrItems=[]; mini.lrAvg=null; mini.lrN=0; mini.iv=null; mini.ivTranscript=''; for(const k in SP) delete SP[k]; startMini4Writing(); }
 }
+function skipWritingTask(){
+  const isEmail = (mini.wStage==='email');
+  const name = isEmail ? 'Write an Email' : 'Write for an Academic Discussion';
+  if(!confirm(name+' をスキップします。\n\nこの課題は【採点対象外】になり、Writingスコアの計算から除外されます（0点にはなりません）。\n\nよろしいですか？')) return;
+  stopTimer();
+  if(isEmail){ mini.skipEmail=true; mini.emailText=''; startMini4Discussion(); }
+  else { mini.skipDisc=true; mini.discText=''; finishMini4(); }
+}
+/* （削除）startMini4Listening(): 呼び出し元ゼロのデッドコードだった。
+   中身が buildListeningModule('med')＋4分タイマー＋2段階適応なし で、
+   実際に使われている startListeningStage1() と矛盾しており事故の元だったため撤去。
+   通しミニのListeningは readingNext() → startListeningStage1() が正しい経路。 */
 
 /* ===================== 事前チェック（音声・マイク）：本番同様、開始前に確認 =====================
    目的: Speakingの途中で「音が出ない／声が拾えない」に気づく事故を防ぐ。
@@ -994,9 +1063,31 @@ function ckUpdate(){
     + (ok ? '<br><b style="color:var(--good)">準備OK。テストを開始できます。</b>'
           : '<br><span style="font-size:13px">①②の両方が ✅ になると「テストを開始」が押せます。</span>');
 }
+/* iPad/iPhone 判定。
+   iOSは【すべてのブラウザが中身WebKit】で、Chrome/Edgeを入れてもSafariと同じエンジンになる。
+   そのWebKitのSpeechRecognitionは「最初の1回は動くが2個目以降が黙って失敗する」挙動が実機で確認された
+   （マイクチェックは通るのに Listen and Repeat 2問目以降が何度でも no-speech になる）。
+   Speakingを正しく練習するにはPCのChrome/Edgeが必要なため、ここで明示的に警告する。
+   iPadOS 13+ は UA が Mac を名乗るので maxTouchPoints で判別する。 */
+function isIOSLike(){
+  const ua=navigator.userAgent||'';
+  if(/iPad|iPhone|iPod/.test(ua)) return true;
+  return (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);   // iPadOS 13+
+}
+function ckDeviceCheck(){
+  const el=document.getElementById('ckDeviceWarn'); if(!el) return;
+  if(!isIOSLike()){ el.classList.add('hide'); return; }
+  el.classList.remove('hide');
+  el.innerHTML='<b style="color:var(--bad)">⚠️ この端末（iPad / iPhone）では Speaking が正しく動きません。</b><br>'
+    +'<span style="font-size:13px">iPadはSafariもChromeも中身が同じ（WebKit）で、音声認識が<b>最初の1問しか動きません</b>。'
+    +'このチェックに合格しても、Listen and Repeat の2問目以降は「声が拾えませんでした」になります（実機で確認済み）。<br>'
+    +'<b>Speakingを練習するときは、パソコンの Chrome または Edge で開いてください。</b><br>'
+    +'この端末で Reading / Listening / Writing だけ練習する場合は、下の「⏭ Speakingをスキップ」を使ってください（採点対象外になります）。</span>';
+}
 function startPreCheck(){
   ckAudioOk=false; ckMicOk=false; ckPeak=0;
   ckCleanup();
+  ckDeviceCheck();
   ckSet('ckAudioSt',''); ckSet('ckMicSt',''); ckSet('ckMicHeard','');
   const lv=document.getElementById('ckLevel'); if(lv) lv.style.width='0%';
   const hb=document.getElementById('ckHeardBtn'); if(hb) hb.disabled=true;
@@ -1052,6 +1143,7 @@ function ckMicStart(){
       };
       loop();
     }catch(e){ /* メーターが作れなくても認識テストは続行する */ }
+    // 5秒でメーター終了 → streamを解放してから認識テスト（マイクの奪い合いを避けるため必ず解放後に開始）
     setTimeout(()=>{
       if(ckRaf){ cancelAnimationFrame(ckRaf); ckRaf=null; }
       if(ckStream){ releaseMicStream(ckStream); ckStream=null; }
@@ -1073,7 +1165,7 @@ function ckMicStart(){
 function ckRecogTest(){
   if(!SR_MINI){ ckSet('ckMicHeard','この端末は音声認識に非対応です。Chrome または Edge で受験してください。');
     const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; } return; }
-  micReady=true;
+  micReady=true;   // 許可済み（上のgetUserMediaが成功している）
   let heard='', done=false, remain=8, iv=null;
   const r=new SR_MINI(); r.lang='en-US'; r.interimResults=true; r.continuous=true;
   ckRecog=r;
@@ -1098,7 +1190,7 @@ function ckRecogTest(){
   r.onresult=e=>{ let fin='',itm=''; for(let k=0;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t+' '; else itm+=t; }
     heard=(fin+itm).trim();
     ckSet('ckMicHeard','認識中: '+heard);
-    if((heard.match(/\S+/g)||[]).length>=4) finish('');
+    if((heard.match(/\S+/g)||[]).length>=4) finish('');   // 4語拾えたら十分
   };
   r.onerror=e=>{ const err=(e&&e.error)||''; if(err && err!=='aborted' && err!=='no-speech'){ ckSet('ckMicHeard',''); ckSet('ckMicSt', micErrText(err));
     if(iv) clearInterval(iv); done=true; const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; } ckRecog=null; } };
@@ -1259,7 +1351,11 @@ function speakingNext(){
   stopTimer();
   let sum=0,n=0; (mini.lrItems||[]).forEach((it,i)=>{ const said=(SP[i]&&SP[i].transcript)||''; if(said.trim()){ const sc=lrWordScore(it.target,said); SP[i]=SP[i]||{}; SP[i].score=sc; sum+=sc; n++; } });
   mini.lrAvg = n?sum/n:null; mini.lrN=n;
-  if(!mini.ivTranscript){ const el=document.getElementById('ivtr'); if(el) mini.ivTranscript=el.textContent.trim(); }
+  /* （削除）ivTranscript の DOM フォールバック。
+     #ivtr の中身は認識結果ではなく「🎤 認識語数 N（内容は非表示・採点後に確認）」という日本語ラベル。
+     STTが空文字を返すと、このラベルが「結愛さんの英語の発話」としてAI採点に送られていた。
+     無音のときは null のまま＝未採点が正しい。 */
+  if(!mini.ivTranscript) mini.ivTranscript='';
   startMini4Writing();
 }
 
@@ -1379,36 +1475,84 @@ async function finishMini4(){
   document.getElementById('overallBand').innerHTML='<span class="spinner" style="width:38px;height:38px;border-width:4px"></span>';
   document.getElementById('rawLine').innerHTML='<div class="scoring"><span class="spinner"></span><b>AI採点中</b><span class="muted">Speaking InterviewとWriting（Email・Discussion）を採点しています…（通常10〜30秒）</span></div>';
   // ---- AI採点（Interview / Email） ----
+  /* AI採点は3本を独立させて並列実行する。
+     旧実装は1つのtryで直列awaitしていたため、Interviewが落ちるとEmail/Discussionも採点されず、
+     Writingが丸ごとnull→総合が上振れしていた（部分受験の歪みを誘発）。
+     allSettled なので1本失敗しても他は生き残る。直列3回（最大90秒）→並列（最大30秒程度）にもなる。 */
   let ivBand=null, wBand=null, aiNote='';
   const url=localStorage.getItem('toefl_w_exec');
   if(url){
-    try{
-      if(mini.ivTranscript){ const p=await aiScore(url,'interview',mini.iv.q,mini.ivTranscript);
-        ivBand=(p.band!=null)?p.band:(p.score!=null?pctToBand(p.score/5):null); mini.ivFb=p; }
-      let emBand=null, dsBand=null;
-      if(mini.emailText){ const p=await aiScore(url,'email',emailScoringText(mini.email),mini.emailText);
-        emBand=(p.band!=null)?p.band:(p.score!=null?pctToBand(p.score/5):null); mini.emailFb=p; }
-      if(mini.discText){ const p=await aiScore(url,'discussion',(mini.disc&&mini.disc.prompt)||'',mini.discText);
-        dsBand=(p.band!=null)?p.band:(p.score!=null?pctToBand(p.score/5):null); mini.discFb=p; }
-      const wB=[emBand,dsBand].filter(b=>b!=null);   // Writing band = Email/Discussion 平均
-      wBand=wB.length?roundHalf(wB.reduce((a,b)=>a+b,0)/wB.length):null;
-    }catch(e){ aiNote='AI採点エラー: '+e.message+'（設定の /exec URL とキーを確認してください）'; }
+    const toBand=p=>(p && p.band!=null)?p.band:((p && p.score!=null)?pctToBand(p.score/5):null);
+    const jobs=[
+      { key:'interview',  run:()=> mini.ivTranscript ? aiScore(url,'interview',mini.iv.q,mini.ivTranscript) : null },
+      { key:'email',      run:()=> mini.emailText    ? aiScore(url,'email',emailScoringText(mini.email),mini.emailText) : null },
+      { key:'discussion', run:()=> mini.discText     ? aiScore(url,'discussion',(mini.disc&&mini.disc.prompt)||'',mini.discText) : null }
+    ];
+    const settled=await Promise.allSettled(jobs.map(j=>Promise.resolve().then(j.run)));
+    const errs=[];
+    let emBand=null, dsBand=null;
+    settled.forEach((r,i)=>{
+      const k=jobs[i].key;
+      if(r.status==='rejected'){ errs.push(k+': '+(r.reason&&r.reason.message||r.reason)); return; }
+      const p=r.value; if(!p) return;
+      if(k==='interview'){ ivBand=toBand(p); mini.ivFb=p; }
+      if(k==='email'){ emBand=toBand(p); mini.emailFb=p; }
+      if(k==='discussion'){ dsBand=toBand(p); mini.discFb=p; }
+    });
+    const wB=[emBand,dsBand].filter(b=>b!=null);   // Writing band = Email/Discussion 平均（採点できた方だけで平均）
+    wBand=wB.length?roundHalf(wB.reduce((a,b)=>a+b,0)/wB.length):null;
+    if(errs.length) aiNote='AI採点エラー（'+errs.join(' ／ ')+'）。該当タスクのみ未採点です。/exec URL とキーを確認してください。';
   } else {
     aiNote='AI採点未接続: Apps Script /exec URL（localStorage: toefl_w_exec）が未登録のため、Speaking InterviewとWriting（Email・Discussion）は未採点です。';
   }
   const sBands=[lrBand,ivBand].filter(b=>b!=null);
   const sBand=sBands.length?roundHalf(sBands.reduce((a,b)=>a+b,0)/sBands.length):null;
-  const bands=[rBand,lBand,sBand,wBand].filter(b=>b!=null);
-  const overall=bands.length?roundHalf(bands.reduce((a,b)=>a+b,0)/bands.length):0;
-  const o120=bandTo120(overall);
-  document.getElementById('overallBand').textContent=overall.toFixed(1);
-  document.getElementById('overall120').textContent=o120;
-  document.getElementById('rBand').textContent=rBand!=null?rBand.toFixed(1):'–';
-  document.getElementById('lBand').textContent=lBand!=null?lBand.toFixed(1):'–';
-  document.getElementById('sBand').textContent=sBand!=null?sBand.toFixed(1):'–';
-  document.getElementById('wBand').textContent=wBand!=null?wBand.toFixed(1):'–';
+
+  /* ===== 総合スコア: 部分受験を「完走」と偽らない =====
+     旧実装は存在するbandだけを平均していたため、Speaking無音＋AI未接続だと
+     R/Lの2つだけの平均が「総合」として表示され、全部やるより高く出た（実測: 3.5→4.0 / 66→77点）。
+     しかも履歴に通常の受験記録として保存され、後から部分受験だったと判別できなかった。
+     → 4技能が揃わない場合は「参考値」と明示し、履歴にも partial フラグを残す。 */
+  const sk=(state.skip||{});
+  const secs=[
+    {k:'R', name:'Reading',   band:rBand, skipped:!!sk.reading},
+    {k:'L', name:'Listening', band:lBand, skipped:!!sk.listening},
+    {k:'S', name:'Speaking',  band:sBand, skipped:!!sk.speaking},
+    {k:'W', name:'Writing',   band:wBand, skipped:!!(mini.skipEmail&&mini.skipDisc)}
+  ];
+  const scored=secs.filter(s=>s.band!=null);
+  const skipped=secs.filter(s=>s.skipped);
+  const unscored=secs.filter(s=>s.band==null && !s.skipped);
+  const partial=scored.length<4;
+  const overall=scored.length?roundHalf(scored.reduce((a,s)=>a+s.band,0)/scored.length):null;
+  const o120=(overall!=null)?bandTo120(overall):null;
+
+  document.getElementById('overallBand').textContent=(overall!=null)?overall.toFixed(1):'–';
+  document.getElementById('overall120').textContent=(o120!=null)?o120:'–';
+  document.getElementById('overallLabel').innerHTML = partial
+    ? '<b style="color:var(--warn)">参考値（部分受験）</b>　'+scored.length+'/4技能の平均 <span class="est">推定</span>'
+    : '総合バンド（1.0–6.0） <span class="est">推定</span>';
+  const pw=document.getElementById('partialWarn');
+  if(partial && pw){
+    pw.classList.remove('hide');
+    let h='<b>⚠️ この総合スコアは参考値です（4技能が揃っていません）。</b><br>';
+    if(skipped.length) h+='・スキップ（採点対象外）: <b>'+skipped.map(s=>s.name).join('・')+'</b><br>';
+    if(unscored.length) h+='・未採点: <b>'+unscored.map(s=>s.name).join('・')+'</b>（無音・未記入・AI採点未接続のいずれか）<br>';
+    h+='<span style="font-size:13px">実施した'+scored.length+'技能だけの平均のため、<b>4技能すべて受験したときの総合スコアとは比較できません</b>。'
+      +'技能を減らすほど平均は得意分野に寄って高く出ます。実力の推移を見るときは、同じ条件（4技能そろえて受験）どうしで比べてください。</span>';
+    pw.innerHTML=h;
+  } else if(pw){ pw.classList.add('hide'); }
+  secs.forEach(s=>{ const el=document.getElementById(s.k.toLowerCase()+'Band');
+    if(el) el.innerHTML = s.band!=null ? s.band.toFixed(1)
+                        : (s.skipped ? '<span style="font-size:15px;color:var(--warn)">スキップ</span>'
+                                     : '<span style="font-size:15px">–</span>'); });
+  const skipTag=s=>s?'　<span style="color:var(--warn)">⏭ スキップ（採点対象外）</span>':'';
   document.getElementById('rawLine').innerHTML=
-    `R ${rRes.c}/${rRes.n}　L ${lRes.c}/${lRes.n}　S(LR ${mini.lrAvg!=null?mini.lrAvg.toFixed(1):'–'}/5${ivBand!=null?'・Interview '+ivBand.toFixed(1):''})　W ${wBand!=null?'band '+wBand.toFixed(1):((mini.emailText||mini.discText)?'未採点':'未記入')}`
+    `R ${sk.reading?'—':rRes.c+'/'+rRes.n}${skipTag(sk.reading)}　L ${sk.listening?'—':lRes.c+'/'+lRes.n}${skipTag(sk.listening)}　`
+    + `S(${sk.speaking?'—':'LR '+(mini.lrAvg!=null?mini.lrAvg.toFixed(1):'–')+'/5'+(ivBand!=null?'・Interview '+ivBand.toFixed(1):'')})${skipTag(sk.speaking)}　`
+    + `W ${wBand!=null?'band '+wBand.toFixed(1):((mini.emailText||mini.discText)?'未採点':'未記入')}`
+    + (mini.skipEmail?'　<span style="color:var(--warn)">Email⏭</span>':'')
+    + (mini.skipDisc?'　<span style="color:var(--warn)">Discussion⏭</span>':'')
     + (aiNote?`<br><span class="ng">${esc(aiNote)}</span>`:'');
   const byTask=mergeByTask(rRes.byTask,lRes.byTask);
   document.getElementById('byTaskBox').innerHTML=
@@ -1429,7 +1573,9 @@ async function finishMini4(){
   wRev+=`<div style="padding:5px 0;border-top:1px solid var(--line)"><b>Academic Discussion</b><br><span class="en" style="white-space:pre-wrap">${esc(mini.discText||'（未記入）')}</span></div>`;
   document.getElementById('review').innerHTML=(rRes.review||[]).concat(lRes.review||[]).join('')+spkRev+wRev;
   saveRecord({date:new Date().toISOString(),mode:'mini4',rBand,lBand,overall,o120,
-    rPct:rRes.n?rRes.c/rRes.n:null,lPct:lRes.n?lRes.c/lRes.n:null,sBand,wBand});
+    rPct:rRes.n?rRes.c/rRes.n:null,lPct:lRes.n?lRes.c/lRes.n:null,sBand,wBand,
+    partial, scoredCount:scored.length,                       // 部分受験の記録（履歴で完走分と区別する）
+    skipped:skipped.map(s=>s.name), unscored:unscored.map(s=>s.name)});
 }
 
 /* ---- 採点 ---- */
@@ -1536,12 +1682,15 @@ function renderHistory(){
   const h=loadHist(); document.getElementById('histEmpty').style.display=h.length?'none':'block';
   const t=document.getElementById('histTable');
   if(!h.length){t.innerHTML='';document.getElementById('chart').innerHTML='';return;}
-  t.innerHTML=`<tr><th>日時</th><th>総合</th><th>0–120</th><th>R</th><th>L</th></tr>`+
+  t.innerHTML=`<tr><th>日時</th><th>総合</th><th>0–120</th><th>R</th><th>L</th><th>区分</th></tr>`+
     h.slice().reverse().map(r=>{const d=new Date(r.date);
       const ds=`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
       const fb=v=>(v==null?'–':v.toFixed(1));
-      return `<tr><td>${ds}</td><td><b class="en">${r.overall.toFixed(1)}</b></td><td class="en">${r.o120}</td><td class="en">${fb(r.rBand)}</td><td class="en">${fb(r.lBand)}</td></tr>`;}).join('');
-  drawChart(h);
+      // 部分受験は完走記録と同列に見えないよう明示（旧記録は partial 未定義＝完走扱い）
+      const part=!!r.partial;
+      const tag=part?`<span style="color:var(--warn);font-size:12px">参考値<br>${(r.scoredCount!=null?r.scoredCount:'?')}/4技能</span>`:'<span class="muted" style="font-size:12px">完走</span>';
+      return `<tr${part?' style="opacity:.72"':''}><td>${ds}</td><td><b class="en">${r.overall!=null?r.overall.toFixed(1):'–'}</b></td><td class="en">${r.o120!=null?r.o120:'–'}</td><td class="en">${fb(r.rBand)}</td><td class="en">${fb(r.lBand)}</td><td>${tag}</td></tr>`;}).join('');
+  drawChart(h.filter(r=>!r.partial && r.overall!=null));   // 推移グラフは完走記録のみ（部分受験を混ぜると推移が壊れる）
 }
 function drawChart(h){
   const W=700,H=240,pad=34,n=h.length;
