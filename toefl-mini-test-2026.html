@@ -108,8 +108,8 @@
     <h2>通しミニテスト（4技能）</h2>
     <p>本番と同じ順番で受験します：<br><b>Reading → Listening → Speaking → Writing</b></p>
     <p class="muted">所要 約30分 ／ 終了後にスコア（推定）を表示</p>
-    <p style="margin:20px 0"><button class="primary" style="font-size:17px;padding:14px 30px" onclick="startMini4()">テストを始める</button></p>
-    <p class="muted">🎤 マイクと🔊音量をオンにしてください（Speaking・Listeningで使用します）</p>
+    <p style="margin:20px 0"><button class="primary" style="font-size:17px;padding:14px 30px" onclick="startPreCheck()">テストを始める</button></p>
+    <p class="muted">🎤 マイクと🔊音量をオンにしてください（Speaking・Listeningで使用します）<br>開始前に<b>音声・マイクチェック</b>があります（本番同様）。</p>
   </div>
 
   <details class="card">
@@ -138,6 +138,50 @@
       ・Writing: Write an Email 1（12 から）＋ Academic Discussion 1（12 から）／ ※Build a Sentence 100問は単体Writingアプリ</p>
     </div>
   </details>
+</section>
+
+<!-- 事前チェック（音声・マイク）：本番同様、テスト開始前に確認する -->
+<section id="check" class="hide">
+  <div class="card">
+    <h2>音声・マイクチェック</h2>
+    <p class="muted">本番のTOEFLと同じく、テスト開始前に<b>音が聞こえるか</b>と<b>マイクが使えるか</b>を確認します。<br>
+    <b>①②の両方が ✅ になるとテストを開始できます。</b>ここで問題を見つけておけば、Speakingの途中で困ることがありません。</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">① 音が聞こえるか</h3>
+    <p class="muted">再生ボタンを押すとチャイム音が鳴ります。聞こえたら「聞こえた」を押してください。<br>
+    聞こえない場合 → 端末の音量、スピーカー／イヤホンの接続、ブラウザのタブがミュートになっていないかを確認。</p>
+    <div class="row" style="margin:10px 0">
+      <button class="play" id="ckPlayBtn" onclick="ckPlaySample()">▶ チャイム音を再生</button>
+      <button class="ghost" id="ckHeardBtn" onclick="ckHeard()" disabled>✓ 聞こえた</button>
+    </div>
+    <div class="muted" id="ckAudioSt" style="min-height:18px;font-size:13px"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">② マイクが使えるか</h3>
+    <p class="muted">「マイクチェックを開始」を押し、下の英文を<b>普通の声の大きさで読み上げて</b>ください。<br>
+    声の大きさのバーが動き、英文が認識されれば合格です（Speakingと同じ音声認識で確認します）。</p>
+    <div class="box en" style="font-size:18px;text-align:center" id="ckPhrase">This is a microphone test.</div>
+    <div class="row" style="margin:10px 0">
+      <button class="play" id="ckMicBtn" onclick="ckMicStart()">🎤 マイクチェックを開始</button>
+    </div>
+    <div style="margin:10px 0">
+      <div class="muted" style="font-size:12px;margin-bottom:3px">声の大きさ</div>
+      <div style="height:16px;background:#0b1220;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+        <div id="ckLevel" style="height:100%;width:0%;background:var(--good);transition:width .08s"></div>
+      </div>
+    </div>
+    <div class="muted" id="ckMicSt" style="min-height:18px;font-size:13px"></div>
+    <div class="muted" id="ckMicHeard" style="min-height:18px;font-size:13px"></div>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <p id="ckSummary" class="muted"></p>
+    <p style="margin:14px 0"><button class="primary" id="ckStartBtn" style="font-size:17px;padding:14px 30px" onclick="ckProceed()" disabled>テストを開始 →</button></p>
+    <p><button class="ghost" onclick="ckCancel()">ホームに戻る</button></p>
+  </div>
 </section>
 
 <!-- READING -->
@@ -223,7 +267,7 @@
   <div class="card"><h3>解答の確認</h3><div id="review"></div></div>
   <div class="row" style="justify-content:space-between">
     <button class="ghost" onclick="show('history')">履歴を見る</button>
-    <button class="ghost" onclick="startMini4()">もう一度受験</button>
+    <button class="ghost" onclick="startPreCheck()">もう一度受験</button>
     <button class="primary" onclick="goHub()">🏠 ハブへ戻る</button>
   </div>
   <p class="foot">スコアはすべて推定値です（公式スコアではありません）。</p>
@@ -932,6 +976,141 @@ function startMini4Listening(){
   startTimer('l',4*60,listeningNext);
 }
 
+/* ===================== 事前チェック（音声・マイク）：本番同様、開始前に確認 =====================
+   目的: Speakingの途中で「音が出ない／声が拾えない」に気づく事故を防ぐ。
+   ①はチャイムmp3を実際に再生し、本番と同じmp3再生経路（fetch→decode→出力）を検証する。
+   ②はレベルメーター（生の入力音量）と SpeechRecognition（実際の認識）を分けて検証する。
+      レベルは動くのに認識だけ失敗＝言語/エンジン側、レベルも動かない＝デバイス側、と切り分けられる。 */
+const CK_SOUND = 'Speaking/audio/check_sound.mp3';
+const CK_PHRASE = 'This is a microphone test.';
+let ckAudioOk=false, ckMicOk=false, ckStream=null, ckCtx=null, ckRaf=null, ckRecog=null, ckPeak=0;
+
+function ckSet(id,txt){ const e=document.getElementById(id); if(e) e.textContent=txt; }
+function ckUpdate(){
+  const ok = ckAudioOk && ckMicOk;
+  const b=document.getElementById('ckStartBtn'); if(b) b.disabled=!ok;
+  const s=document.getElementById('ckSummary');
+  if(s) s.innerHTML = '① 音: '+(ckAudioOk?'✅':'⬜')+'　／　② マイク: '+(ckMicOk?'✅':'⬜')
+    + (ok ? '<br><b style="color:var(--good)">準備OK。テストを開始できます。</b>'
+          : '<br><span style="font-size:13px">①②の両方が ✅ になると「テストを開始」が押せます。</span>');
+}
+function startPreCheck(){
+  ckAudioOk=false; ckMicOk=false; ckPeak=0;
+  ckCleanup();
+  ckSet('ckAudioSt',''); ckSet('ckMicSt',''); ckSet('ckMicHeard','');
+  const lv=document.getElementById('ckLevel'); if(lv) lv.style.width='0%';
+  const hb=document.getElementById('ckHeardBtn'); if(hb) hb.disabled=true;
+  const pb=document.getElementById('ckPlayBtn'); if(pb){ pb.disabled=false; pb.textContent='▶ チャイム音を再生'; }
+  const mb=document.getElementById('ckMicBtn'); if(mb){ mb.disabled=false; mb.textContent='🎤 マイクチェックを開始'; }
+  const ph=document.getElementById('ckPhrase'); if(ph) ph.textContent=CK_PHRASE;
+  ckUpdate();
+  show('check'); window.scrollTo(0,0);
+}
+/* ---- ① 音声チェック ---- */
+function ckPlaySample(){
+  const pb=document.getElementById('ckPlayBtn');
+  ckSet('ckAudioSt','🔊 再生中…');
+  stopAudio();
+  const a=new Audio(CK_SOUND); curAudio=a;
+  a.onended=()=>{ curAudio=null; ckSet('ckAudioSt','再生が終わりました。聞こえましたか？　聞こえなければ音量を上げてもう一度再生してください。');
+                  const hb=document.getElementById('ckHeardBtn'); if(hb) hb.disabled=false; if(pb) pb.textContent='▶ もう一度再生'; };
+  a.onerror=()=>{ curAudio=null; ckSet('ckAudioSt','⚠️ チャイム音の読み込みに失敗しました（'+CK_SOUND+' が見つかりません）。通信状態を確認して再読み込みしてください。'); };
+  a.play().catch(e=>{ ckSet('ckAudioSt','⚠️ 再生できませんでした（'+((e&&e.name)||'error')+'）。ページを再読み込みして、もう一度お試しください。'); });
+}
+function ckHeard(){ ckAudioOk=true; ckSet('ckAudioSt','✅ 音は聞こえています。'); ckUpdate(); }
+
+/* ---- ② マイクチェック（レベルメーター → 音声認識） ---- */
+function ckCleanup(){
+  if(ckRaf){ cancelAnimationFrame(ckRaf); ckRaf=null; }
+  if(ckRecog){ try{ ckRecog.abort(); }catch(e){} ckRecog=null; }
+  if(ckStream){ releaseMicStream(ckStream); ckStream=null; }
+  if(ckCtx){ try{ ckCtx.close(); }catch(e){} ckCtx=null; }
+}
+function ckMicStart(){
+  const mb=document.getElementById('ckMicBtn'); if(mb){ mb.disabled=true; mb.textContent='🎤 マイク確認中…'; }
+  ckSet('ckMicSt','🎤 マイクの許可を確認中…（ダイアログが出たら「許可」を押してください）'); ckSet('ckMicHeard','');
+  ckPeak=0;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    ckSet('ckMicSt', micErrText('no-mediadevices')); if(mb){ mb.disabled=false; mb.textContent='🎤 もう一度チェック'; } return;
+  }
+  navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
+    ckStream=s;
+    ckSet('ckMicSt','🔴 声の大きさを測定中… 下の英文を読み上げてください（約5秒）');
+    try{
+      ckCtx=new (window.AudioContext||window.webkitAudioContext)();
+      const src=ckCtx.createMediaStreamSource(s), an=ckCtx.createAnalyser();
+      an.fftSize=1024; src.connect(an);
+      const buf=new Uint8Array(an.fftSize);
+      const loop=()=>{
+        an.getByteTimeDomainData(buf);
+        let sum=0; for(let i=0;i<buf.length;i++){ const v=(buf[i]-128)/128; sum+=v*v; }
+        const rms=Math.sqrt(sum/buf.length);
+        const pct=Math.min(100, Math.round(rms*320));
+        if(pct>ckPeak) ckPeak=pct;
+        const lv=document.getElementById('ckLevel'); if(lv) lv.style.width=pct+'%';
+        ckRaf=requestAnimationFrame(loop);
+      };
+      loop();
+    }catch(e){ /* メーターが作れなくても認識テストは続行する */ }
+    setTimeout(()=>{
+      if(ckRaf){ cancelAnimationFrame(ckRaf); ckRaf=null; }
+      if(ckStream){ releaseMicStream(ckStream); ckStream=null; }
+      if(ckCtx){ try{ ckCtx.close(); }catch(e){} ckCtx=null; }
+      if(ckPeak<4){
+        ckSet('ckMicSt','⚠️ 声がほとんど検出されませんでした（レベル '+ckPeak+'%）。マイクがミュートになっていないか、正しいマイクが選ばれているか（Windowsの設定→サウンド→入力）を確認して、もう一度お試しください。');
+        const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; }
+        return;
+      }
+      ckSet('ckMicSt','✔ 声を検出しました（最大レベル '+ckPeak+'%）。次に音声認識を確認します…');
+      ckRecogTest();
+    }, 5000);
+  }).catch(e=>{
+    const code=(e&&e.name)||(e&&e.message)||'not-allowed';
+    ckSet('ckMicSt', micErrText(code));
+    const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; }
+  });
+}
+function ckRecogTest(){
+  if(!SR_MINI){ ckSet('ckMicHeard','この端末は音声認識に非対応です。Chrome または Edge で受験してください。');
+    const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; } return; }
+  micReady=true;
+  let heard='', done=false, remain=8, iv=null;
+  const r=new SR_MINI(); r.lang='en-US'; r.interimResults=true; r.continuous=true;
+  ckRecog=r;
+  const finish=(okMsg)=>{
+    if(done) return; done=true;
+    if(iv) clearInterval(iv);
+    try{ r.stop(); }catch(e){}
+    const b=document.getElementById('ckMicBtn');
+    const words=(heard.match(/\S+/g)||[]).length;
+    if(words>=2){
+      ckMicOk=true;
+      ckSet('ckMicSt','✅ マイクと音声認識、どちらも正常です。');
+      ckSet('ckMicHeard','認識できた英文: 「'+heard.trim()+'」');
+      if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; }
+    }else{
+      ckSet('ckMicSt','⚠️ 声は届いていますが、英文として認識できませんでした（レベルは '+ckPeak+'%）。もう少しはっきり、区切らずに読み上げてもう一度お試しください。'+(okMsg?'（'+okMsg+'）':''));
+      ckSet('ckMicHeard','');
+      if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; }
+    }
+    ckRecog=null; ckUpdate();
+  };
+  r.onresult=e=>{ let fin='',itm=''; for(let k=0;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t+' '; else itm+=t; }
+    heard=(fin+itm).trim();
+    ckSet('ckMicHeard','認識中: '+heard);
+    if((heard.match(/\S+/g)||[]).length>=4) finish('');
+  };
+  r.onerror=e=>{ const err=(e&&e.error)||''; if(err && err!=='aborted' && err!=='no-speech'){ ckSet('ckMicHeard',''); ckSet('ckMicSt', micErrText(err));
+    if(iv) clearInterval(iv); done=true; const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; } ckRecog=null; } };
+  r.onend=()=>{ finish(''); };
+  try{ r.start(); }catch(e){ finish('start失敗'); return; }
+  const tick=()=>{ if(done) return; if(remain<=0){ finish(''); return; }
+    ckSet('ckMicSt','🔴 音声認識テスト中… 英文を読み上げてください（残り '+remain+'秒）'); remain--; };
+  tick(); iv=setInterval(tick,1000);
+}
+function ckProceed(){ ckCleanup(); startMini4(); }
+function ckCancel(){ ckCleanup(); show('home'); }
+
 /* ----- Speaking: Listen and Repeat（語一致・推定） ----- */
 const SR_MINI = window.SpeechRecognition || window.webkitSpeechRecognition;
 const SP={};
@@ -964,17 +1143,20 @@ function startMini4Speaking(){
 }
 /* ===== 1回再生→自動録音エンジン（カンニング防止：再生完了後にのみ録音開始・再生中は録音しない・再生し直し不可） ===== */
 let spkRecog=null, spkBusy=false, spkUtter=null, spkLastErr='';
-let micStream=null, micReady=false;
+let micReady=false;
 function spkStop(){ if(spkRecog){try{spkRecog.stop();}catch(e){}} spkRecog=null; }
 function spkAbort(){ if(spkRecog){try{spkRecog.abort();}catch(e){}} spkRecog=null; }
 /* マイク許可をユーザー操作の直後に取得（再生完了後のsetTimeout内では許可ダイアログが出ずnot-allowedになるため）。
-   取得したstreamは保持し続け、許可状態とマイク稼働を安定させる。 */
+   ★取得したstreamは即座に解放する。掴んだままだとSpeechRecognitionと同じマイクを奪い合い、
+     録音インジケータが点きっぱなしになる／環境によっては声を拾えなくなる（no-speech）ため。
+     許可はオリジンに永続するので、解放してもSpeechRecognitionは許可済みで動作する。 */
+function releaseMicStream(s){ try{ (s.getTracks()||[]).forEach(t=>{ try{t.stop();}catch(e){} }); }catch(e){} }
 function ensureMic(){
-  if(micReady && micStream && micStream.active) return Promise.resolve(true);
+  if(micReady) return Promise.resolve(true);
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
     return Promise.reject(new Error('no-mediadevices'));
   }
-  return navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{ micStream=s; micReady=true; return true; });
+  return navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{ releaseMicStream(s); micReady=true; return true; });
 }
 /* エラーコード→日本語の対処メッセージ */
 function micErrText(err){
@@ -1387,7 +1569,8 @@ function show(id){
   var inTest = ['reading','listening','speaking','writing'].indexOf(id)>=0;
   window._testActive = inTest;
   var _nav=document.getElementById('miniNav'); if(_nav) _nav.style.display = inTest ? 'none' : 'flex';
-  ['home','reading','listening','speaking','writing','result','history','info'].forEach(s=>document.getElementById(s).classList.toggle('hide',s!==id));
+  if(id!=='check' && typeof ckCleanup==='function') ckCleanup();   // チェック画面を離れたらマイク・メーターを確実に解放
+  ['home','check','reading','listening','speaking','writing','result','history','info'].forEach(s=>{var _e=document.getElementById(s); if(_e) _e.classList.toggle('hide',s!==id);});
   document.getElementById('navHome').classList.toggle('active',id==='home');
   document.getElementById('navHist').classList.toggle('active',id==='history');
   document.getElementById('navInfo').classList.toggle('active',id==='info');
