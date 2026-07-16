@@ -112,6 +112,10 @@
 
 <!-- HOME -->
 <section id="home">
+  <div class="card" id="verCard" style="text-align:center;padding:10px">
+    <div id="verLine" class="muted" style="font-size:13px">バージョン確認中…</div>
+  </div>
+
   <div class="card" style="text-align:center">
     <h2>通しミニテスト（4技能）</h2>
     <p>本番と同じ順番で受験します：<br><b>Reading → Listening → Speaking → Writing</b></p>
@@ -710,6 +714,43 @@ const TASK_SKILL={ctw:"Reading",daily:"Reading",academic:"Reading",response:"Lis
 /* 表・解説の並びを統一する正準順（Reading群→Listening群） */
 const TASK_ORDER=["ctw","daily","academic","response","conversation","announcement","talk"];
 function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,byTask[k]]).concat(Object.entries(byTask).filter(([k])=>TASK_ORDER.indexOf(k)<0));}
+
+/* ===================== バージョン表示・鮮度チェック =====================
+   目的: 結愛さんの画面が最新かどうかを、受験前にトップで判別できるようにする。
+   なぜ単なるバージョン表示では足りないか:
+     ページがブラウザにキャッシュされていると、バージョン番号ごと古いものが表示される。
+     「v1.5と出ているから最新」と思い込む事故が起きる。
+   そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
+     いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
+   ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
+const APP_VERSION = '1.6.0';
+const APP_DATE    = '2026-07-17';
+async function checkVersion(){
+  const el=document.getElementById('verLine'); if(!el) return;
+  const base='v'+APP_VERSION+'（'+APP_DATE+'）';
+  try{
+    const t=await fetch(location.pathname+'?vc='+Date.now(),{cache:'no-store'}).then(r=>r.text());
+    const m=t.match(/const APP_VERSION\s*=\s*'([^']+)'/);
+    const live=m?m[1]:null;
+    if(!live){ el.innerHTML=base+' <span class="muted">／ 最新版の確認に失敗しました</span>'; return; }
+    if(live===APP_VERSION){
+      el.innerHTML='<span style="color:var(--good)">✅ 最新版です</span>　<span class="muted">'+base+'</span>';
+      document.getElementById('verCard').style.borderLeft='4px solid var(--good)';
+    }else{
+      el.innerHTML='<b style="color:var(--warn)">⚠️ 画面が古い版です（表示中 '+base+' ／ 最新 v'+live+'）</b><br>'
+        +'<span style="font-size:12px">下のボタンで最新にしてから受験してください。</span><br>'
+        +'<button class="primary" style="margin-top:8px" onclick="forceUpdate()">🔄 最新に更新する</button>';
+      const c=document.getElementById('verCard');
+      c.style.borderLeft='4px solid var(--warn)'; c.style.background='rgba(245,158,11,.08)';
+    }
+  }catch(e){
+    el.innerHTML=base+' <span class="muted">／ 最新版の確認に失敗（オフライン？）</span>';
+  }
+}
+function forceUpdate(){
+  // クエリを変えて読み直す＝キャッシュを確実に迂回する（location.reload()では古いままのことがある）
+  location.replace(location.pathname+'?v='+Date.now());
+}
 
 /* ============ 状態・ユーティリティ ============ */
 let state={};
@@ -2049,6 +2090,7 @@ window.addEventListener('beforeunload',function(e){ if(window._testActive){ e.pr
 renderConvTable();
 initExec();
 initSync();
+checkVersion();
 if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=function(){ speechSynthesis.getVoices(); }; }  // 2声取得のためボイス一覧をウォームアップ
 
 /* ---- 入口ハブからの技能別ディープリンク (#reading / #listening) ---- */
