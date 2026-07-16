@@ -137,6 +137,22 @@
         <button class="ghost" onclick="clearExec()">クリア</button></p>
       <p class="muted" id="execStatus"></p>
 
+      <h4 style="margin-top:16px">受験者名と結果の同期（弱点レポート用）</h4>
+      <p class="muted">受験者名は<b>この端末に保存</b>され、受験結果に付きます。同期URLを登録すると、結果がGoogleスプレッドシートに自動保存されます（無料）。<br>
+      ※ 端末やブラウザからは個人を判別できません（同じ家なら回線も同じ）。<b>誰の記録かはこの名前だけが決めます</b>。</p>
+      <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
+        <label class="muted" style="font-size:13px">受験者名</label>
+        <input type="text" id="userName" placeholder="例: Yume"
+          style="flex:0 0 160px;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px">
+      </div>
+      <input type="text" id="syncUrl" placeholder="同期用 Apps Script の /exec URL（手順: P3セットアップ手順.md）"
+        style="width:100%;margin-top:8px;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font-family:var(--en)">
+      <p style="margin-top:8px">
+        <button class="ghost" onclick="saveSync()">保存</button>
+        <button class="ghost" onclick="testSync()">接続テスト</button>
+        <button class="ghost" onclick="pushAllHistory()">この端末の履歴をまとめて送信</button></p>
+      <p class="muted" id="syncStatus"></p>
+
       <h4 style="margin-top:16px">テストの詳細</h4>
       <p class="muted">R/Lは本番同様の2段階適応（モジュール1の出来で難化／易化）。回答約33分（R 2.5分×2／L 2分×2／S 4分／W Build a Sentence 3分＋Email 7分＋Discussion 10分）。回答後にSpeaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点（従量課金・数円/回）、R/L/復唱／Build a Sentenceは機械採点。スコアは推定値です。</p>
       <p class="muted"><b>各セクションの出題数 ／ バンク保有数</b>（すべて毎回ランダム抽選）<br>
@@ -971,33 +987,38 @@ function captureCtw(){
   if(ctwItem){ for(let i=0;i<ctwItem._n;i++){const el=document.getElementById('ctw_'+i);state.ctwResp.push(el?el.value:'');} }
 }
 function mergeByTask(){ const out={}; for(const m of arguments){ if(!m)continue; for(const k in m){ out[k]=out[k]||{c:0,n:0}; out[k].c+=m[k].c; out[k].n+=m[k].n; } } return out; }
+/* 採点結果には HTML の review に加えて、機械可読な wrong[]（誤答の明細）を返す。
+   弱点レポートで「どの設問・どの選択肢で落としたか」を後から分析するために必要。 */
 function scoreReadingItems(items){
-  let c=0,n=0; const byTask={}; const review=[];
+  let c=0,n=0; const byTask={}; const review=[]; const wrong=[];
   const add=(tt,cc,nn)=>{byTask[tt]=byTask[tt]||{c:0,n:0};byTask[tt].c+=cc;byTask[tt].n+=nn;};
   items.forEach((item,ri)=>{
     const t=item.t;
     if(item.kind==='ctw'){
       const blanks=item.parts.filter(p=>p.t==='blank'); let cc=0; const det=[];
       blanks.forEach((b,i)=>{const v=norm(state.ctwResp[i]);const ok=v===norm(b.miss)||v===norm(b.full);if(ok)cc++;
-        det.push({pre:b.pre,miss:b.miss,full:b.full,got:state.ctwResp[i]||'',ok});});
+        det.push({pre:b.pre,miss:b.miss,full:b.full,got:state.ctwResp[i]||'',ok});
+        if(!ok) wrong.push({sec:'R',task:'ctw',level:t.level,itemId:t.id||t.title||'',ask:b.pre+'…',correct:b.full,got:state.ctwResp[i]||''});});
       c+=cc;n+=blanks.length; add('ctw',cc,blanks.length); review.push(ctwReview(t.title,det));
     } else {
       let cc=0; const det=[];
-      t.q.forEach((q,qi)=>{const got=state.ans[`r${ri}_${qi}`];const ok=got===q.a;if(ok)cc++;det.push({q,got,ok});});
+      t.q.forEach((q,qi)=>{const got=state.ans[`r${ri}_${qi}`];const ok=got===q.a;if(ok)cc++;det.push({q,got,ok});
+        if(!ok) wrong.push({sec:'R',task:t.taskType,level:t.level,itemId:t.id||t.title||'',ask:q.q||'',correct:(q.c&&q.c[q.a])||q.a,got:(got!=null&&q.c)?q.c[got]:'（未回答）'});});
       c+=cc;n+=t.q.length; add(t.taskType,cc,t.q.length); review.push(mcReview(t.title||TASK_JP[t.taskType],det));
     }
   });
-  return {c,n,byTask,review};
+  return {c,n,byTask,review,wrong};
 }
 function scoreListeningItems(items){
-  let c=0,n=0; const byTask={}; const review=[];
+  let c=0,n=0; const byTask={}; const review=[]; const wrong=[];
   const add=(tt,cc,nn)=>{byTask[tt]=byTask[tt]||{c:0,n:0};byTask[tt].c+=cc;byTask[tt].n+=nn;};
   items.forEach((item,li)=>{
     const t=item.t; let cc=0; const det=[];
-    t.q.forEach((q,qi)=>{const got=state.ans[`l${li}_${qi}`];const ok=got===q.a;if(ok)cc++;det.push({q,got,ok});});
+    t.q.forEach((q,qi)=>{const got=state.ans[`l${li}_${qi}`];const ok=got===q.a;if(ok)cc++;det.push({q,got,ok});
+      if(!ok) wrong.push({sec:'L',task:t.taskType,level:t.level,itemId:t.id||t.title||'',ask:q.q||'',correct:(q.c&&q.c[q.a])||q.a,got:(got!=null&&q.c)?q.c[got]:'（未回答）'});});
     c+=cc;n+=t.q.length; add(t.taskType,cc,t.q.length); review.push(mcReview((t.title||('Response '+(li+1))),det));
   });
-  return {c,n,byTask,review};
+  return {c,n,byTask,review,wrong};
 }
 
 /* ===================== 通しミニ（4技能・約15–18分・全機械採点・課金なし） ===================== */
@@ -1103,6 +1124,15 @@ function ckDeviceCheck(){
     +'この端末で Reading / Listening / Writing だけ練習する場合は、下の「⏭ Speakingをスキップ」を使ってください（採点対象外になります）。</span>';
 }
 function startPreCheck(){
+  // 受験者名が未設定だと「誰の記録か」が永久に分からなくなるため、受験前にここで気づかせる
+  if(!getUser()){
+    if(!confirm('受験者名が設定されていません。\n\nこのまま受験すると、記録が誰のものか分からなくなります（端末や回線からは判別できません）。\n\nOK＝このまま受験する／キャンセル＝ホームの「受験者名と結果の同期」で名前を設定する')){
+      show('home');
+      const el=document.getElementById('userName');
+      if(el){ const d=el.closest('details'); if(d) d.open=true; el.focus(); }
+      return;
+    }
+  }
   ckAudioOk=false; ckMicOk=false; ckPeak=0;
   ckCleanup();
   ckDeviceCheck();
@@ -1540,6 +1570,71 @@ async function testExec(){
 function initExec(){ const u=localStorage.getItem('toefl_w_exec'); const el=document.getElementById('execUrl'); if(el)el.value=u||'';
   const st=document.getElementById('execStatus'); if(st)st.textContent=u?'AI採点: 有効（URL登録済み）':'AI採点: 未接続（URL未登録）'; }
 
+/* ===== 受験者名 ＋ 結果のSheets同期 =====
+   なぜ名前が要るか: このアプリは静的ホスティング(GitHub Pages)なのでIPは取得できず、
+   仮に取れても同居家族は同じグローバルIPになるため個人を判別できない。
+   誰の記録かを決められるのは、端末に保存したこの名前だけ。 */
+const LS_USER='toefl_user', LS_SYNC='toefl_sync_exec', LS_DEVICE='toefl_device_id';
+function getUser(){ return (localStorage.getItem(LS_USER)||'').trim(); }
+function getDeviceId(){
+  let d=localStorage.getItem(LS_DEVICE);
+  if(!d){ d='dev-'+Math.random().toString(36).slice(2,8); localStorage.setItem(LS_DEVICE,d); }
+  return d;
+}
+function initSync(){
+  const u=document.getElementById('userName'); if(u) u.value=getUser();
+  const s=document.getElementById('syncUrl'); if(s) s.value=localStorage.getItem(LS_SYNC)||'';
+  const st=document.getElementById('syncStatus');
+  if(st){ const url=localStorage.getItem(LS_SYNC);
+    st.textContent = !getUser() ? '⚠️ 受験者名が未設定です（このままだと誰の記録か分かりません）'
+                   : (url ? '同期: 有効（受験者名: '+getUser()+'）' : '同期: 未接続（受験者名: '+getUser()+'／この端末にのみ保存）'); }
+}
+function saveSync(){
+  const name=(document.getElementById('userName').value||'').trim();
+  const url=(document.getElementById('syncUrl').value||'').trim();
+  if(url && !/^https:\/\/script\.google\.com\//.test(url)){
+    document.getElementById('syncStatus').textContent='⚠️ Apps Script の https://script.google.com/... の /exec URL を入れてください。'; return; }
+  localStorage.setItem(LS_USER,name);
+  if(url) localStorage.setItem(LS_SYNC,url); else localStorage.removeItem(LS_SYNC);
+  initSync();
+  document.getElementById('syncStatus').textContent='保存しました。'+(name?'受験者名: '+name:'⚠️ 受験者名が空です')+(url?' ／ 同期: 有効':' ／ 同期: 無効');
+}
+async function testSync(){
+  const url=(document.getElementById('syncUrl').value||'').trim()||localStorage.getItem(LS_SYNC);
+  const st=document.getElementById('syncStatus');
+  if(!url){ st.textContent='同期URLを入力してください。'; return; }
+  st.textContent='接続テスト中…';
+  try{ const r=await fetch(url,{method:'GET'}); const d=await r.json();
+    st.textContent = (d&&d.ok) ? ('✅ 接続OK（保存済み: '+((d.records||[]).length)+'件）') : ('⚠ 想定外の応答: '+JSON.stringify(d).slice(0,120)); }
+  catch(e){ st.textContent='❌ 接続失敗: '+e.message+'（デプロイとアクセス権限「全員」を確認）'; }
+}
+/* 同期は「送れたら送る」。失敗しても受験結果の表示や localStorage 保存は妨げない。 */
+async function syncPush(record){
+  const url=localStorage.getItem(LS_SYNC); if(!url) return {ok:false, reason:'未接続'};
+  try{
+    // text/plain にすることでCORSプリフライトを避ける（バックエンドの想定どおり）
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'save', record})});
+    const d=await r.json();
+    return d && d.ok ? {ok:true} : {ok:false, reason:(d&&d.error)||'応答エラー'};
+  }catch(e){ return {ok:false, reason:e.message}; }
+}
+async function pushAllHistory(){
+  const st=document.getElementById('syncStatus');
+  const url=localStorage.getItem(LS_SYNC);
+  if(!url){ st.textContent='先に同期URLを保存してください。'; return; }
+  const h=loadHist().filter(r=>r.sync);       // 同期用ペイロードを持つ記録だけ送る
+  if(!h.length){ st.textContent='送信できる記録がありません（この機能を入れる前の記録は送れません）。'; return; }
+  st.textContent='送信中… 0/'+h.length;
+  let ok=0, ng=[];
+  for(let i=0;i<h.length;i++){
+    const r=await syncPush(h[i].sync);
+    if(r.ok) ok++; else ng.push(r.reason);
+    st.textContent='送信中… '+(i+1)+'/'+h.length;
+  }
+  st.textContent='送信完了: 成功 '+ok+'件'+(ng.length?(' ／ 失敗 '+ng.length+'件（'+ng[0]+'）'):'');
+}
+
 async function aiScore(url,task,prompt,response){
   const r=await fetch(url,{method:'POST',body:JSON.stringify({task:task,prompt:prompt,response:response})});
   const data=await r.json(); if(!data.ok) throw new Error(data.error||'API error');
@@ -1739,10 +1834,48 @@ async function finishMini4(){
 
   document.getElementById('review').innerHTML=(rRes.review||[]).concat(lRes.review||[]).join('')
     || '<p class="muted">（Reading / Listening をスキップしたため、確認する解答はありません）</p>';
-  saveRecord({date:new Date().toISOString(),mode:'mini4',rBand,lBand,overall,o120,
+  /* ---- 弱点レポート用の同期データ ----
+     タスク別正答率／誤答の明細／AI所見 を1レコードにまとめる。
+     誰の記録かは受験者名でしか決まらない（IPや端末では判別できない）。 */
+  const dateIso=new Date().toISOString();
+  const fbSlim=fb=>fb?{score:fb.score, band:fb.band, summary:fb.summary,
+      improvements:(fb.improvements_detail||[]).map(d=>({impact:d.impact, category:d.category, rubric:d.rubric, issue:d.issue, fix:d.fix})),
+      strengths:fb.strengths||[]}:null;
+  const syncRec={
+    id:(getUser()||'unknown')+'_'+getDeviceId()+'_'+dateIso,
+    date:dateIso, app:'mini4',
+    data:{
+      user:getUser()||'(未設定)', device:getDeviceId(),
+      overall, o120, partial, scoredCount:scored.length,
+      skipped:skipped.map(s=>s.name), unscored:unscored.map(s=>s.name),
+      bands:{r:rBand, l:lBand, s:sBand, w:wBand},
+      path:{r:state.rMod.path||null, l:state.lMod.path||null},
+      raw:{rC:rRes.c, rN:rRes.n, lC:lRes.c, lN:lRes.n},
+      byTask,                                              // タスク別の正答率と推移に使う
+      wrong:(rRes.wrong||[]).concat(lRes.wrong||[]),        // 誤答の傾向分析に使う
+      bs: mini.skipBS?{skipped:true}:(mini.bsN?{c:mini.bsC, n:mini.bsN,
+          items:(mini.bsItems||[]).map((it,i)=>{ const cor=it.chunks.slice(1); const pl=(mini.bsAns[i]||[]).filter(x=>x!=null);
+            return {id:it.id, diff:it.diff, ok: pl.length===cor.length && pl.every((w,k)=>w===cor[k]),
+                    correct:it.chunks[0]+' '+cor.join(' '), got: pl.length?(it.chunks[0]+' '+pl.join(' ')):''}; })}:null),
+      lr: sk.speaking?{skipped:true}:{avg:mini.lrAvg, n:mini.lrN,
+          items:(mini.lrItems||[]).map((it,i)=>({target:it.target, said:(SP[i]&&SP[i].transcript)||'', score:(SP[i]&&SP[i].score)!=null?SP[i].score:null}))},
+      iv: sk.speaking?{skipped:true}:{q:mini.iv?mini.iv.q:'', said:mini.ivTranscript||'', band:ivBand, fb:fbSlim(mini.ivFb)},
+      email: mini.skipEmail?{skipped:true}:{text:mini.emailText||'', band:(mini.emailFb?(mini.emailFb.band!=null?mini.emailFb.band:null):null), fb:fbSlim(mini.emailFb)},
+      disc: mini.skipDisc?{skipped:true}:{text:mini.discText||'', band:(mini.discFb?(mini.discFb.band!=null?mini.discFb.band:null):null), fb:fbSlim(mini.discFb)}
+    }
+  };
+  saveRecord({date:dateIso,mode:'mini4',rBand,lBand,overall,o120,
     rPct:rRes.n?rRes.c/rRes.n:null,lPct:lRes.n?lRes.c/lRes.n:null,sBand,wBand,
     partial, scoredCount:scored.length,                       // 部分受験の記録（履歴で完走分と区別する）
-    skipped:skipped.map(s=>s.name), unscored:unscored.map(s=>s.name)});
+    skipped:skipped.map(s=>s.name), unscored:unscored.map(s=>s.name),
+    user:getUser(), sync:syncRec});                           // syncRec は後から「まとめて送信」でも使う
+  // 同期は結果表示の後（失敗しても受験結果には影響させない）
+  syncPush(syncRec).then(r=>{
+    const el=document.getElementById('rawLine'); if(!el) return;
+    const tag = r.ok ? '<span style="color:var(--good)">☁ 記録を同期しました（'+esc(getUser()||'受験者名 未設定')+'）</span>'
+                     : '<span class="muted">☁ 未同期（'+esc(r.reason||'')+'）— ホームの「受験者名と結果の同期」から後で送信できます</span>';
+    el.innerHTML += '<br>'+tag;
+  });
 }
 
 /* ---- 採点 ---- */
@@ -1849,14 +1982,15 @@ function renderHistory(){
   const h=loadHist(); document.getElementById('histEmpty').style.display=h.length?'none':'block';
   const t=document.getElementById('histTable');
   if(!h.length){t.innerHTML='';document.getElementById('chart').innerHTML='';return;}
-  t.innerHTML=`<tr><th>日時</th><th>総合</th><th>0–120</th><th>R</th><th>L</th><th>区分</th></tr>`+
+  t.innerHTML=`<tr><th>日時</th><th>受験者</th><th>総合</th><th>0–120</th><th>R</th><th>L</th><th>区分</th></tr>`+
     h.slice().reverse().map(r=>{const d=new Date(r.date);
       const ds=`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
       const fb=v=>(v==null?'–':v.toFixed(1));
       // 部分受験は完走記録と同列に見えないよう明示（旧記録は partial 未定義＝完走扱い）
       const part=!!r.partial;
       const tag=part?`<span style="color:var(--warn);font-size:12px">参考値<br>${(r.scoredCount!=null?r.scoredCount:'?')}/4技能</span>`:'<span class="muted" style="font-size:12px">完走</span>';
-      return `<tr${part?' style="opacity:.72"':''}><td>${ds}</td><td><b class="en">${r.overall!=null?r.overall.toFixed(1):'–'}</b></td><td class="en">${r.o120!=null?r.o120:'–'}</td><td class="en">${fb(r.rBand)}</td><td class="en">${fb(r.lBand)}</td><td>${tag}</td></tr>`;}).join('');
+      const who=r.user?esc(r.user):'<span class="muted" style="font-size:12px">未設定</span>';
+      return `<tr${part?' style="opacity:.72"':''}><td>${ds}</td><td>${who}</td><td><b class="en">${r.overall!=null?r.overall.toFixed(1):'–'}</b></td><td class="en">${r.o120!=null?r.o120:'–'}</td><td class="en">${fb(r.rBand)}</td><td class="en">${fb(r.lBand)}</td><td>${tag}</td></tr>`;}).join('');
   drawChart(h.filter(r=>!r.partial && r.overall!=null));   // 推移グラフは完走記録のみ（部分受験を混ぜると推移が壊れる）
 }
 function drawChart(h){
@@ -1905,6 +2039,7 @@ function goHub(){
 window.addEventListener('beforeunload',function(e){ if(window._testActive){ e.preventDefault(); e.returnValue=''; } });
 renderConvTable();
 initExec();
+initSync();
 if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=function(){ speechSynthesis.getVoices(); }; }  // 2声取得のためボイス一覧をウォームアップ
 
 /* ---- 入口ハブからの技能別ディープリンク (#reading / #listening) ---- */
