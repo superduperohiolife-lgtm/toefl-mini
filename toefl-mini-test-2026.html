@@ -164,9 +164,10 @@
 
   <div class="card">
     <h3 style="margin-top:0">② マイクが使えるか</h3>
-    <p class="muted">「マイクチェックを開始」を押し、下の英文を<b>普通の声の大きさで読み上げて</b>ください。<br>
-    声の大きさのバーが動き、英文が認識されれば合格です（Speakingと同じ音声認識で確認します）。</p>
+    <p class="muted">「マイクチェックを開始」を押すと<b>すぐに録音が始まります</b>。下の英文を<b>1回だけ</b>、普通の声の大きさで読み上げてください。<br>
+    英文が認識されると自動で終わります（Speakingと同じ音声認識で確認します）。</p>
     <div class="box en" style="font-size:18px;text-align:center" id="ckPhrase">This is a microphone test.</div>
+    <p class="muted" style="font-size:12px;margin:6px 0 0">↑ この英文を声に出して読むだけです（読み上げは1回で終わります）。</p>
     <div class="row" style="margin:10px 0">
       <button class="play" id="ckMicBtn" onclick="ckMicStart()">🎤 マイクチェックを開始</button>
     </div>
@@ -1048,8 +1049,11 @@ function skipWritingTask(){
 /* ===================== 事前チェック（音声・マイク）：本番同様、開始前に確認 =====================
    目的: Speakingの途中で「音が出ない／声が拾えない」に気づく事故を防ぐ。
    ①はチャイムmp3を実際に再生し、本番と同じmp3再生経路（fetch→decode→出力）を検証する。
-   ②はレベルメーター（生の入力音量）と SpeechRecognition（実際の認識）を分けて検証する。
-      レベルは動くのに認識だけ失敗＝言語/エンジン側、レベルも動かない＝デバイス側、と切り分けられる。 */
+   ②はレベルメーター（生の入力音量）と SpeechRecognition（実際の認識）を【同時に】走らせ、読み上げは1回だけにする。
+      当初はマイクの奪い合いを警戒して2段階（メーター5秒→認識8秒）にしていたが、
+      利用者が英文を2回読まされて意図が伝わらなかったため1回に統合した。
+      本番のTOEFLのマイクチェックも読み上げは1回。
+      レベルは動くのに認識だけ失敗＝エンジン/発音側、レベルも動かない＝デバイス側、の切り分けは同時実行でも可能。 */
 const CK_SOUND = 'Speaking/audio/check_sound.mp3';
 const CK_PHRASE = 'This is a microphone test.';
 let ckAudioOk=false, ckMicOk=false, ckStream=null, ckCtx=null, ckRaf=null, ckRecog=null, ckPeak=0;
@@ -1110,94 +1114,96 @@ function ckPlaySample(){
 }
 function ckHeard(){ ckAudioOk=true; ckSet('ckAudioSt','✅ 音は聞こえています。'); ckUpdate(); }
 
-/* ---- ② マイクチェック（レベルメーター → 音声認識） ---- */
+/* ---- ② マイクチェック（レベルメーターと音声認識を同時実行／読み上げは1回） ---- */
 function ckCleanup(){
   if(ckRaf){ cancelAnimationFrame(ckRaf); ckRaf=null; }
   if(ckRecog){ try{ ckRecog.abort(); }catch(e){} ckRecog=null; }
   if(ckStream){ releaseMicStream(ckStream); ckStream=null; }
   if(ckCtx){ try{ ckCtx.close(); }catch(e){} ckCtx=null; }
 }
+function ckMicReset(){ const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; } }
+function ckStartMeter(s){
+  try{
+    ckCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=ckCtx.createMediaStreamSource(s), an=ckCtx.createAnalyser();
+    an.fftSize=1024; src.connect(an);
+    const buf=new Uint8Array(an.fftSize);
+    const loop=()=>{
+      an.getByteTimeDomainData(buf);
+      let sum=0; for(let i=0;i<buf.length;i++){ const v=(buf[i]-128)/128; sum+=v*v; }
+      const pct=Math.min(100, Math.round(Math.sqrt(sum/buf.length)*320));
+      if(pct>ckPeak) ckPeak=pct;
+      const lv=document.getElementById('ckLevel'); if(lv) lv.style.width=pct+'%';
+      ckRaf=requestAnimationFrame(loop);
+    };
+    loop();
+  }catch(e){ /* メーターが作れなくても認識の確認は続行する */ }
+}
 function ckMicStart(){
   const mb=document.getElementById('ckMicBtn'); if(mb){ mb.disabled=true; mb.textContent='🎤 マイク確認中…'; }
   ckSet('ckMicSt','🎤 マイクの許可を確認中…（ダイアログが出たら「許可」を押してください）'); ckSet('ckMicHeard','');
-  ckPeak=0;
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    ckSet('ckMicSt', micErrText('no-mediadevices')); if(mb){ mb.disabled=false; mb.textContent='🎤 もう一度チェック'; } return;
-  }
+  ckPeak=0; ckCleanup();
+  const lv0=document.getElementById('ckLevel'); if(lv0) lv0.style.width='0%';
+  if(!SR_MINI){ ckSet('ckMicSt','この端末は音声認識に非対応です。パソコンの Chrome または Edge で開いてください。'); ckMicReset(); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ ckSet('ckMicSt', micErrText('no-mediadevices')); ckMicReset(); return; }
   navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
-    ckStream=s;
-    ckSet('ckMicSt','🔴 声の大きさを測定中… 下の英文を読み上げてください（約5秒）');
-    try{
-      ckCtx=new (window.AudioContext||window.webkitAudioContext)();
-      const src=ckCtx.createMediaStreamSource(s), an=ckCtx.createAnalyser();
-      an.fftSize=1024; src.connect(an);
-      const buf=new Uint8Array(an.fftSize);
-      const loop=()=>{
-        an.getByteTimeDomainData(buf);
-        let sum=0; for(let i=0;i<buf.length;i++){ const v=(buf[i]-128)/128; sum+=v*v; }
-        const rms=Math.sqrt(sum/buf.length);
-        const pct=Math.min(100, Math.round(rms*320));
-        if(pct>ckPeak) ckPeak=pct;
-        const lv=document.getElementById('ckLevel'); if(lv) lv.style.width=pct+'%';
-        ckRaf=requestAnimationFrame(loop);
-      };
-      loop();
-    }catch(e){ /* メーターが作れなくても認識テストは続行する */ }
-    // 5秒でメーター終了 → streamを解放してから認識テスト（マイクの奪い合いを避けるため必ず解放後に開始）
-    setTimeout(()=>{
-      if(ckRaf){ cancelAnimationFrame(ckRaf); ckRaf=null; }
-      if(ckStream){ releaseMicStream(ckStream); ckStream=null; }
-      if(ckCtx){ try{ ckCtx.close(); }catch(e){} ckCtx=null; }
-      if(ckPeak<4){
-        ckSet('ckMicSt','⚠️ 声がほとんど検出されませんでした（レベル '+ckPeak+'%）。マイクがミュートになっていないか、正しいマイクが選ばれているか（Windowsの設定→サウンド→入力）を確認して、もう一度お試しください。');
-        const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; }
-        return;
-      }
-      ckSet('ckMicSt','✔ 声を検出しました（最大レベル '+ckPeak+'%）。次に音声認識を確認します…');
-      ckRecogTest();
-    }, 5000);
+    ckStream=s; micReady=true;   // 許可が取れた＝以降のSpeakingも許可済みで動く
+    ckStartMeter(s);             // メーターと認識を同時に走らせる（読み上げは1回だけ）
+    ckRecogTest();
   }).catch(e=>{
     const code=(e&&e.name)||(e&&e.message)||'not-allowed';
-    ckSet('ckMicSt', micErrText(code));
-    const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; }
+    ckSet('ckMicSt', micErrText(code)); ckMicReset();
   });
 }
+/* メーターが動いている状態のまま認識を開始する。読み上げは1回で完結する。 */
 function ckRecogTest(){
-  if(!SR_MINI){ ckSet('ckMicHeard','この端末は音声認識に非対応です。Chrome または Edge で受験してください。');
-    const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; } return; }
-  micReady=true;   // 許可済み（上のgetUserMediaが成功している）
-  let heard='', done=false, remain=8, iv=null;
+  let heard='', done=false, remain=10, iv=null;
   const r=new SR_MINI(); r.lang='en-US'; r.interimResults=true; r.continuous=true;
   ckRecog=r;
-  const finish=(okMsg)=>{
-    if(done) return; done=true;
+  const stopAll=()=>{
     if(iv) clearInterval(iv);
     try{ r.stop(); }catch(e){}
-    const b=document.getElementById('ckMicBtn');
+    if(ckRaf){ cancelAnimationFrame(ckRaf); ckRaf=null; }
+    if(ckStream){ releaseMicStream(ckStream); ckStream=null; }   // 録音インジケータを残さない
+    if(ckCtx){ try{ ckCtx.close(); }catch(e){} ckCtx=null; }
+    ckRecog=null;
+  };
+  const finish=()=>{
+    if(done) return; done=true;
+    stopAll();
     const words=(heard.match(/\S+/g)||[]).length;
     if(words>=2){
       ckMicOk=true;
       ckSet('ckMicSt','✅ マイクと音声認識、どちらも正常です。');
       ckSet('ckMicHeard','認識できた英文: 「'+heard.trim()+'」');
-      if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; }
-    }else{
-      ckSet('ckMicSt','⚠️ 声は届いていますが、英文として認識できませんでした（レベルは '+ckPeak+'%）。もう少しはっきり、区切らずに読み上げてもう一度お試しください。'+(okMsg?'（'+okMsg+'）':''));
+    }else if(ckPeak>=4){
+      // 声は届いている＝マイクは正常。認識だけ失敗している
+      ckSet('ckMicSt','⚠️ 声は届いています（最大レベル '+ckPeak+'%）が、英文として認識できませんでした。もう少しはっきり、区切らずに読み上げてもう一度お試しください。');
       ckSet('ckMicHeard','');
-      if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; }
+    }else{
+      // レベルも動いていない＝マイク側の問題
+      ckSet('ckMicSt','⚠️ 声がほとんど検出されませんでした（最大レベル '+ckPeak+'%）。マイクがミュートになっていないか、正しいマイクが選ばれているか（Windowsの設定 →「システム」→「サウンド」→「入力」）を確認して、もう一度お試しください。');
+      ckSet('ckMicHeard','');
     }
-    ckRecog=null; ckUpdate();
+    ckMicReset(); ckUpdate();
   };
-  r.onresult=e=>{ let fin='',itm=''; for(let k=0;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t+' '; else itm+=t; }
+  r.onresult=e=>{
+    if(done) return;   // 判定確定後に遅れて届く結果で表示を上書きしない（「認識中:」のまま残るのを防ぐ）
+    let fin='',itm='';
+    for(let k=0;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t+' '; else itm+=t; }
     heard=(fin+itm).trim();
     ckSet('ckMicHeard','認識中: '+heard);
-    if((heard.match(/\S+/g)||[]).length>=4) finish('');   // 4語拾えたら十分
+    if((heard.match(/\S+/g)||[]).length>=4) finish();   // 4語拾えたら十分
   };
-  r.onerror=e=>{ const err=(e&&e.error)||''; if(err && err!=='aborted' && err!=='no-speech'){ ckSet('ckMicHeard',''); ckSet('ckMicSt', micErrText(err));
-    if(iv) clearInterval(iv); done=true; const b=document.getElementById('ckMicBtn'); if(b){ b.disabled=false; b.textContent='🎤 もう一度チェック'; } ckRecog=null; } };
-  r.onend=()=>{ finish(''); };
-  try{ r.start(); }catch(e){ finish('start失敗'); return; }
-  const tick=()=>{ if(done) return; if(remain<=0){ finish(''); return; }
-    ckSet('ckMicSt','🔴 音声認識テスト中… 英文を読み上げてください（残り '+remain+'秒）'); remain--; };
+  r.onerror=e=>{ const err=(e&&e.error)||'';
+    if(err && err!=='aborted' && err!=='no-speech'){
+      if(done) return; done=true; stopAll();
+      ckSet('ckMicHeard',''); ckSet('ckMicSt', micErrText(err)); ckMicReset();
+    } };
+  r.onend=()=>{ finish(); };
+  try{ r.start(); }catch(e){ finish(); return; }
+  const tick=()=>{ if(done) return; if(remain<=0){ finish(); return; }
+    ckSet('ckMicSt','🔴 録音中… 下の英文を1回読み上げてください（残り '+remain+'秒）'); remain--; };
   tick(); iv=setInterval(tick,1000);
 }
 function ckProceed(){ ckCleanup(); startMini4(); }
