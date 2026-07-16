@@ -963,38 +963,81 @@ function startMini4Speaking(){
   startTimer('s',4*60,speakingNext);
 }
 /* ===== 1回再生→自動録音エンジン（カンニング防止：再生完了後にのみ録音開始・再生中は録音しない・再生し直し不可） ===== */
-let spkRecog=null, spkBusy=false, spkUtter=null;
+let spkRecog=null, spkBusy=false, spkUtter=null, spkLastErr='';
+let micStream=null, micReady=false;
 function spkStop(){ if(spkRecog){try{spkRecog.stop();}catch(e){}} spkRecog=null; }
 function spkAbort(){ if(spkRecog){try{spkRecog.abort();}catch(e){}} spkRecog=null; }
+/* マイク許可をユーザー操作の直後に取得（再生完了後のsetTimeout内では許可ダイアログが出ずnot-allowedになるため）。
+   取得したstreamは保持し続け、許可状態とマイク稼働を安定させる。 */
+function ensureMic(){
+  if(micReady && micStream && micStream.active) return Promise.resolve(true);
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    return Promise.reject(new Error('no-mediadevices'));
+  }
+  return navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{ micStream=s; micReady=true; return true; });
+}
+/* エラーコード→日本語の対処メッセージ */
+function micErrText(err){
+  switch(err){
+    case 'not-allowed': case 'NotAllowedError': case 'service-not-allowed':
+      return '⚠️ マイクがブロックされています。アドレスバー左の🔒（またはカメラ/マイク）アイコン →「マイク」を「許可」にして、ページを再読み込みしてください。';
+    case 'audio-capture': case 'NotFoundError':
+      return '⚠️ マイクが見つかりません。PCにマイクが接続されているか、Windowsの設定 →「プライバシーとセキュリティ」→「マイク」でブラウザのアクセスが有効かご確認ください。';
+    case 'NotReadableError':
+      return '⚠️ マイクを他のアプリ（Zoom/Teams等）が使用中です。そのアプリを終了してから再試行してください。';
+    case 'network':
+      return '⚠️ 音声認識サーバーに接続できません（ネットワーク）。インターネット接続をご確認ください。';
+    case 'no-mediadevices':
+      return '⚠️ この環境ではマイクを使用できません。Chrome または Edge で https のURLから開いてください。';
+    default:
+      return '⚠️ 音声を認識できませんでした（'+(err||'原因不明')+'）。「🎤 もう一度録音」を押してください（お手本は再生されません）。';
+  }
+}
 /* 認識のみ開始（お手本は再生しない）。2個目以降のSTT空振り対策の中核 */
 function beginRecognition(cfg, isRetry){
   const btn=cfg.btn;
   if(!SR_MINI){ if(cfg.statusEl) cfg.statusEl.textContent='この端末は音声認識に非対応です。Chrome または Edge で受験してください。'; spkBusy=false; if(btn){btn.disabled=false;btn.textContent='完了';} return; }
   try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}  // 音声出力を解放してからマイクを掴む
   spkAbort();  // 直前の認識が残っていると2個目以降が空振りするため確実に破棄
+  spkLastErr='';
   let remain=cfg.limitSec, ivid=null, got=false;
   const r=new SR_MINI(); r.lang='en-US'; r.interimResults=true; r.continuous=true; let fin='';
   r.onresult=e=>{ got=true; let itm=''; for(let k=e.resultIndex;k<e.results.length;k++){const t=e.results[k][0].transcript; if(e.results[k].isFinal)fin+=t+' '; else itm+=t;} cfg.onText((fin+itm).trim()); };
-  r.onerror=e=>{ const err=(e&&e.error)||''; if(err && err!=='no-speech' && err!=='aborted' && cfg.statusEl){ cfg.statusEl.textContent='認識エラー（'+err+'）。マイク許可とChrome/Edgeをご確認ください。'; } };
+  r.onerror=e=>{ const err=(e&&e.error)||''; if(err && err!=='aborted') spkLastErr=err; };  // onendで上書きされないよう保持
   r.onend=()=>{ if(ivid) clearInterval(ivid); spkRecog=null; spkBusy=false;
     if(got){ if(btn){btn.disabled=true;btn.textContent='✅ 完了';} if(cfg.statusEl) cfg.statusEl.textContent='✅ 録音完了'; }
-    else { offerRerecord(cfg); } };
+    else { offerRerecord(cfg, spkLastErr); } };
   spkRecog=r;
   try{ r.start(); }
-  catch(e){ spkAbort(); if(!isRetry){ setTimeout(()=>beginRecognition(cfg,true), 400); return; } offerRerecord(cfg); return; }
+  catch(e){ spkAbort(); if(!isRetry){ setTimeout(()=>beginRecognition(cfg,true), 400); return; } offerRerecord(cfg,'start-failed'); return; }
   const tick=()=>{ if(remain<=0){ spkStop(); return; } if(cfg.statusEl) cfg.statusEl.textContent='🔴 録音中… 残り '+remain+'秒'; remain--; };
   tick(); ivid=setInterval(tick,1000);
 }
-/* 空振り時：お手本を再生し直さず録音だけやり直す（カンニング防止を保ったまま復帰） */
-function offerRerecord(cfg){
+/* 空振り時：お手本を再生し直さず録音だけやり直す（カンニング防止を保ったまま復帰）。真因を必ず表示する。 */
+function offerRerecord(cfg, err){
   spkBusy=false;
-  if(cfg.statusEl) cfg.statusEl.textContent='⚠️ 音声を認識できませんでした。「🎤 もう一度録音」を押してください（お手本は再生されません）。';
+  if(err==='not-allowed'||err==='service-not-allowed'||err==='audio-capture') micReady=false;  // 許可取り直し
+  if(cfg.statusEl) cfg.statusEl.textContent = (err==='no-speech'||!err)
+    ? '⚠️ 音声を認識できませんでした（声が拾えませんでした）。「🎤 もう一度録音」を押して、マイクに近づいてはっきり話してください（お手本は再生されません）。'
+    : micErrText(err);
   const btn=cfg.btn;
-  if(btn){ btn.disabled=false; btn.textContent='🎤 もう一度録音'; btn.onclick=()=>{ if(spkBusy) return; spkBusy=true; btn.disabled=true; btn.textContent='🔴 準備中…'; beginRecognition(cfg,false); }; }
+  if(btn){ btn.disabled=false; btn.textContent='🎤 もう一度録音'; btn.onclick=()=>{ if(spkBusy) return; spkBusy=true; btn.disabled=true; btn.textContent='🔴 準備中…';
+    ensureMic().then(()=>beginRecognition(cfg,false)).catch(e=>{ spkBusy=false; offerRerecord(cfg,(e&&e.name)||(e&&e.message)||'not-allowed'); }); }; }
 }
 function spkRun(cfg){   // cfg:{audio,text,limitSec,btn,statusEl,onText}
   if(spkBusy) return;                       // 他項目が進行中は多重起動しない
   spkBusy=true;
+  const btn=cfg.btn; if(btn){ btn.disabled=true; btn.textContent='🎤 マイク確認中…'; }
+  if(cfg.statusEl) cfg.statusEl.textContent='🎤 マイクの許可を確認中…（ダイアログが出たら「許可」を押してください）';
+  // ★クリック直後にマイク許可を取得してから再生へ。許可が取れなければ再生せず止める（お手本を無駄に消費しない）
+  ensureMic().then(()=>spkRunAfterMic(cfg)).catch(e=>{
+    spkBusy=false;
+    const code=(e&&e.name)||(e&&e.message)||'not-allowed';
+    if(cfg.statusEl) cfg.statusEl.textContent=micErrText(code);
+    if(btn){ btn.disabled=false; btn.textContent='▶ 開始（1回再生→自動録音）'; }
+  });
+}
+function spkRunAfterMic(cfg){
   const btn=cfg.btn; if(btn){ btn.disabled=true; btn.textContent='▶ 再生中…'; }
   if(cfg.statusEl) cfg.statusEl.textContent='🔊 お手本/質問を再生中（1回のみ）…';
   const go=()=>setTimeout(()=>beginRecognition(cfg,false), 300);  // 再生直後は少し待ってから録音開始
