@@ -723,7 +723,7 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.7.0';
 const APP_DATE    = '2026-07-17';
 async function checkVersion(){
   const el=document.getElementById('verLine'); if(!el) return;
@@ -1683,11 +1683,51 @@ async function pushAllHistory(){
   st.textContent='送信完了: 成功 '+ok+'件'+(ng.length?(' ／ 失敗 '+ng.length+'件（'+ng[0]+'）'):'');
 }
 
-async function aiScore(url,task,prompt,response){
-  const r=await fetch(url,{method:'POST',body:JSON.stringify({task:task,prompt:prompt,response:response})});
-  const data=await r.json(); if(!data.ok) throw new Error(data.error||'API error');
-  const m=(data.raw||'').match(/\{[\s\S]*\}/); if(!m) throw new Error('AI応答の解析失敗');
-  return JSON.parse(m[0]);   // {score, band, summary, ...}
+/* AI採点の呼び出し。
+   ★2026-07-17 全面改修。旧実装は失敗の理由を一切残さなかった。
+   2026-07-16 の受験で Email と Discussion が採点されなかったとき、
+   「なぜ落ちたか」を示す情報がレコードにも画面にも残らず、原因特定に丸1日かかった。
+   実際の原因: GAS側 MAX_TOKENS=1600 で出力が途中で切れ、GASが ok:true で返し、
+   ここの JSON.parse が SyntaxError で落ちて band=null になっていた。
+   旧実装の問題:
+     ① r.ok（HTTPステータス）を見ない → GASがHTMLエラーページを返すと r.json() が意味不明な例外を吐く
+     ② JSON.parse が裸 → 何が返ってきたのか分からないまま落ちる
+     ③ タイムアウトなし → 応答が返らないと永久に待つ
+     ④ リトライなし → 一時的な失敗で即あきらめる
+   投げる Error の message は、そのまま syncRec.data.aiErrs に保存され後から追跡できる。 */
+async function aiScore(url,task,prompt,response,_attempt){
+  const attempt=_attempt||1, MAX_ATTEMPT=2, TIMEOUT_MS=60000;
+  const ac=('AbortController' in window)?new AbortController():null;
+  const timer=ac?setTimeout(()=>ac.abort(),TIMEOUT_MS):null;
+  let r, txt;
+  try{
+    r=await fetch(url,{method:'POST',body:JSON.stringify({task:task,prompt:prompt,response:response}),
+                       signal:ac?ac.signal:undefined});
+    txt=await r.text();                        // ← 先に生テキストで受ける。JSONでなくても中身を見られる
+  }catch(e){
+    if(timer) clearTimeout(timer);
+    const reason=(e&&e.name==='AbortError')?('タイムアウト（'+(TIMEOUT_MS/1000)+'秒）'):('通信エラー: '+(e&&e.message||e));
+    if(attempt<MAX_ATTEMPT) return aiScore(url,task,prompt,response,attempt+1);   // 1回だけ再試行
+    throw new Error(reason+'（'+attempt+'回試行）');
+  }
+  if(timer) clearTimeout(timer);
+  if(!r.ok) throw new Error('HTTP '+r.status+': '+txt.slice(0,200));   // ← ①の修正
+  let data; try{ data=JSON.parse(txt); }catch(e){
+    throw new Error('GAS応答がJSONでない（HTTP '+r.status+'・先頭200字）: '+txt.slice(0,200));
+  }
+  if(!data.ok){
+    // GASが truncated:true を返したら、それは max_tokens 切れ。再試行しても同じなので即あきらめる
+    throw new Error((data.truncated?'[出力途中切れ] ':'')+(data.error||'API error'));
+  }
+  const raw=data.raw||'';
+  const m=raw.match(/\{[\s\S]*\}/);
+  if(!m) throw new Error('AI応答にJSONが無い（rawLen='+raw.length+'・末尾120字）: '+raw.slice(-120));
+  try{
+    return JSON.parse(m[0]);   // {score, band, summary, ...}
+  }catch(e){                   // ← ②の修正。何が返ってきたのか分かる形で投げる
+    throw new Error('AI応答のJSONが壊れている: '+String(e).slice(0,100)
+      +'（rawLen='+raw.length+' stop_reason='+(data.stop_reason||'?')+' 末尾120字="'+raw.slice(-120)+'"）');
+  }
 }
 /* AI採点フィードバックの整形表示（採点根拠・強み・改善点・修正例・模範解答） */
 function aiFbBlock(title, fb){
@@ -1713,6 +1753,102 @@ function aiFbBlock(title, fb){
   if(fb.model_answer) h+=`<div><b>模範解答</b><div class="box en" style="white-space:pre-wrap;margin-top:4px">${esc(fb.model_answer)}</div></div>`;
   return h;
 }
+/* ===== 採点をやり直す（段3・2026-07-17 追加） =====
+   なぜ必要か: 2026-07-16 の受験で Email/Discussion のAI採点が落ちたとき、結愛さんには
+   「頑張ったのに採点されなかった」という結果しか残らなかった。答案は保存されていたのに、
+   その場でやり直す手段が無く、本人は書き直すしかないと受け取った。
+   答案は mini に残っている。落ちたタスクだけ、もう一度採点して結果とレコードを更新する。
+   ※ 採点し直すだけで、答案には一切触れない。 */
+async function retryAiScore(){
+  const st=document.getElementById('retryStatus');
+  const rec=mini.lastSyncRec, ctx=mini.retryCtx;
+  if(!rec||!ctx){ if(st) st.textContent='この受験の記録が見つかりません。'; return; }
+  const url=localStorage.getItem('toefl_w_exec');
+  if(!url){ if(st) st.innerHTML='<span class="ng">AI採点の /exec URL が未登録です。ホームの「その他」→ 設定から登録してください。</span>'; return; }
+  const targets=(rec.data.unscoredTasks||[]).slice();
+  if(!targets.length){ if(st) st.textContent='やり直す対象がありません。'; return; }
+  if(st) st.innerHTML='<span class="spinner"></span> 採点し直しています…（通常10〜30秒）';
+
+  const toBand=p=>(p && p.band!=null)?p.band:((p && p.score!=null)?pctToBand(p.score/5):null);
+  const runner={
+    interview: ()=> aiScore(url,'interview',(mini.iv&&mini.iv.q)||'',mini.ivTranscript||''),
+    email:     ()=> aiScore(url,'email',emailScoringText(mini.email),mini.emailText||''),
+    discussion:()=> aiScore(url,'discussion',(mini.disc&&mini.disc.prompt)||'',mini.discText||'')
+  };
+  const settled=await Promise.allSettled(targets.map(k=>Promise.resolve().then(runner[k])));
+  const stillErrs=[], stillUnscored=[], fixed=[];
+  settled.forEach((r,i)=>{
+    const k=targets[i];
+    if(r.status==='rejected'||!r.value){
+      stillErrs.push(k+': '+(r.reason&&r.reason.message||r.reason||'応答なし'));
+      stillUnscored.push(k); return;
+    }
+    const p=r.value; fixed.push(k);
+    if(k==='interview'){ mini.ivFb=p; }
+    if(k==='email'){ mini.emailFb=p; }
+    if(k==='discussion'){ mini.discFb=p; }
+  });
+
+  // band を組み直す（式は通常受験と同一。ここで採点方針を変えない）
+  const ivBand2 = mini.ivFb?toBand(mini.ivFb):(rec.data.iv&&rec.data.iv.band!=null?rec.data.iv.band:null);
+  const emBand2 = mini.emailFb?toBand(mini.emailFb):null;
+  const dsBand2 = mini.discFb?toBand(mini.discFb):null;
+  const wB=[ctx.bsBand,emBand2,dsBand2].filter(b=>b!=null);
+  const wBand2=wB.length?roundHalf(wB.reduce((a,b)=>a+b,0)/wB.length):null;
+  const sB=[ctx.lrBand,ivBand2].filter(b=>b!=null);
+  const sBand2=sB.length?roundHalf(sB.reduce((a,b)=>a+b,0)/sB.length):null;
+  const secs2=[
+    {k:'R',name:'Reading',  band:ctx.rBand, skipped:!!ctx.sk.reading},
+    {k:'L',name:'Listening',band:ctx.lBand, skipped:!!ctx.sk.listening},
+    {k:'S',name:'Speaking', band:sBand2,    skipped:!!ctx.sk.speaking},
+    {k:'W',name:'Writing',  band:wBand2,    skipped:!!(mini.skipBS&&mini.skipEmail&&mini.skipDisc)}
+  ];
+  const scored2=secs2.filter(s=>s.band!=null);
+  const partial2=(scored2.length<4)||(stillUnscored.length>0);
+  const overall2=scored2.length?roundHalf(scored2.reduce((a,s)=>a+s.band,0)/scored2.length):null;
+  const o1202=(overall2!=null)?bandTo120(overall2):null;
+
+  // 画面を更新
+  secs2.forEach(s=>{ const el=document.getElementById(s.k.toLowerCase()+'Band');
+    if(el&&s.band!=null) el.textContent=s.band.toFixed(1); });
+  const ob=document.getElementById('overallBand'); if(ob) ob.textContent=(overall2!=null)?overall2.toFixed(1):'–';
+  const o1=document.getElementById('overall120'); if(o1) o1.textContent=(o1202!=null)?o1202:'–';
+  const ol=document.getElementById('overallLabel');
+  if(ol) ol.innerHTML = partial2
+    ? '<b style="color:var(--warn)">参考値（部分受験）</b>　'+scored2.length+'/4技能の平均 <span class="est">推定</span>'
+    : '総合バンド（1.0–6.0） <span class="est">推定</span>';
+  // Speaking / Writing のフィードバック欄を採点結果で描き直す
+  if(mini.ivFb){ const c=document.getElementById('spkResult');
+    if(c&&!/AI採点/.test(c.innerHTML)) c.innerHTML+=aiFbBlock('AI採点（やり直し）',mini.ivFb); }
+  if(mini.emailFb||mini.discFb){ const c=document.getElementById('wrtResult');
+    if(c){ let add='';
+      if(mini.emailFb) add+='<h4>Write an Email</h4>'+aiFbBlock('AI採点（やり直し）',mini.emailFb);
+      if(mini.discFb)  add+='<h4>Write for an Academic Discussion</h4>'+aiFbBlock('AI採点（やり直し）',mini.discFb);
+      c.innerHTML+=add; } }
+
+  // レコードを更新して再同期（同じ id を上書き。受験のやり直しではない）
+  const fbSlim2=fb=>fb?{score:fb.score, band:fb.band, summary:fb.summary,
+      improvements:(fb.improvements_detail||[]).map(d=>({impact:d.impact, category:d.category, rubric:d.rubric, issue:d.issue, fix:d.fix})),
+      strengths:fb.strengths||[]}:null;
+  const d=rec.data;
+  d.bands={r:ctx.rBand, l:ctx.lBand, s:sBand2, w:wBand2};
+  d.overall=overall2; d.o120=o1202; d.partial=partial2; d.scoredCount=scored2.length;
+  d.unscoredTasks=stillUnscored;
+  d.aiErrs=stillErrs;
+  d.rescoredAt=new Date().toISOString();               // やり直した事実を残す（元の受験日時 date は変えない）
+  if(mini.ivFb&&d.iv) { d.iv.band=ivBand2; d.iv.fb=fbSlim2(mini.ivFb); }
+  if(mini.emailFb&&d.email){ d.email.band=(mini.emailFb.band!=null?mini.emailFb.band:null); d.email.fb=fbSlim2(mini.emailFb); }
+  if(mini.discFb&&d.disc){ d.disc.band=(mini.discFb.band!=null?mini.discFb.band:null); d.disc.fb=fbSlim2(mini.discFb); }
+  try{ const r=await syncPush(rec);
+    if(st) st.innerHTML = (fixed.length?'<span style="color:var(--good)">✅ '+fixed.length+'件を採点しました</span>':'')
+      + (stillErrs.length?' <span class="ng">／ '+stillErrs.length+'件はまだ失敗（'+esc(stillErrs[0].slice(0,80))+'）</span>':'')
+      + (r.ok?' ／ ☁ 記録を更新しました':' ／ <span class="muted">☁ 未同期（'+esc(r.reason||'')+'）</span>');
+  }catch(e){ if(st) st.innerHTML='<span class="ng">採点は完了しましたが同期に失敗しました: '+esc(String(e))+'</span>'; }
+  if(!stillUnscored.length){
+    const btn=document.querySelector('#partialWarn button'); if(btn) btn.style.display='none';
+  }
+}
+
 async function finishMini4(){
   stopAudio(); stopTimer();
   const EMPTY={c:0,n:0,byTask:{},review:[],wrong:[]};
@@ -1734,6 +1870,13 @@ async function finishMini4(){
      Writingが丸ごとnull→総合が上振れしていた（部分受験の歪みを誘発）。
      allSettled なので1本失敗しても他は生き残る。直列3回（最大90秒）→並列（最大30秒程度）にもなる。 */
   let ivBand=null, wBand=null, aiNote='';
+  /* ★2026-07-17 追加: AI採点の失敗理由と、タスク単位の未採点を必ず記録に残す。
+     2026-07-16 の受験では Email/Discussion が未採点だったのに
+     partial:false / scoredCount:4 / unscored:[] と記録され、「4技能完走・0-120換算100点」に見えていた。
+     セクション単位の partial では、Writing 3タスク中2タスクの欠落を検知できない。
+     aiErrs / unscoredTasks は syncRec に保存し、後から必ず追跡できるようにする。 */
+  const aiErrs=[];                       // 失敗理由（そのまま syncRec.data.aiErrs へ）
+  const unscoredTasks=[];                // 「やったのに採点されなかった」タスク（スキップとは別物）
   // Build a Sentence は機械採点（1点/問）。AI接続の有無に関係なく先に算出する。
   const bsBand = (mini.bsN) ? pctToBand(mini.bsC/mini.bsN) : null;
   const url=localStorage.getItem('toefl_w_exec');
@@ -1745,23 +1888,30 @@ async function finishMini4(){
       { key:'discussion', run:()=> mini.discText     ? aiScore(url,'discussion',(mini.disc&&mini.disc.prompt)||'',mini.discText) : null }
     ];
     const settled=await Promise.allSettled(jobs.map(j=>Promise.resolve().then(j.run)));
-    const errs=[];
     let emBand=null, dsBand=null;
     settled.forEach((r,i)=>{
       const k=jobs[i].key;
-      if(r.status==='rejected'){ errs.push(k+': '+(r.reason&&r.reason.message||r.reason)); return; }
-      const p=r.value; if(!p) return;
+      if(r.status==='rejected'){
+        aiErrs.push(k+': '+(r.reason&&r.reason.message||r.reason));
+        unscoredTasks.push(k);                 // 答案はあるのに採点できなかった＝穴
+        return;
+      }
+      const p=r.value; if(!p) return;          // p===null は答案が無い（無音・未記入）＝穴ではない
       if(k==='interview'){ ivBand=toBand(p); mini.ivFb=p; }
       if(k==='email'){ emBand=toBand(p); mini.emailFb=p; }
       if(k==='discussion'){ dsBand=toBand(p); mini.discFb=p; }
     });
     const wB=[bsBand,emBand,dsBand].filter(b=>b!=null);   // Writing band = BS/Email/Discussion 平均（採点できたものだけで平均）
     wBand=wB.length?roundHalf(wB.reduce((a,b)=>a+b,0)/wB.length):null;
-    if(errs.length) aiNote='AI採点エラー（'+errs.join(' ／ ')+'）。該当タスクのみ未採点です。/exec URL とキーを確認してください。';
+    if(aiErrs.length) aiNote='AI採点エラー（'+aiErrs.join(' ／ ')+'）。該当タスクのみ未採点です。/exec URL とキーを確認してください。';
   } else {
     // AI未接続でも Build a Sentence は機械採点なのでWritingスコアに反映する
     wBand = (bsBand!=null) ? bsBand : null;
     aiNote='AI採点未接続: Apps Script /exec URL（localStorage: toefl_w_exec）が未登録のため、Speaking InterviewとWriting（Email・Discussion）は未採点です。Build a Sentenceは機械採点のため反映されています。';
+    // 答案を書いたのに採点されないタスクは、AI未接続の場合も「穴」として記録する
+    if(mini.ivTranscript){ aiErrs.push('interview: AI採点未接続（toefl_w_exec 未登録）'); unscoredTasks.push('interview'); }
+    if(mini.emailText)   { aiErrs.push('email: AI採点未接続（toefl_w_exec 未登録）');     unscoredTasks.push('email'); }
+    if(mini.discText)    { aiErrs.push('discussion: AI採点未接続（toefl_w_exec 未登録）');unscoredTasks.push('discussion'); }
   }
   const sBands=[lrBand,ivBand].filter(b=>b!=null);
   const sBand=sBands.length?roundHalf(sBands.reduce((a,b)=>a+b,0)/sBands.length):null;
@@ -1781,9 +1931,16 @@ async function finishMini4(){
   const scored=secs.filter(s=>s.band!=null);
   const skipped=secs.filter(s=>s.skipped);
   const unscored=secs.filter(s=>s.band==null && !s.skipped);
-  const partial=scored.length<4;
+  /* ★2026-07-17 修正（R-2）: partial の判定にタスク単位の穴を含める。
+     旧: const partial = scored.length<4;
+     旧実装はセクション単位でしか見ていなかったため、Writing 3タスク中2タスクが未採点でも
+     「BSだけ採点できていれば W は採点済」＝ partial:false になった。
+     2026-07-16 の実受験がこれ。Email/Discussion が落ちたのに 4技能完走・0-120換算100点として記録された。
+     採点できたタスクだけの平均は、必ず「できなかったタスク」の分だけ甘くなる。それを完走と呼ばない。 */
+  const partial=(scored.length<4) || (unscoredTasks.length>0);
   const overall=scored.length?roundHalf(scored.reduce((a,s)=>a+s.band,0)/scored.length):null;
   const o120=(overall!=null)?bandTo120(overall):null;
+  const TASK_LABEL_JP={interview:'Speaking: Take an Interview', email:'Writing: Write an Email', discussion:'Writing: Academic Discussion'};
 
   document.getElementById('overallBand').textContent=(overall!=null)?overall.toFixed(1):'–';
   document.getElementById('overall120').textContent=(o120!=null)?o120:'–';
@@ -1796,6 +1953,19 @@ async function finishMini4(){
     let h='<b>⚠️ この総合スコアは参考値です（4技能が揃っていません）。</b><br>';
     if(skipped.length) h+='・スキップ（採点対象外）: <b>'+skipped.map(s=>s.name).join('・')+'</b><br>';
     if(unscored.length) h+='・未採点: <b>'+unscored.map(s=>s.name).join('・')+'</b>（無音・未記入・AI採点未接続のいずれか）<br>';
+    /* ★2026-07-17 追加（段3）: 「答案を書いたのに採点されなかった」を、はっきり分けて出す。
+       2026-07-16 の受験でここが出ず、結愛さんは「頑張ったのに採点されなかった」とだけ受け取った。
+       アプリの不具合であること・答案は残っていること・やり直せることを、その場で必ず伝える。 */
+    if(unscoredTasks.length){
+      h+='<div style="margin:10px 0;padding:10px;border:1px solid var(--ng);border-radius:8px;background:rgba(229,72,77,.10)">'
+        +'<b style="color:var(--ng)">⚠️ 採点できなかった課題があります（あなたのせいではありません）</b><br>'
+        +'<b>'+unscoredTasks.map(k=>TASK_LABEL_JP[k]||k).join('・')+'</b><br>'
+        +'<span style="font-size:13px">これは<b>アプリ側の不具合</b>です。書いた（話した）内容は<b>すべて保存されています</b>。'
+        +'下のボタンでもう一度採点できます。答案を書き直す必要はありません。</span><br>'
+        +'<button class="primary" style="margin-top:8px" onclick="retryAiScore()">🔄 採点をやり直す</button>'
+        +'<span id="retryStatus" class="muted" style="margin-left:8px;font-size:13px"></span>'
+        +'</div>';
+    }
     h+='<span style="font-size:13px">実施した'+scored.length+'技能だけの平均のため、<b>4技能すべて受験したときの総合スコアとは比較できません</b>。'
       +'技能を減らすほど平均は得意分野に寄って高く出ます。実力の推移を見るときは、同じ条件（4技能そろえて受験）どうしで比べてください。</span>';
     pw.innerHTML=h;
@@ -1896,24 +2066,52 @@ async function finishMini4(){
     date:dateIso, app:'mini4',
     data:{
       user:getUser()||'(未設定)', device:getDeviceId(),
+      /* ★2026-07-17 追加（R-4）: どの版で採った結果かを必ず残す。
+         採点式（CONV / pathBand / BAND120）は較正未了で今後変わる。版が違えば band は比較できない。
+         版が無いと「タスク別の正答率と推移」という機能が原理的に成立しない。 */
+      appVersion:APP_VERSION, appDate:APP_DATE,
       overall, o120, partial, scoredCount:scored.length,
       skipped:skipped.map(s=>s.name), unscored:unscored.map(s=>s.name),
+      /* ★2026-07-17 追加（R-2 / R-3）: タスク単位の穴と、その理由。
+         セクション単位の unscored では Writing 3タスク中2タスクの欠落が見えない（2026-07-16 の実受験がこれ）。
+         aiErrs が無かったため、Email/Discussion が落ちた原因の特定に丸1日かかった。二度と繰り返さない。 */
+      unscoredTasks,                                        // 答案はあるのに採点されなかったタスク
+      aiErrs,                                               // その理由（HTTPステータス・切れた位置・末尾など）
       bands:{r:rBand, l:lBand, s:sBand, w:wBand},
       path:{r:state.rMod.path||null, l:state.lMod.path||null},
       raw:{rC:rRes.c, rN:rRes.n, lC:lRes.c, lN:lRes.n},
       byTask,                                              // タスク別の正答率と推移に使う
       wrong:(rRes.wrong||[]).concat(lRes.wrong||[]),        // 誤答の傾向分析に使う
+      /* ★2026-07-17 追加（R-13）: 設問（prompt / bullets / id）を保存する。
+         旧実装は Email/Discussion の設問を「AIに送るのに保存しない」状態だった。
+         2026-07-17 の採点し直しで、設問が無いと Task fulfillment（指定項目を満たしたか）＝最大の配点が
+         採点できないことが判明し、writing_bank.js を本文から総当たり照合して復元する羽目になった。
+         id すら無いため、バンクを1文字でも編集すれば過去レコードは永久に復元不能になる。
+         設問は既にメモリ上にある。保存するだけ。band 値は一切変わらない。 */
       bs: mini.skipBS?{skipped:true}:(mini.bsN?{c:mini.bsC, n:mini.bsN,
           items:(mini.bsItems||[]).map((it,i)=>{ const cor=it.chunks.slice(1); const pl=(mini.bsAns[i]||[]).filter(x=>x!=null);
             return {id:it.id, diff:it.diff, ok: pl.length===cor.length && pl.every((w,k)=>w===cor[k]),
+                    context:it.context||'', chunks:it.chunks||[], extra:it.extra||'',   // ← ダミー語の有無を後から追える
                     correct:it.chunks[0]+' '+cor.join(' '), got: pl.length?(it.chunks[0]+' '+pl.join(' ')):''}; })}:null),
       lr: sk.speaking?{skipped:true}:{avg:mini.lrAvg, n:mini.lrN,
           items:(mini.lrItems||[]).map((it,i)=>({target:it.target, said:(SP[i]&&SP[i].transcript)||'', score:(SP[i]&&SP[i].score)!=null?SP[i].score:null}))},
-      iv: sk.speaking?{skipped:true}:{q:mini.iv?mini.iv.q:'', said:mini.ivTranscript||'', band:ivBand, fb:fbSlim(mini.ivFb)},
-      email: mini.skipEmail?{skipped:true}:{text:mini.emailText||'', band:(mini.emailFb?(mini.emailFb.band!=null?mini.emailFb.band:null):null), fb:fbSlim(mini.emailFb)},
-      disc: mini.skipDisc?{skipped:true}:{text:mini.discText||'', band:(mini.discFb?(mini.discFb.band!=null?mini.discFb.band:null):null), fb:fbSlim(mini.discFb)}
+      iv: sk.speaking?{skipped:true}:{id:(mini.iv&&mini.iv.id)||null, q:mini.iv?mini.iv.q:'', said:mini.ivTranscript||'', band:ivBand, fb:fbSlim(mini.ivFb)},
+      email: mini.skipEmail?{skipped:true}:{
+          id:(mini.email&&mini.email.id)||null,
+          diff:(mini.email&&mini.email.diff)||null,
+          to:(mini.email&&mini.email.to)||'', subject:(mini.email&&mini.email.subject)||'',
+          scenario:(mini.email&&mini.email.scenario)||'', bullets:(mini.email&&mini.email.bullets)||[],
+          prompt:emailScoringText(mini.email),               // AIに送ったものと同一の設問文
+          text:mini.emailText||'', band:(mini.emailFb?(mini.emailFb.band!=null?mini.emailFb.band:null):null), fb:fbSlim(mini.emailFb)},
+      disc: mini.skipDisc?{skipped:true}:{
+          id:(mini.disc&&mini.disc.id)||null,
+          diff:(mini.disc&&mini.disc.diff)||null,
+          prompt:(mini.disc&&mini.disc.prompt)||'',          // AIに送ったものと同一の設問文
+          text:mini.discText||'', band:(mini.discFb?(mini.discFb.band!=null?mini.discFb.band:null):null), fb:fbSlim(mini.discFb)}
     }
   };
+  mini.lastSyncRec=syncRec;   // 「採点をやり直す」ボタンが、この記録を書き換えて再同期するために保持
+  mini.retryCtx={rBand, lBand, bsBand, lrBand, sk, dateIso};   // 再採点後に band を組み直すのに必要な文脈
   saveRecord({date:dateIso,mode:'mini4',rBand,lBand,overall,o120,
     rPct:rRes.n?rRes.c/rRes.n:null,lPct:lRes.n?lRes.c/lRes.n:null,sBand,wBand,
     partial, scoredCount:scored.length,                       // 部分受験の記録（履歴で完走分と区別する）
