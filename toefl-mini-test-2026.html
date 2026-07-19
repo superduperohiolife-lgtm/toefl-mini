@@ -748,7 +748,7 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.9.1';
 const APP_DATE    = '2026-07-18';
 async function checkVersion(){
   const el=document.getElementById('verLine'); if(!el) return;
@@ -979,7 +979,7 @@ function renderReading(){
       html+=`<p class="muted">空欄に語の<b>足りない文字</b>を入力。<b>下線1本＝1文字</b>で、入力する文字数が分かります（本番同様）。例 <span class="en">insi__ → de</span>。</p><div class="box cloze">`;
       let bi=0;
       item.parts.forEach(p=>{ if(p.t==='text') html+=`<span>${esc(p.s)}</span>`;
-        else { const n=(p.miss||'').length||1; html+=`<span class="pre">${p.pre}</span><input id="ctw_${bi}" class="ctwin" maxlength="${n}" size="${n}" style="width:${n+1}ch" placeholder="${'_'.repeat(n)}" autocapitalize="off" autocomplete="off" spellcheck="false" title="残り${n}文字">`; bi++; } });
+        else { const n=(p.miss||'').length||1; html+=`<span class="pre">${p.pre}</span><input id="ctw_${ri}_${bi}" class="ctwin" maxlength="${n}" size="${n}" style="width:${n+1}ch" placeholder="${'_'.repeat(n)}" autocapitalize="off" autocomplete="off" spellcheck="false" title="残り${n}文字">`; bi++; } });
       item._n=bi; html+=`</div>`;
     } else {
       html+=`<div class="box passage">${esc(t.text)}</div>`;
@@ -1075,9 +1075,13 @@ function stopAudio(){
 
 /* ---- モジュール採点ヘルパー ---- */
 function captureCtw(){
-  const ctwItem=state.reading.find(x=>x.kind==='ctw');
+  /* モジュール内の全CtW項目を項目インデックス ri ごとに個別捕捉する。
+     旧実装は最初の1個(ctw_0..)しか拾わず、固定フルテスト(1モジュールに複数CtW)で
+     2個目以降のCtWが未捕捉＝採点不能だった。入力IDは ctw_<ri>_<bi>。 */
   state.ctwResp=[];
-  if(ctwItem){ for(let i=0;i<ctwItem._n;i++){const el=document.getElementById('ctw_'+i);state.ctwResp.push(el?el.value:'');} }
+  state.reading.forEach((item,ri)=>{
+    if(item.kind==='ctw'){ const arr=[]; for(let i=0;i<item._n;i++){ const el=document.getElementById('ctw_'+ri+'_'+i); arr.push(el?el.value:''); } state.ctwResp[ri]=arr; }
+  });
 }
 function mergeByTask(){ const out={}; for(const m of arguments){ if(!m)continue; for(const k in m){ out[k]=out[k]||{c:0,n:0}; out[k].c+=m[k].c; out[k].n+=m[k].n; } } return out; }
 /* 採点結果には HTML の review に加えて、機械可読な wrong[]（誤答の明細）を返す。
@@ -1088,10 +1092,11 @@ function scoreReadingItems(items){
   items.forEach((item,ri)=>{
     const t=item.t;
     if(item.kind==='ctw'){
+      const resp=state.ctwResp[ri]||[];   // この項目(ri)の回答配列。複数CtWでも取り違えない
       const blanks=item.parts.filter(p=>p.t==='blank'); let cc=0; const det=[];
-      blanks.forEach((b,i)=>{const v=norm(state.ctwResp[i]);const ok=v===norm(b.miss)||v===norm(b.full);if(ok)cc++;
-        det.push({pre:b.pre,miss:b.miss,full:b.full,got:state.ctwResp[i]||'',ok});
-        if(!ok) wrong.push({sec:'R',task:'ctw',level:t.level,itemId:t.id||t.title||'',ask:b.pre+'…',correct:b.full,got:state.ctwResp[i]||''});});
+      blanks.forEach((b,i)=>{const v=norm(resp[i]);const ok=v===norm(b.miss)||v===norm(b.full);if(ok)cc++;
+        det.push({pre:b.pre,miss:b.miss,full:b.full,got:resp[i]||'',ok});
+        if(!ok) wrong.push({sec:'R',task:'ctw',level:t.level,itemId:t.id||t.title||'',ask:b.pre+'…',correct:b.full,got:resp[i]||''});});
       c+=cc;n+=blanks.length; add('ctw',cc,blanks.length); review.push(ctwReview(t.title,det));
     } else {
       let cc=0; const det=[];
@@ -1179,7 +1184,11 @@ function startFixedRun(){
 }
 function fixedReadingModule(stage){
   const R=FF.reading;
-  const ctw = stage===1 ? R.ctw.slice(0,15) : R.ctw.slice(15,30);          // CtW30を2モジュールに分割
+  /* CtWは各空欄=1点で採点される。本番のReadingはCtW≈30語でセクションの約6割。
+     全30段落(≈180空欄)を出すとCtWが9割を占めReadingバンドが歪むため、
+     本番同数の≈30空欄になるよう5段落(モジュール1=3・モジュール2=2)に絞る。
+     残りの段落はバンクに保持（将来の追加フォームや個別練習用）。 */
+  const ctw = stage===1 ? R.ctw.slice(0,3) : R.ctw.slice(3,5);
   const texts = stage===1 ? [R.daily[0], R.academic[0]] : [R.daily[1], R.daily[2], R.academic[1]];
   const mod = ctw.map(t=>({kind:'ctw', t, parts:parseCtw(t.text)}));
   texts.filter(Boolean).forEach(t=>mod.push({kind:'text', t}));
