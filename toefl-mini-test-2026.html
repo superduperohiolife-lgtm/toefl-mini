@@ -723,8 +723,8 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.7.0';
-const APP_DATE    = '2026-07-17';
+const APP_VERSION = '1.8.0';
+const APP_DATE    = '2026-07-18';
 async function checkVersion(){
   const el=document.getElementById('verLine'); if(!el) return;
   const base='v'+APP_VERSION+'（'+APP_DATE+'）';
@@ -767,6 +767,35 @@ function _keepPick(len){ return Math.max(1, Math.min(len-2, Math.floor(len/2)));
 function _keepSample(len,n){ return Math.max(n, Math.min(len-n, Math.floor(len/2))); }
 function pickAvoid(bank,key){ if(!bank||!bank.length) return undefined; const keep=_keepPick(bank.length); const rec=_recent(key); let pool=bank.filter(x=>rec.indexOf(_idOf(x))<0); if(!pool.length) pool=bank; const c=pick(pool); _remember(key,_idOf(c),keep); return c; }
 function sampleAvoid(bank,n,key){ if(!bank) return []; if(bank.length<=n) return sample(bank,bank.length); const keep=_keepSample(bank.length,n); const rec=_recent(key); let pool=bank.filter(x=>rec.indexOf(_idOf(x))<0); if(pool.length<n) pool=bank; const c=sample(pool,n); c.forEach(x=>_remember(key,_idOf(x),keep)); return c; }
+/* ============ 完全ローテーション抽選（シャッフルバッグ） ============
+   プールを1周（＝全問）出し切るまで同じ問題を絶対に繰り返さない。使い切ったら再シャッフルして次の周へ。
+   pickAvoid（直近 N 件だけ避ける確率抽選）と違い、少数バンクでも「全部出るまで重複ゼロ」を保証する。
+   周の境界で直前と同じ問題が続かないよう、新しい周の先頭が直前IDなら後ろへ回す。
+   バンク改訂（問題の増減）にも自動追従（bag内の無効IDを除去）。端末ごとに localStorage で残りを保持。 */
+function _bagKey(key){ return 'bag_'+key; }
+function _loadBag(key){ try{ const v=JSON.parse(localStorage.getItem(_bagKey(key))||'null'); return Array.isArray(v)?v:null; }catch(e){ return null; } }
+function _saveBag(key,arr){ try{ localStorage.setItem(_bagKey(key), JSON.stringify(arr)); }catch(e){} }
+function _refillBag(ids,key){ const bag=sample(ids.slice(), ids.length); const last=_recent(key)[0];
+  if(bag.length>1 && bag[0]===last){ bag.push(bag.shift()); } return bag; }
+function pickBag(bank,key){
+  if(!bank||!bank.length) return undefined;
+  const ids=bank.map(_idOf);
+  let bag=_loadBag(key); if(bag) bag=bag.filter(id=>ids.indexOf(id)>=0);
+  if(!bag||!bag.length) bag=_refillBag(ids,key);
+  const id=bag.shift(); _saveBag(key,bag); _remember(key,id,1);   // 周境界回避用に直近1件だけ記録
+  return bank.find(x=>_idOf(x)===id) || bank[0];
+}
+function pickBagByLevel(bank,level,key){ const p=bank.filter(x=>x.level===level); const pool=p.length?p:bank; return pickBag(pool,key); }
+function sampleBag(bank,n,key){
+  if(!bank||!bank.length) return [];
+  if(bank.length<=n) return sample(bank,bank.length);
+  const ids=bank.map(_idOf);
+  let bag=_loadBag(key); if(bag) bag=bag.filter(id=>ids.indexOf(id)>=0);
+  const out=[];
+  while(out.length<n){ if(!bag||!bag.length) bag=_refillBag(ids,key); const id=bag.shift(); if(out.indexOf(id)<0) out.push(id); }
+  _saveBag(key,bag);
+  return out.map(id=>bank.find(x=>_idOf(x)===id)).filter(Boolean);
+}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function parseCtw(text){
   const parts=[];let last=0;const re=/\[([^\]|]+)\|(\d+)\]/g;let m;
@@ -791,8 +820,8 @@ function sampleByLevel(bank, level, n, key){ const p=bank.filter(x=>x.level===le
 function buildReadingModule(level){
   const ctw=pickByLevel(READING_CTW, level, 'ctw_'+level);
   return [ {kind:'ctw', t:ctw, parts:parseCtw(ctw.text)},
-           {kind:'text', t:pickByLevel(READING_DAILY, level, 'daily_'+level)},
-           {kind:'text', t:pickByLevel(READING_ACADEMIC, level, 'acad_'+level)} ];
+           {kind:'text', t:pickBagByLevel(READING_DAILY, level, 'daily_'+level)},
+           {kind:'text', t:pickBagByLevel(READING_ACADEMIC, level, 'acad_'+level)} ];
 }
 function buildListeningModule(level){
   const resp=sampleByLevel(LIS_RESPONSE, level, 3, 'resp_'+level).map(t=>({kind:'audio',t}));
@@ -804,8 +833,8 @@ function buildListeningModule(level){
 function buildReadingModuleMini(level){
   const ctw=pickByLevel(READING_CTW, level, 'ctw_'+level);
   const useDaily = (state.stage===2);   // モジュール1=Academic / モジュール2=Daily（1回の受験で両方に触れる）
-  const second = useDaily ? pickByLevel(READING_DAILY, level, 'daily_'+level)
-                          : pickByLevel(READING_ACADEMIC, level, 'acad_'+level);
+  const second = useDaily ? pickBagByLevel(READING_DAILY, level, 'daily_'+level)
+                          : pickBagByLevel(READING_ACADEMIC, level, 'acad_'+level);
   return [ {kind:'ctw', t:ctw, parts:parseCtw(ctw.text)},
            {kind:'text', t:second} ];
 }
@@ -821,13 +850,11 @@ const LIS_LONG_BANKS = ()=>[
 function pickLong(level){
   const cands=LIS_LONG_BANKS();
   if(!cands.length) return undefined;
-  const usedKey='longtask';
-  const rec=_recent(usedKey);
-  let pool=cands.filter(x=>rec.indexOf(x.task)<0);   // 直前に出た種別は避ける
-  if(!pool.length) pool=cands;
-  const chosen=pick(pool);
-  _remember(usedKey, chosen.task, Math.max(1,cands.length-1));
-  return pickByLevel(chosen.bank, level, chosen.task+'_'+level);
+  // 種別（会話/告知/講義）を完全ローテーション＝3種を1周ずつ出し切ってから次の周へ
+  const chosenTask=pickBag(cands.map(c=>({id:c.task})),'longtask').id;
+  const chosen=cands.find(c=>c.task===chosenTask)||cands[0];
+  // 種別×レベル内も一巡するまで重複なし（該当levelが無ければ種別全体にフォールバック）
+  return pickBagByLevel(chosen.bank, level, chosen.task+'_'+level);
 }
 function buildListeningModuleMini(level){
   const resp=sampleByLevel(LIS_RESPONSE, level, 2, 'resp_'+level).map(t=>({kind:'audio',t}));
@@ -1285,7 +1312,14 @@ function ckRecogTest(){
     for(let k=0;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t+' '; else itm+=t; }
     heard=(fin+itm).trim();
     ckSet('ckMicHeard','認識中: '+heard);
-    if((heard.match(/\S+/g)||[]).length>=4) finish();   // 4語拾えたら十分
+    /* 早期終了は「文を読み切った」と確認できるまで待つ。
+       旧実装は4語（"This is a micro"）で finish() し、"microphone test" を拾う前に停止していた。
+       課題文 "This is a microphone test." の要語（microphone と test）が両方認識されたら完了。
+       認識が要語を拾えなくても、最終結果5語以上か 10秒タイマーで必ず終了する（下の tick 参照）。 */
+    const norm=heard.toLowerCase().replace(/[^a-z]+/g,' ');
+    const readWhole=/\bmicrophone\b/.test(norm) && /\btests?\b/.test(norm);
+    const finalWords=(fin.match(/\S+/g)||[]).length;
+    if(readWhole || finalWords>=5) finish();
   };
   r.onerror=e=>{ const err=(e&&e.error)||'';
     if(err && err!=='aborted' && err!=='no-speech'){
@@ -1306,8 +1340,8 @@ const SR_MINI = window.SpeechRecognition || window.webkitSpeechRecognition;
 const SP={};
 function startMini4Speaking(){
   for(const k in SP) delete SP[k];
-  mini.lrItems = sampleAvoid(LR_POOL, 3, 'lr');   // 毎回ランダム＋直近重複回避
-  mini.iv = pickAvoid(IV_ITEMS_MINI, 'iv'); mini.ivTranscript='';
+  mini.lrItems = sampleBag(LR_POOL, 3, 'lr');   // 完全ローテーション（プール10を一巡するまで重複なし）
+  mini.iv = pickBag(IV_ITEMS_MINI, 'iv'); mini.ivTranscript='';   // Interview 4問を1周ずつ出し切る
   const lrCards = mini.lrItems.map((it,i)=>`
     <div class="card">
       <div><b>Listen and Repeat ${i+1}</b></div>
