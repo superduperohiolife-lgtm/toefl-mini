@@ -318,6 +318,15 @@
     <p class="muted" style="font-size:12px;margin:0 0 8px">問題 → あなたの回答 → アドバイス の順に並んでいます。</p>
     <div id="wrtResult"></div></div>
   <div class="card"><h3>Reading / Listening の解答確認</h3><div id="review"></div></div>
+  <div class="card" id="fbCard">
+    <h3>気づき・フィードバック</h3>
+    <p class="muted" style="font-size:13px">この回で気づいたことを自由に書いてください（分かりにくい問題／操作の不便／音声の不具合／難易度の違和感 など）。<b>裏の記録シートに保存</b>され、アプリ改善に使います。任意。</p>
+    <textarea id="fbText" style="width:100%;min-height:90px;background:#0b1220;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font-family:var(--jp);font-size:15px" placeholder="例: Listeningの3問目の音声が途中で切れた／Complete the Words の入力欄が分かりにくい／Reading が時間内に終わらなかった など"></textarea>
+    <div class="row" style="margin-top:8px;align-items:center;gap:8px">
+      <button class="primary" onclick="submitFeedback()">フィードバックを送信</button>
+      <span class="muted" id="fbStatus" style="font-size:13px"></span>
+    </div>
+  </div>
   <div class="row" style="justify-content:space-between">
     <button class="ghost" onclick="show('history')">履歴を見る</button>
     <button class="ghost" onclick="startPreCheck()">もう一度受験</button>
@@ -748,7 +757,7 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.9.1';
+const APP_VERSION = '1.9.2';
 const APP_DATE    = '2026-07-18';
 async function checkVersion(){
   const el=document.getElementById('verLine'); if(!el) return;
@@ -1810,6 +1819,24 @@ async function syncPush(record){
     return d && d.ok ? {ok:true} : {ok:false, reason:(d&&d.error)||'応答エラー'};
   }catch(e){ return {ok:false, reason:e.message}; }
 }
+/* 受験後の気づきを、その回の結果レコード(data.feedback)に足して裏の同期シートへ保存する。
+   同期バックエンドは id 一致で upsert するため、mini.lastSyncRec を再送すれば同じ行に追記される。 */
+async function submitFeedback(){
+  const el=document.getElementById('fbText'), st=document.getElementById('fbStatus');
+  const text=el?el.value.trim():'';
+  if(!text){ if(st) st.textContent='内容を入力してください。'; return; }
+  if(!mini||!mini.lastSyncRec){ if(st) st.textContent='この結果の記録が見つかりませんでした。'; return; }
+  const url=localStorage.getItem(LS_SYNC);
+  if(!url){ if(st) st.innerHTML='<span class="ng">同期URLが未設定のため保存できません。ホームの「受験者名と結果の同期」でURLを登録してください。</span>'; return; }
+  mini.lastSyncRec.data.feedback={ text, at:new Date().toISOString(), user:getUser()||'' };
+  if(st) st.textContent='送信中…';
+  const r=await syncPush(mini.lastSyncRec);
+  if(st) st.innerHTML = r.ok ? '<span style="color:var(--good)">☁ フィードバックを保存しました。ありがとう！</span>'
+                             : '<span class="ng">未保存（'+esc(r.reason||'')+'）— 通信環境を確認して再送してください。</span>';
+  // ローカル履歴の同レコードにも反映（同期の重複を避けて id で照合）
+  try{ const h=loadHist(); const rec=h.find(x=>x.sync&&x.sync.id===mini.lastSyncRec.id);
+    if(rec){ rec.sync.data.feedback=mini.lastSyncRec.data.feedback; localStorage.setItem(LS_KEY,JSON.stringify(h)); } }catch(e){}
+}
 async function pushAllHistory(){
   const st=document.getElementById('syncStatus');
   const url=localStorage.getItem(LS_SYNC);
@@ -2004,6 +2031,7 @@ async function finishMini4(){
   const rBand=rRes.n?(state.fixed?pctToBand(rRes.c/rRes.n):pathBand(rRes.c/rRes.n,state.rMod.path)):null;   // fixedは非適応＝素の換算／mini4は経路別換算
   const lBand=lRes.n?(state.fixed?pctToBand(lRes.c/lRes.n):pathBand(lRes.c/lRes.n,state.lMod.path)):null;
   const lrBand=mini.lrN?pctToBand((mini.lrAvg||0)/5):null;
+  { const fb=document.getElementById('fbText'); if(fb) fb.value=''; const fs=document.getElementById('fbStatus'); if(fs) fs.textContent=''; }   // 新しい結果ごとにフィードバック欄を初期化
   show('result'); window.scrollTo(0,0);
   document.getElementById('overallBand').innerHTML='<span class="spinner" style="width:38px;height:38px;border-width:4px"></span>';
   document.getElementById('rawLine').innerHTML='<div class="scoring"><span class="spinner"></span><b>AI採点中</b><span class="muted">Speaking InterviewとWriting（Email・Discussion）を採点しています…（通常10〜30秒）</span></div>';
