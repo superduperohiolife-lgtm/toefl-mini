@@ -757,8 +757,10 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.9.3';
+const APP_VERSION = '1.9.4';
 const APP_DATE    = '2026-07-19';
+/* v1.9.4: 本番形式テストの結果表示を改善。Email/Discussion/Interview は仕様上あとでCoworkで採点するため、
+   「未採点(エラー)」ではなく「保存済み・Cowork採点」と分かる表示に統一（赤字→中間色、要約行と部分受験警告の文言も是正）。 */
 async function checkVersion(){
   const el=document.getElementById('verLine'); if(!el) return;
   const base='v'+APP_VERSION+'（'+APP_DATE+'）';
@@ -2127,7 +2129,7 @@ async function finishMini4(){
     pw.classList.remove('hide');
     let h='<b>⚠️ この総合スコアは参考値です（4技能が揃っていません）。</b><br>';
     if(skipped.length) h+='・スキップ（採点対象外）: <b>'+skipped.map(s=>s.name).join('・')+'</b><br>';
-    if(unscored.length) h+='・未採点: <b>'+unscored.map(s=>s.name).join('・')+'</b>（無音・未記入・AI採点未接続のいずれか）<br>';
+    if(unscored.length) h+='・'+(state.fixed?'採点保留':'未採点')+': <b>'+unscored.map(s=>s.name).join('・')+'</b>（'+(state.fixed?'本番形式：Writing/Speakingの記述・面接は保存済み。あとでCoworkで採点します':'無音・未記入・AI採点未接続のいずれか')+'）<br>';
     /* ★2026-07-17 追加（段3）: 「答案を書いたのに採点されなかった」を、はっきり分けて出す。
        2026-07-16 の受験でここが出ず、結愛さんは「頑張ったのに採点されなかった」とだけ受け取った。
        アプリの不具合であること・答案は残っていること・やり直せることを、その場で必ず伝える。 */
@@ -2153,12 +2155,12 @@ async function finishMini4(){
   document.getElementById('rawLine').innerHTML=
     `R ${sk.reading?'—':rRes.c+'/'+rRes.n}${skipTag(sk.reading)}　L ${sk.listening?'—':lRes.c+'/'+lRes.n}${skipTag(sk.listening)}　`
     + `S(${sk.speaking?'—':'LR '+(mini.lrAvg!=null?mini.lrAvg.toFixed(1):'–')+'/5'+(ivBand!=null?'・Interview '+ivBand.toFixed(1):'')})${skipTag(sk.speaking)}　`
-    + `W ${wBand!=null?'band '+wBand.toFixed(1):((mini.emailText||mini.discText)?'未採点':'未記入')}`
+    + `W ${wBand!=null?'band '+wBand.toFixed(1):(state.fixed&&(mini.emailText||mini.discText)?'<span class="muted">保存済み（Cowork採点）</span>':((mini.emailText||mini.discText)?'未採点':'未記入'))}`
     + (mini.bsN?'（BS '+mini.bsC+'/'+mini.bsN+'）':'')
     + (mini.skipBS?'　<span style="color:var(--warn)">BS⏭</span>':'')
     + (mini.skipEmail?'　<span style="color:var(--warn)">Email⏭</span>':'')
     + (mini.skipDisc?'　<span style="color:var(--warn)">Discussion⏭</span>':'')
-    + (aiNote?`<br><span class="ng">${esc(aiNote)}</span>`:'');
+    + (aiNote?`<br><span class="${state.fixed?'muted':'ng'}">${esc(aiNote)}</span>`:'');
   const byTask=mergeByTask(rRes.byTask,lRes.byTask);
   document.getElementById('byTaskBox').innerHTML=
     `<table><tr><th>技能</th><th>タスク</th><th>正答</th><th>正答率</th></tr>`+
