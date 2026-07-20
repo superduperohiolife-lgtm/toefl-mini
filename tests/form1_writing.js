@@ -46,14 +46,14 @@ window.FORM1_WRITING = {
       id: "f1bs07",
       diff: "medium",
       context: "What did the professor recommend before the exam?",
-      chunks: ["The professor", "recommended", "that we", "review", "the notes", "carefully."],
+      chunks: ["The professor", "recommended", "that we", "review", "the notes carefully."],
       extra: "reviewed"
     },
     {
       id: "f1bs08",
       diff: "hard",
       context: "What is the main reason the experiment failed?",
-      chunks: ["The experiment", "failed", "mainly because", "the temperature", "was not", "controlled", "properly."],
+      chunks: ["The experiment", "failed", "mainly because", "the temperature", "was not", "controlled properly."],
       extra: "controlling"
     },
     {
