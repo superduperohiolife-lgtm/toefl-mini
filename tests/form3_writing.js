@@ -4,70 +4,70 @@ window.FORM3_WRITING = {
       id: "f3bs01",
       diff: "easy",
       context: "Where did you buy that jacket?",
-      chunks: ["I", "bought", "that", "jacket", "at", "the", "market", "yesterday."],
+      chunks: ["I", "bought", "that jacket", "at the market", "yesterday."],
       extra: "buying"
     },
     {
       id: "f3bs02",
       diff: "easy",
       context: "What does your father do on weekends?",
-      chunks: ["My", "father", "paints", "old", "furniture", "on", "weekends."],
+      chunks: ["My father", "paints", "old furniture", "on weekends."],
       extra: "painting"
     },
     {
       id: "f3bs03",
       diff: "easy",
       context: "Why is the office empty today?",
-      chunks: ["The", "office", "is", "empty", "because", "of", "a", "conference."],
+      chunks: ["The office", "is empty", "because of", "a conference."],
       extra: "emptied"
     },
     {
       id: "f3bs04",
       diff: "easy",
       context: "What is the dog doing in the yard?",
-      chunks: ["The", "dog", "is", "chasing", "a", "ball", "in", "the", "yard."],
+      chunks: ["The dog", "is chasing", "a ball", "in the yard."],
       extra: "chased"
     },
     {
       id: "f3bs05",
       diff: "medium",
       context: "What would you do if you won the prize?",
-      chunks: ["If", "I", "won", "the", "prize,", "I", "would", "donate", "part", "of", "it."],
+      chunks: ["If I", "won", "the prize,", "I would", "donate", "part of it."],
       extra: "will"
     },
     {
       id: "f3bs06",
       diff: "medium",
       context: "How long has your uncle taught mathematics?",
-      chunks: ["My", "uncle", "has", "taught", "mathematics", "for", "twenty", "years."],
+      chunks: ["My uncle", "has taught", "mathematics", "for", "twenty years."],
       extra: "teaching"
     },
     {
       id: "f3bs07",
       diff: "medium",
       context: "What did the coach insist on before the game?",
-      chunks: ["The", "coach", "insisted", "that", "we", "stretch", "before", "the", "game."],
+      chunks: ["The coach", "insisted", "that we", "stretch", "before the game."],
       extra: "insisting"
     },
     {
       id: "f3bs08",
       diff: "hard",
       context: "Why was the bridge closed to traffic?",
-      chunks: ["The", "bridge", "was", "closed", "to", "traffic", "because", "the", "supports", "had", "weakened."],
+      chunks: ["The bridge", "was closed", "to traffic", "because", "the supports", "had weakened."],
       extra: "weakening"
     },
     {
       id: "f3bs09",
       diff: "hard",
       context: "How did the students react to the sudden announcement?",
-      chunks: ["Surprised", "by", "the", "sudden", "announcement,", "the", "students", "fell", "completely", "silent."],
+      chunks: ["Surprised by", "the sudden announcement,", "the students", "fell", "completely silent."],
       extra: "surprise"
     },
     {
       id: "f3bs10",
       diff: "hard",
       context: "What should the city have done before the flood?",
-      chunks: ["The", "city", "should", "have", "cleared", "the", "drains", "before", "the", "rainy", "season."],
+      chunks: ["The city", "should have", "cleared", "the drains", "before", "the rainy season."],
       extra: "clearing"
     }
   ],
