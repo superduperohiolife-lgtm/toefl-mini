@@ -158,7 +158,7 @@
   <div class="card" style="text-align:center">
     <h2>本番形式フルテスト（4技能・本番と同じ問題数）</h2>
     <p class="muted">本番と同じ順（R→L→S→W）・本番相当の問題数と制限時間。<b>毎回同じ固定問題</b>で、3回とも<b>結愛が未着手の新規問題</b>。所要 約2時間。</p>
-    <p class="muted" style="font-size:13px">Reading 49問・Listening 46問・Speaking 11（LR7＋Interview4）・Writing 12（BS10＋Email＋Discussion）。<br><b>開始時に採点方法を選びます（必須）</b>：<b>AI判定あり</b>＝Speaking・Writingの全項目をAI(Sonnet)が採点し解説（従量課金・数十円/回・1〜2分）／<b>AI判定なし</b>＝APIを使わず、解いた順に設問・正解・答案を並べる答え合わせのみ（無料・すぐ表示）。</p>
+    <p class="muted" style="font-size:13px">Reading 49問・Listening 46問・Speaking 11（LR7＋Interview4）・Writing 12（BS10＋Email＋Discussion）。<br><b>開始時に採点方法を選びます（必須）</b>：<b>AI判定あり</b>＝Speaking・Writingの全項目をAI(Sonnet)が採点し解説（従量課金・数十円/回・1〜2分）／<b>AI判定なし</b>＝AI採点を使わず、解いた順に設問・正解・答案を並べる答え合わせのみ（無料・すぐ表示）。答案は記録に残ります。</p>
     <p style="margin:16px 0">
       <button class="primary" style="font-size:16px;padding:12px 22px;margin:4px" onclick="startFixedPre(1)">本番形式テスト 1</button>
       <button class="primary" style="font-size:16px;padding:12px 22px;margin:4px" onclick="startFixedPre(2)">本番形式テスト 2</button>
@@ -789,9 +789,11 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.10.1';
+const APP_VERSION = '1.10.2';
 const APP_DATE    = '2026-07-19';
-/* v1.10.1: 本番形式テスト開始時に「AI判定あり/なし」を必須選択（未選択で開始不可）。
+/* v1.10.2: AI判定なし（答え合わせ）でも記録を残す。答案をローカル履歴＋結果同期シートへ保存（AI採点は使わない）。
+   履歴では「答え合わせ（採点なし）」と表示し、推移グラフには含めない（点数がないため）。
+   v1.10.1: 本番形式テスト開始時に「AI判定あり/なし」を必須選択（未選択で開始不可）。
    AI判定なし＝APIを使わず、R→L→S→Wの全設問を解いた順に「設問・正解・あなたの答案」で答え合わせ（採点なし・無料）。
    客観問題は設問+正解+答案、自由記述（面接/Email/Discussion）は設問+答案のみ。
    v1.10.0: 本番形式テスト3回の Speaking・Writing 全項目（復唱7・面接4・Build a Sentence 10・Email・Discussion）を
@@ -1245,7 +1247,7 @@ function askFixedMode(n){
     +'</button>'
     +'<button class="modeBtn noai" onclick="chooseFixedMode(false)">'
     +'<span class="t">📄 AI判定なし（答え合わせのみ）</span>'
-    +'<span class="d">APIを使わず<b>採点しません</b>。解いた順に「設問・正解・あなたの答案」を並べて見直すだけ。<b>無料・すぐ表示</b></span>'
+    +'<span class="d">AI採点を使わず<b>採点しません</b>。解いた順に「設問・正解・あなたの答案」を並べて見直すだけ。<b>無料・すぐ表示</b>。答案は記録に残ります</span>'
     +'</button>'
     +'</div>'
     +'<button class="ghost" style="margin-top:12px" onclick="cancelFixedMode()">やめる（ホームへ戻る）</button>'
@@ -2303,9 +2305,56 @@ function finishFixedReview(rRes, lRes){
   resultCardsShow(false);
   const rh=document.getElementById('reviewHeader');
   if(rh) rh.innerHTML='<h2 style="margin:0 0 4px">答え合わせ（AI判定なし）</h2>'
-    +'<p class="muted" style="margin:0">この回は<b>採点しません</b>（点数・総合スコアなし・API不使用）。解いた順に「設問・正解・あなたの答案」を並べています。自由記述（面接・Email・Discussion）は正解がないため、設問とあなたの答案のみ表示します。</p>';
+    +'<p class="muted" style="margin:0">この回は<b>採点しません</b>（点数・総合スコアなし・AI不使用）。解いた順に「設問・正解・あなたの答案」を並べています。自由記述（面接・Email・Discussion）は正解がないため、設問とあなたの答案のみ表示します。</p>'
+    +'<p class="muted" id="reviewSyncStatus" style="margin:6px 0 0;font-size:13px"></p>';
   document.getElementById('review').innerHTML=h;
   show('result'); window.scrollTo(0,0);
+
+  /* ---- 記録を残す（採点はしないが、答案は保存する。AI採点APIは使わない） ----
+     保存先: ローカル履歴（reviewOnly＝答え合わせ）＋ 結果同期シート（toefl_sync_exec・AI課金とは無関係）。 */
+  const dateIso=new Date().toISOString();
+  const syncRec={
+    id:(getUser()||'unknown')+'_'+getDeviceId()+'_'+dateIso,
+    date:dateIso, app:'full'+state.fixed+'-review', form:state.fixed||null,
+    data:{
+      user:getUser()||'(未設定)', device:getDeviceId(),
+      appVersion:APP_VERSION, appDate:APP_DATE,
+      reviewOnly:true,                                   // 採点なし・答え合わせのみの回
+      overall:null, o120:null, partial:true,
+      bands:{r:null, l:null, s:null, w:null},
+      path:{r:state.rMod.path||null, l:state.lMod.path||null},
+      raw:{rC:rRes.c, rN:rRes.n, lC:lRes.c, lN:lRes.n},
+      byTask:mergeByTask(rRes.byTask, lRes.byTask),
+      wrong:(rRes.wrong||[]).concat(lRes.wrong||[]),
+      bs: mini.skipBS?{skipped:true}:{c:mini.bsC, n:mini.bsN,
+          items:(mini.bsItems||[]).map((it,i)=>{ const cor=it.chunks.slice(1); const pl=(mini.bsAns[i]||[]).filter(x=>x!=null);
+            return {id:it.id, diff:it.diff, ok: pl.length===cor.length && pl.every((w,k)=>w===cor[k]),
+                    context:it.context||'', chunks:it.chunks||[], extra:it.extra||'',
+                    correct:it.chunks[0]+' '+cor.join(' '), got: pl.length?(it.chunks[0]+' '+pl.join(' ')):''}; })},
+      lr: sk.speaking?{skipped:true}:{avg:mini.lrAvg, n:mini.lrN,
+          items:(mini.lrItems||[]).map((it,i)=>({target:it.target, said:(SP[i]&&SP[i].transcript)||'', score:(SP[i]&&SP[i].score)!=null?SP[i].score:null}))},
+      iv: sk.speaking?{skipped:true}:{mode:'review', items:(mini.ivItems||[]).map((it,i)=>({id:it.id, q:it.q, said:mini.ivTr[i]||''}))},
+      email: mini.skipEmail?{skipped:true}:{
+          id:(mini.email&&mini.email.id)||null, diff:(mini.email&&mini.email.diff)||null,
+          to:(mini.email&&mini.email.to)||'', subject:(mini.email&&mini.email.subject)||'',
+          scenario:(mini.email&&mini.email.scenario)||'', bullets:(mini.email&&mini.email.bullets)||[],
+          prompt:emailScoringText(mini.email), text:mini.emailText||''},
+      disc: mini.skipDisc?{skipped:true}:{
+          id:(mini.disc&&mini.disc.id)||null, diff:(mini.disc&&mini.disc.diff)||null,
+          prompt:(mini.disc&&mini.disc.prompt)||'', text:mini.discText||''}
+    }
+  };
+  mini.lastSyncRec=syncRec;
+  saveRecord({date:dateIso, mode:'mini4', form:state.fixed||null, reviewOnly:true, partial:true,
+    rBand:null, lBand:null, overall:null, o120:null,
+    rPct:rRes.n?rRes.c/rRes.n:null, lPct:lRes.n?lRes.c/lRes.n:null,
+    user:getUser(), sync:syncRec});
+  const setSync=(txt)=>{ const el=document.getElementById('reviewSyncStatus'); if(el) el.innerHTML=txt; };
+  setSync('<span class="spinner" style="width:14px;height:14px;border-width:2px"></span> 記録を保存しています…');
+  syncPush(syncRec).then(r=>{
+    setSync(r.ok ? '<span style="color:var(--good)">☁ 記録を保存しました（'+esc(getUser()||'受験者名 未設定')+'）</span>'
+                 : '<span class="muted">☁ ローカルに保存済み・クラウド未同期（'+esc(r.reason||'')+'）— ホームの「受験者名と結果の同期」から後で送信できます</span>');
+  }).catch(e=>{ setSync('<span class="muted">ローカルに保存済み・クラウド同期に失敗: '+esc(String(e))+'</span>'); });
 }
 
 async function finishMini4(){
@@ -2811,7 +2860,9 @@ function renderHistory(){
       const fb=v=>(v==null?'–':v.toFixed(1));
       // 部分受験は完走記録と同列に見えないよう明示（旧記録は partial 未定義＝完走扱い）
       const part=!!r.partial;
-      const tag=part?`<span style="color:var(--warn);font-size:12px">参考値<br>${(r.scoredCount!=null?r.scoredCount:'?')}/4技能</span>`:'<span class="muted" style="font-size:12px">完走</span>';
+      const tag=r.reviewOnly
+        ? `<span style="color:var(--muted);font-size:12px">答え合わせ<br>（採点なし）</span>`
+        : (part?`<span style="color:var(--warn);font-size:12px">参考値<br>${(r.scoredCount!=null?r.scoredCount:'?')}/4技能</span>`:'<span class="muted" style="font-size:12px">完走</span>');
       const who=r.user?esc(r.user):'<span class="muted" style="font-size:12px">未設定</span>';
       return `<tr${part?' style="opacity:.72"':''}><td>${ds}</td><td>${who}</td><td><b class="en">${r.overall!=null?r.overall.toFixed(1):'–'}</b></td><td class="en">${r.o120!=null?r.o120:'–'}</td><td class="en">${fb(r.rBand)}</td><td class="en">${fb(r.lBand)}</td><td>${tag}</td></tr>`;}).join('');
   drawChart(h.filter(r=>!r.partial && r.overall!=null));   // 推移グラフは完走記録のみ（部分受験を混ぜると推移が壊れる）
