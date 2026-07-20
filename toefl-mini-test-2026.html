@@ -95,6 +95,16 @@
   #aiOverlay .count{font-family:var(--en);font-size:18px;font-weight:700}
   #aiOverlay .note{color:var(--muted);font-size:13px;margin-top:10px}
   #aiOverlay .stage{font-size:13px;color:var(--text);margin-top:6px;min-height:18px}
+  /* ===== 採点モード選択ゲート（本番形式・必須選択） ===== */
+  #fixedModeGate{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.94);display:flex;align-items:center;justify-content:center;padding:20px}
+  #fixedModeGate .panel{background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:24px 22px;max-width:520px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  #fixedModeGate .big{font-size:20px;font-weight:800;color:var(--accent);margin:0 0 2px}
+  #fixedModeGate .opts{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+  #fixedModeGate .modeBtn{display:block;width:100%;text-align:left;border-radius:12px;border:2px solid var(--line);background:var(--card2);color:var(--text);padding:14px 16px;cursor:pointer}
+  #fixedModeGate .modeBtn:hover{border-color:var(--accent)}
+  #fixedModeGate .modeBtn.ai:hover{border-color:var(--accent2)}
+  #fixedModeGate .modeBtn .t{display:block;font-size:16px;font-weight:800;margin-bottom:4px}
+  #fixedModeGate .modeBtn .d{display:block;font-size:12.5px;color:var(--muted);line-height:1.6}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .stat{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
   .stat .v{font-size:24px;font-weight:bold;font-family:var(--en)}
@@ -148,7 +158,7 @@
   <div class="card" style="text-align:center">
     <h2>本番形式フルテスト（4技能・本番と同じ問題数）</h2>
     <p class="muted">本番と同じ順（R→L→S→W）・本番相当の問題数と制限時間。<b>毎回同じ固定問題</b>で、3回とも<b>結愛が未着手の新規問題</b>。所要 約2時間。</p>
-    <p class="muted" style="font-size:13px">Reading 49問・Listening 46問・Speaking 11（LR7＋Interview4）・Writing 12（BS10＋Email＋Discussion）。<br>R/L は機械採点。<b>Speaking・Writing は全項目（復唱・面接・Build a Sentence・Email・Discussion）を回答後にAI(Sonnet)が採点</b>し、タスクごとに解説を表示（従量課金・1回あたり数十円目安）。採点は項目が多いため<b>1〜2分ほど</b>かかります。</p>
+    <p class="muted" style="font-size:13px">Reading 49問・Listening 46問・Speaking 11（LR7＋Interview4）・Writing 12（BS10＋Email＋Discussion）。<br><b>開始時に採点方法を選びます（必須）</b>：<b>AI判定あり</b>＝Speaking・Writingの全項目をAI(Sonnet)が採点し解説（従量課金・数十円/回・1〜2分）／<b>AI判定なし</b>＝APIを使わず、解いた順に設問・正解・答案を並べる答え合わせのみ（無料・すぐ表示）。</p>
     <p style="margin:16px 0">
       <button class="primary" style="font-size:16px;padding:12px 22px;margin:4px" onclick="startFixedPre(1)">本番形式テスト 1</button>
       <button class="primary" style="font-size:16px;padding:12px 22px;margin:4px" onclick="startFixedPre(2)">本番形式テスト 2</button>
@@ -313,14 +323,15 @@
 
 <!-- RESULT -->
 <section id="result" class="hide">
-  <div class="card" style="text-align:center">
+  <div id="reviewHeader" class="card hide" style="text-align:center"></div>
+  <div class="card" id="scoreCard" style="text-align:center">
     <h2>推定スコア</h2>
     <div class="scorebig" id="overallBand">–</div>
     <div class="muted" id="overallLabel">総合バンド（1.0–6.0） <span class="est">推定</span></div>
     <div style="margin-top:6px">0–120換算（推定）: <b class="en" id="overall120">–</b> <span class="est">推定・要調整</span></div>
     <div id="partialWarn" class="hide" style="margin-top:12px;padding:10px;border:1px solid var(--warn);border-radius:8px;background:rgba(245,158,11,.08);text-align:left"></div>
   </div>
-  <div class="card">
+  <div class="card" id="secCard">
     <h3>セクション別</h3>
     <div class="grid2">
       <div class="stat"><div class="v en" id="rBand">–</div><div class="l">Reading band</div></div>
@@ -330,15 +341,15 @@
     </div>
     <p class="muted" id="rawLine" style="margin-top:10px"></p>
   </div>
-  <div class="card"><h3>タスク別 正答</h3><div id="byTaskBox"></div></div>
-  <div class="card"><h3>Reading / Listening のアドバイス</h3><div id="advice"></div></div>
+  <div class="card" id="byTaskCard"><h3>タスク別 正答</h3><div id="byTaskBox"></div></div>
+  <div class="card" id="adviceCard"><h3>Reading / Listening のアドバイス</h3><div id="advice"></div></div>
   <div class="card" id="spkCard"><h3>Speaking の結果</h3>
     <p class="muted" style="font-size:12px;margin:0 0 8px">問題 → あなたの回答 → アドバイス の順に並んでいます。</p>
     <div id="spkResult"></div></div>
   <div class="card" id="wrtCard"><h3>Writing の結果</h3>
     <p class="muted" style="font-size:12px;margin:0 0 8px">問題 → あなたの回答 → アドバイス の順に並んでいます。</p>
     <div id="wrtResult"></div></div>
-  <div class="card"><h3>Reading / Listening の解答確認</h3><div id="review"></div></div>
+  <div class="card" id="reviewCard"><h3 id="reviewTitle">Reading / Listening の解答確認</h3><div id="review"></div></div>
   <div class="card" id="fbCard">
     <h3>気づき・フィードバック</h3>
     <p class="muted" style="font-size:13px">この回で気づいたことを自由に書いてください（分かりにくい問題／操作の不便／音声の不具合／難易度の違和感 など）。<b>裏の記録シートに保存</b>され、アプリ改善に使います。任意。</p>
@@ -778,9 +789,12 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.10.0';
+const APP_VERSION = '1.10.1';
 const APP_DATE    = '2026-07-19';
-/* v1.10.0: 本番形式テスト3回の Speaking・Writing 全項目（復唱7・面接4・Build a Sentence 10・Email・Discussion）を
+/* v1.10.1: 本番形式テスト開始時に「AI判定あり/なし」を必須選択（未選択で開始不可）。
+   AI判定なし＝APIを使わず、R→L→S→Wの全設問を解いた順に「設問・正解・あなたの答案」で答え合わせ（採点なし・無料）。
+   客観問題は設問+正解+答案、自由記述（面接/Email/Discussion）は設問+答案のみ。
+   v1.10.0: 本番形式テスト3回の Speaking・Writing 全項目（復唱7・面接4・Build a Sentence 10・Email・Discussion）を
    アプリ内AI(Sonnet)採点に変更。結果は好評だったSpeaking結果の書式（表＋カード・強み/改善点・模範解答）で表示。
    採点中は全画面オーバーレイで進捗（n/23）を明示。同時実行数4で並列採点。GASに repeat/bs タスク型を追加。
    v1.9.5: 本番形式テストの制限時間を公式base timeに一致させた。
@@ -1201,6 +1215,7 @@ function startMini4(){
    回答を保存し、あとでCoworkで採点する（API課金ゼロ）。既存ミニは state.fixed 未設定＝無改変。 */
 let FF=null;           // 現在の固定フォームデータ
 let PENDING_FIXED=0;   // 事前チェック通過後に開始する回番号
+let PENDING_AIGRADE=null;   // 本番形式の採点モード（true=AI判定あり / false=AI判定なし＝答え合わせのみ）。必ず選択させる
 function fixedForm(n){
   const R=window['FORM'+n+'_READING'], L=window['FORM'+n+'_LISTENING'],
         S=window['FORM'+n+'_SPEAKING'], W=window['FORM'+n+'_WRITING'];
@@ -1210,13 +1225,48 @@ function fixedForm(n){
 function startFixedPre(n){
   const f=fixedForm(n);
   if(!f){ alert('本番形式テスト'+n+' の問題データが読み込めませんでした。ページを再読み込みしてください。'); return; }
-  PENDING_FIXED=n; startPreCheck();
+  PENDING_FIXED=n; PENDING_AIGRADE=null;
+  askFixedMode(n);   // ★採点モード（AI判定あり/なし）を必ず選ばせる。選ばないと先へ進めない
+}
+/* ===== 採点モード選択ゲート（本番形式テスト開始前・必須） =====
+   AI判定あり: 全項目をアプリ内AIで採点し解説（従量課金）。
+   AI判定なし: APIを使わず、解いた順に「設問・正解・答案」を並べる答え合わせのみ（採点なし・無料）。
+   このモーダルは選択するまで閉じられない（背景クリック・ESC・×なし）。 */
+function askFixedMode(n){
+  const old=document.getElementById('fixedModeGate'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.id='fixedModeGate';
+  ov.innerHTML='<div class="panel">'
+    +'<div class="big">本番形式テスト '+n+'</div>'
+    +'<p style="margin:6px 0 2px">採点方法を選んでください。<b>選ぶまで開始できません。</b></p>'
+    +'<div class="opts">'
+    +'<button class="modeBtn ai" onclick="chooseFixedMode(true)">'
+    +'<span class="t">🧠 AI判定あり</span>'
+    +'<span class="d">Speaking・Writing の全項目（復唱・面接・Build a Sentence・Email・Discussion）をAIが採点し、タスクごとに解説を表示。<b>従量課金（数十円/回）</b>・採点に1〜2分</span>'
+    +'</button>'
+    +'<button class="modeBtn noai" onclick="chooseFixedMode(false)">'
+    +'<span class="t">📄 AI判定なし（答え合わせのみ）</span>'
+    +'<span class="d">APIを使わず<b>採点しません</b>。解いた順に「設問・正解・あなたの答案」を並べて見直すだけ。<b>無料・すぐ表示</b></span>'
+    +'</button>'
+    +'</div>'
+    +'<button class="ghost" style="margin-top:12px" onclick="cancelFixedMode()">やめる（ホームへ戻る）</button>'
+    +'</div>';
+  document.body.appendChild(ov);
+}
+function chooseFixedMode(useAI){
+  PENDING_AIGRADE=!!useAI;
+  const g=document.getElementById('fixedModeGate'); if(g) g.remove();
+  startPreCheck();   // 事前チェック（音声・マイク）→ ckProceed → startFixedRun
+}
+function cancelFixedMode(){
+  PENDING_FIXED=0; PENDING_AIGRADE=null;
+  const g=document.getElementById('fixedModeGate'); if(g) g.remove();
+  show('home');
 }
 function startFixedRun(){
   const n=PENDING_FIXED; PENDING_FIXED=0;
   FF=fixedForm(n);
   mini={ ivTranscript:'', emailText:'', skipEmail:false, skipDisc:false, ivItems:[], ivTr:[] };
-  state={ mode:'mini4', fixed:n, stage:1, section:'reading', reading:null, listening:null,
+  state={ mode:'mini4', fixed:n, aiGrade:(PENDING_AIGRADE!==false), stage:1, section:'reading', reading:null, listening:null,
           rMod:{}, lMod:{}, ans:{}, ctwResp:[], played:{},
           skip:{reading:false, listening:false, speaking:false} };
   startReadingStage1();
@@ -2174,8 +2224,93 @@ function fixedWritingCard(title, promptText, answerText, fb){
     +`</div>`;
 }
 
+/* 結果画面のカード表示を切替（scored=採点あり通常表示 / false=答え合わせ表示） */
+function resultCardsShow(scored){
+  const ids=['scoreCard','secCard','byTaskCard','adviceCard','spkCard','wrtCard','fbCard'];
+  ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('hide', !scored); });
+  const rh=document.getElementById('reviewHeader'); if(rh) rh.classList.toggle('hide', scored);
+  const rt=document.getElementById('reviewTitle'); if(rt) rt.textContent = scored ? 'Reading / Listening の解答確認' : '答え合わせ（解いた順）';
+}
+
+/* ===== 本番形式・AI判定なし: 採点もAPIも使わず、解いた順に答え合わせを並べる =====
+   客観問題（Reading/Listening/復唱/Build a Sentence）＝設問・正解・あなたの答案。
+   自由記述（面接・Email・Discussion）＝設問・あなたの答案のみ（正解/模範解答なし）。 */
+function finishFixedReview(rRes, lRes){
+  stopAudio(); stopTimer();
+  const sk=(state.skip||{});
+  const esc2=s=>esc(s==null?'':String(s));
+  const card=(title, correctHtml, yourHtml)=>
+    `<div style="margin:10px 0;padding:10px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px">`
+    +`<h4 style="margin:0 0 6px">${title}</h4>`
+    +(correctHtml!=null?`<div class="lbl">正解</div><div class="box en" style="white-space:pre-wrap">${correctHtml}</div>`:'')
+    +`<div class="lbl">あなたの答案</div><div class="box en" style="white-space:pre-wrap">${yourHtml}</div>`
+    +`</div>`;
+  const sec=t=>`<h3 style="border-bottom:2px solid var(--accent);padding-bottom:4px;margin:20px 0 6px">${t}</h3>`;
+  let h='';
+
+  // ① Reading（解いた順の解答確認ブロックを再利用：設問・正解・あなたの答案・正誤）
+  h+=sec('Reading');
+  h+=(rRes.review&&rRes.review.length)?rRes.review.join('') : '<p class="muted">（Reading の記録がありません）</p>';
+
+  // ② Listening
+  h+=sec('Listening');
+  h+=(lRes.review&&lRes.review.length)?lRes.review.join('') : '<p class="muted">（Listening の記録がありません）</p>';
+
+  // ③ Speaking：復唱（お手本＝正解＋あなたの発話）→ 面接（質問＋あなたの答案のみ）
+  h+=sec('Speaking');
+  if(sk.speaking){ h+='<p class="muted">⏭ スキップ（採点対象外）</p>'; }
+  else {
+    (mini.lrItems||[]).forEach((it,i)=>{ const said=(SP[i]&&SP[i].transcript)||'';
+      h+=card('Listen and Repeat '+(i+1), esc2(it.target), said?esc2(said):'<span class="muted">（無音）</span>'); });
+    (mini.ivItems||[]).forEach((it,i)=>{ const said=mini.ivTr[i]||'';
+      // 面接は自由発話＝正解なし。設問（質問）とあなたの答案のみ
+      h+=`<div style="margin:10px 0;padding:10px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px">`
+        +`<h4 style="margin:0 0 6px">Take an Interview ${i+1}</h4>`
+        +`<div class="lbl">設問（質問）</div><div class="box en" style="white-space:pre-wrap">${esc2(it.q)}</div>`
+        +`<div class="lbl">あなたの答案</div><div class="box en" style="white-space:pre-wrap">${said?esc2(said):'<span class="muted">（無音）</span>'}</div>`
+        +`</div>`; });
+  }
+
+  // ④ Writing：Build a Sentence（文脈・正解＋あなた）→ Email／Discussion（設問＋あなたのみ）
+  h+=sec('Writing');
+  if(mini.skipBS){ h+='<div style="margin:10px 0"><b>Build a Sentence</b> <span class="muted">⏭ スキップ</span></div>'; }
+  else (mini.bsItems||[]).forEach((it,i)=>{
+    const cor=it.chunks.slice(1); const pl=(mini.bsAns[i]||[]).filter(x=>x!=null);
+    const ok=pl.length===cor.length && pl.every((w,k)=>w===cor[k]);
+    const correct=it.chunks[0]+' '+cor.join(' ');
+    const mine=pl.length?(it.chunks[0]+' '+pl.join(' ')):'<span class="muted">（未回答）</span>';
+    h+=`<div style="margin:10px 0;padding:10px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px">`
+      +`<h4 style="margin:0 0 6px">Build a Sentence ${i+1} ${ok?'<span style="color:var(--good)">✅</span>':'<span style="color:var(--bad)">❌</span>'}</h4>`
+      +`<div class="muted" style="font-size:12px">文脈: <span class="en">${esc2(it.context||'')}</span></div>`
+      +`<div class="lbl">正解</div><div class="box en" style="white-space:pre-wrap">${esc2(correct)}</div>`
+      +`<div class="lbl">あなたの答案</div><div class="box en" style="white-space:pre-wrap">${typeof mine==='string'&&mine.indexOf('<span')===0?mine:esc2(mine)}</div>`
+      +((!ok&&it.extra)?`<div class="muted" style="font-size:12px;margin-top:4px">※「${esc2(it.extra)}」は使わないダミー語</div>`:'')
+      +`</div>`;
+  });
+  // Email（自由記述＝設問＋あなたのみ）
+  h+= mini.skipEmail ? '<div style="margin:10px 0"><b>Write an Email</b> <span class="muted">⏭ スキップ</span></div>'
+    : `<div style="margin:10px 0;padding:10px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px">`
+      +`<h4 style="margin:0 0 6px">Write an Email</h4>`
+      +`<div class="lbl">設問</div><div class="box en" style="white-space:pre-wrap">${esc2(emailDisplayText(mini.email))}</div>`
+      +`<div class="lbl">あなたの答案</div><div class="box en" style="white-space:pre-wrap">${mini.emailText?esc2(mini.emailText):'<span class="muted">（未記入）</span>'}</div></div>`;
+  // Discussion（自由記述＝設問＋あなたのみ）
+  h+= mini.skipDisc ? '<div style="margin:10px 0"><b>Academic Discussion</b> <span class="muted">⏭ スキップ</span></div>'
+    : `<div style="margin:10px 0;padding:10px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px">`
+      +`<h4 style="margin:0 0 6px">Write for an Academic Discussion</h4>`
+      +`<div class="lbl">設問</div><div class="box en" style="white-space:pre-wrap">${esc2((mini.disc&&mini.disc.prompt)||'')}</div>`
+      +`<div class="lbl">あなたの答案</div><div class="box en" style="white-space:pre-wrap">${mini.discText?esc2(mini.discText):'<span class="muted">（未記入）</span>'}</div></div>`;
+
+  resultCardsShow(false);
+  const rh=document.getElementById('reviewHeader');
+  if(rh) rh.innerHTML='<h2 style="margin:0 0 4px">答え合わせ（AI判定なし）</h2>'
+    +'<p class="muted" style="margin:0">この回は<b>採点しません</b>（点数・総合スコアなし・API不使用）。解いた順に「設問・正解・あなたの答案」を並べています。自由記述（面接・Email・Discussion）は正解がないため、設問とあなたの答案のみ表示します。</p>';
+  document.getElementById('review').innerHTML=h;
+  show('result'); window.scrollTo(0,0);
+}
+
 async function finishMini4(){
   stopAudio(); stopTimer();
+  resultCardsShow(true);   // 採点あり通常表示に戻す（前回が答え合わせ表示でも復帰）
   const EMPTY={c:0,n:0,byTask:{},review:[],wrong:[]};
   const rA=state.rMod.res1||EMPTY, rB=state.rMod.res2||EMPTY;
   const lA=state.lMod.res1||EMPTY, lB=state.lMod.res2||EMPTY;
@@ -2183,6 +2318,8 @@ async function finishMini4(){
               wrong:(rA.wrong||[]).concat(rB.wrong||[])};    // 誤答明細もモジュール1+2を合算する
   const lRes={c:lA.c+lB.c, n:lA.n+lB.n, byTask:mergeByTask(lA.byTask,lB.byTask), review:lA.review.concat(lB.review),
               wrong:(lA.wrong||[]).concat(lB.wrong||[])};
+  // ★本番形式で「AI判定なし」を選んだ場合: 採点もAPIも使わず、解いた順の答え合わせだけを表示する
+  if(state.fixed && state.aiGrade===false){ return finishFixedReview(rRes, lRes); }
   const rBand=rRes.n?(state.fixed?pctToBand(rRes.c/rRes.n):pathBand(rRes.c/rRes.n,state.rMod.path)):null;   // fixedは非適応＝素の換算／mini4は経路別換算
   const lBand=lRes.n?(state.fixed?pctToBand(lRes.c/lRes.n):pathBand(lRes.c/lRes.n,state.lMod.path)):null;
   let lrBand=mini.lrN?pctToBand((mini.lrAvg||0)/5):null;   // 本番形式ではAI採点の平均で上書きする
@@ -2567,6 +2704,7 @@ async function finishMini4(){
 function norm(s){return (s||'').trim().toLowerCase().replace(/[.,!?'"]/g,'');}
 function finishTest(){
   stopAudio(); stopTimer();
+  if(typeof resultCardsShow==='function') resultCardsShow(true);
   const hasR=state.mode!=='listening', hasL=state.mode!=='reading';
   const EMPTY={c:0,n:0,byTask:{},review:[]};
   let rC=0,rN=0,rByTask={},rReview=[],rPath=null;
