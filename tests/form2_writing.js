@@ -4,70 +4,70 @@ window.FORM2_WRITING = {
       id: "f2bs01",
       diff: "easy",
       context: "Where does your brother work?",
-      chunks: ["My", "brother", "works", "at", "a", "small", "bookstore."],
+      chunks: ["My brother", "works", "at", "a small bookstore."],
       extra: "working"
     },
     {
       id: "f2bs02",
       diff: "easy",
       context: "When did the train finally arrive?",
-      chunks: ["The", "train", "finally", "arrived", "an", "hour", "late."],
+      chunks: ["The train", "finally", "arrived", "an hour late."],
       extra: "arriving"
     },
     {
       id: "f2bs03",
       diff: "easy",
       context: "Why is the museum closed today?",
-      chunks: ["The", "museum", "is", "closed", "because", "of", "a", "holiday."],
+      chunks: ["The museum", "is closed", "because of", "a holiday."],
       extra: "closing"
     },
     {
       id: "f2bs04",
       diff: "easy",
       context: "What is your sister cooking for dinner?",
-      chunks: ["My", "sister", "is", "cooking", "soup", "for", "dinner."],
+      chunks: ["My sister", "is cooking", "soup", "for dinner."],
       extra: "cooked"
     },
     {
       id: "f2bs05",
       diff: "medium",
       context: "What would happen if it rained tomorrow?",
-      chunks: ["If", "it", "rained", "tomorrow,", "the", "match", "would", "be", "postponed."],
+      chunks: ["If it", "rained", "tomorrow,", "the match", "would be", "postponed."],
       extra: "will"
     },
     {
       id: "f2bs06",
       diff: "medium",
       context: "How long have they lived in this city?",
-      chunks: ["They", "have", "lived", "in", "this", "city", "for", "ten", "years."],
+      chunks: ["They", "have lived", "in this city", "for", "ten years."],
       extra: "living"
     },
     {
       id: "f2bs07",
       diff: "medium",
       context: "What did the manager suggest during the meeting?",
-      chunks: ["The", "manager", "suggested", "that", "we", "reduce", "our", "monthly", "expenses."],
+      chunks: ["The manager", "suggested", "that we", "reduce", "our monthly expenses."],
       extra: "reduced"
     },
     {
       id: "f2bs08",
       diff: "hard",
       context: "Why were the results considered unreliable?",
-      chunks: ["The", "results", "were", "considered", "unreliable", "because", "the", "sample", "was", "too", "small."],
+      chunks: ["The results", "were considered", "unreliable", "because", "the sample", "was", "too small."],
       extra: "considering"
     },
     {
       id: "f2bs09",
       diff: "hard",
       context: "How did the researchers respond to the criticism?",
-      chunks: ["Faced", "with", "growing", "criticism,", "the", "researchers", "repeated", "the", "entire", "experiment."],
+      chunks: ["Faced with", "growing criticism,", "the researchers", "repeated", "the entire experiment."],
       extra: "face"
     },
     {
       id: "f2bs10",
       diff: "hard",
       context: "What should the government have prioritized earlier?",
-      chunks: ["The", "government", "should", "have", "strengthened", "public", "transport", "before", "raising", "fuel", "taxes."],
+      chunks: ["The government", "should have", "strengthened", "public transport", "before", "raising fuel taxes."],
       extra: "strengthening"
     }
   ],
