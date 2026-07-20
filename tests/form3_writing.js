@@ -4,7 +4,7 @@ window.FORM3_WRITING = {
       id: "f3bs01",
       diff: "easy",
       context: "Where did you buy that jacket?",
-      chunks: ["I", "bought", "that jacket", "at the market", "yesterday."],
+      chunks: ["I", "bought", "that jacket", "at the market yesterday."],
       extra: "buying"
     },
     {
