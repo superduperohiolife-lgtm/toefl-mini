@@ -39,7 +39,7 @@ window.FORM2_WRITING = {
       id: "f2bs06",
       diff: "medium",
       context: "How long have they lived in this city?",
-      chunks: ["They", "have lived", "in this city", "for", "ten years."],
+      chunks: ["They", "have", "lived", "in this city for ten years."],
       extra: "living"
     },
     {
