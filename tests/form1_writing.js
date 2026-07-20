@@ -4,70 +4,70 @@ window.FORM1_WRITING = {
       id: "f1bs01",
       diff: "easy",
       context: "Where did you leave the keys?",
-      chunks: ["I", "left", "the", "keys", "on", "the", "kitchen", "table."],
+      chunks: ["I", "left", "the keys", "on", "the kitchen table."],
       extra: "leaving"
     },
     {
       id: "f1bs02",
       diff: "easy",
       context: "What time does the library open?",
-      chunks: ["The", "library", "opens", "at", "nine", "o'clock."],
+      chunks: ["The library", "opens", "at", "nine o'clock."],
       extra: "opened"
     },
     {
       id: "f1bs03",
       diff: "easy",
       context: "Why was she late for class?",
-      chunks: ["She", "was", "late", "because", "the", "bus", "broke", "down."],
+      chunks: ["She", "was late", "because", "the bus", "broke down."],
       extra: "break"
     },
     {
       id: "f1bs04",
       diff: "easy",
       context: "What are the children doing right now?",
-      chunks: ["The", "children", "are", "playing", "in", "the", "garden."],
+      chunks: ["The children", "are playing", "in", "the garden."],
       extra: "played"
     },
     {
       id: "f1bs05",
       diff: "medium",
       context: "What would you do if you had more free time?",
-      chunks: ["If", "I", "had", "more", "free", "time,", "I", "would", "learn", "to", "paint."],
+      chunks: ["If I", "had", "more free time,", "I would", "learn", "to paint."],
       extra: "will"
     },
     {
       id: "f1bs06",
       diff: "medium",
       context: "Has the package arrived yet?",
-      chunks: ["The", "package", "has", "not", "arrived", "yet,", "so", "we", "must", "wait."],
+      chunks: ["The package", "has not", "arrived yet,", "so", "we", "must wait."],
       extra: "arriving"
     },
     {
       id: "f1bs07",
       diff: "medium",
       context: "What did the professor recommend before the exam?",
-      chunks: ["The", "professor", "recommended", "that", "we", "review", "the", "notes", "carefully."],
+      chunks: ["The professor", "recommended", "that we", "review", "the notes", "carefully."],
       extra: "reviewed"
     },
     {
       id: "f1bs08",
       diff: "hard",
       context: "What is the main reason the experiment failed?",
-      chunks: ["The", "experiment", "failed", "mainly", "because", "the", "temperature", "was", "not", "controlled", "properly."],
+      chunks: ["The experiment", "failed", "mainly because", "the temperature", "was not", "controlled", "properly."],
       extra: "controlling"
     },
     {
       id: "f1bs09",
       diff: "hard",
       context: "How did the committee reach its final decision?",
-      chunks: ["Having", "weighed", "the", "evidence", "carefully,", "the", "committee", "reached", "a", "unanimous", "decision."],
+      chunks: ["Having", "weighed", "the evidence", "carefully,", "the committee", "reached", "a unanimous decision."],
       extra: "weigh"
     },
     {
       id: "f1bs10",
       diff: "hard",
       context: "What should the company have done differently?",
-      chunks: ["The", "company", "should", "have", "invested", "in", "training", "before", "expanding", "abroad."],
+      chunks: ["The company", "should have", "invested", "in training", "before", "expanding abroad."],
       extra: "investing"
     }
   ],
