@@ -152,7 +152,7 @@
     <p>本番と同じ順番で受験します：<br><b>Reading → Listening → Speaking → Writing</b></p>
     <p class="muted">所要 約33分 ／ 終了後にスコア（推定）を表示</p>
     <p style="margin:20px 0"><button class="primary" style="font-size:17px;padding:14px 30px" onclick="startPreCheck()">テストを始める</button></p>
-    <p class="muted">🎤 マイクと🔊音量をオンにしてください（Speaking・Listeningで使用します）<br>開始前に<b>音声・マイクチェック</b>があります（本番同様）。</p>
+    <p class="muted">🎤 マイクと🔊音量をオンにしてください（Speaking・Listeningで使用します）<br>開始前に<b>音声・マイクチェック</b>があります（本番同様・<b>任意</b>。音を出せない場所ではスキップ可）。</p>
   </div>
 
   <div class="card" style="text-align:center">
@@ -215,8 +215,8 @@
 <section id="check" class="hide">
   <div class="card">
     <h2>音声・マイクチェック</h2>
-    <p class="muted">本番のTOEFLと同じく、テスト開始前に<b>音が聞こえるか</b>と<b>マイクが使えるか</b>を確認します。<br>
-    <b>①②の両方が ✅ になるとテストを開始できます。</b>ここで問題を見つけておけば、Speakingの途中で困ることがありません。</p>
+    <p class="muted">本番のTOEFLと同じく、テスト開始前に<b>音が聞こえるか</b>と<b>マイクが使えるか</b>を確認できます。<br>
+    <b>このチェックは任意です。</b>音を出せない場所（スタバ等）では、チェックせずそのまま「テストを開始 →」を押せます。ここで問題を見つけておけば、Speakingの途中で困ることがありません。</p>
     <div id="ckDeviceWarn" class="hide" style="margin-top:12px;padding:10px;border:1px solid var(--bad);border-radius:8px;background:rgba(239,68,68,.08)"></div>
   </div>
 
@@ -789,9 +789,11 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.10.2';
-const APP_DATE    = '2026-07-19';
-/* v1.10.2: AI判定なし（答え合わせ）でも記録を残す。答案をローカル履歴＋結果同期シートへ保存（AI採点は使わない）。
+const APP_VERSION = '1.10.3';
+const APP_DATE    = '2026-07-20';
+/* v1.10.3: 事前の音声・マイクチェックを【任意】に変更。未通過でも「テストを開始」が押せる
+   （スタバ等、音を出せない場所で受験するため）。チェック機能自体は残置。文言を任意化。
+   v1.10.2: AI判定なし（答え合わせ）でも記録を残す。答案をローカル履歴＋結果同期シートへ保存（AI採点は使わない）。
    履歴では「答え合わせ（採点なし）」と表示し、推移グラフには含めない（点数がないため）。
    v1.10.1: 本番形式テスト開始時に「AI判定あり/なし」を必須選択（未選択で開始不可）。
    AI判定なし＝APIを使わず、R→L→S→Wの全設問を解いた順に「設問・正解・あなたの答案」で答え合わせ（採点なし・無料）。
@@ -1370,11 +1372,12 @@ let ckAudioOk=false, ckMicOk=false, ckStream=null, ckCtx=null, ckRaf=null, ckRec
 function ckSet(id,txt){ const e=document.getElementById(id); if(e) e.textContent=txt; }
 function ckUpdate(){
   const ok = ckAudioOk && ckMicOk;
-  const b=document.getElementById('ckStartBtn'); if(b) b.disabled=!ok;
+  // チェックは任意：未通過でも「テストを開始」を押せる（スタバ等、音を出せない場所での受験用）
+  const b=document.getElementById('ckStartBtn'); if(b) b.disabled=false;
   const s=document.getElementById('ckSummary');
   if(s) s.innerHTML = '① 音: '+(ckAudioOk?'✅':'⬜')+'　／　② マイク: '+(ckMicOk?'✅':'⬜')
     + (ok ? '<br><b style="color:var(--good)">準備OK。テストを開始できます。</b>'
-          : '<br><span style="font-size:13px">①②の両方が ✅ になると「テストを開始」が押せます。</span>');
+          : '<br><span style="font-size:13px">このチェックは<b>任意</b>です。音を出せない場所（スタバ等）では、チェックせずそのまま「テストを開始 →」を押してかまいません（Speaking/Listeningは各画面でスキップ可）。</span>');
 }
 /* iPad/iPhone 判定。
    iOSは【すべてのブラウザが中身WebKit】で、Chrome/Edgeを入れてもSafariと同じエンジンになる。
