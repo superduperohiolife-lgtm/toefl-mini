@@ -1,0 +1,29 @@
+# Mini95 追加問題の音声（edge-tts）を GitHub 上で生成してコミットする。
+# 手動実行: Actions → "Mini95 audio (edge-tts)" → Run workflow
+name: Mini95 audio (edge-tts)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install edge-tts
+        run: pip install --upgrade edge-tts
+      - name: Generate audio
+        run: python tests/make_mini95_tts.py
+      - name: Check count
+        run: |
+          echo "Listening: $(ls Listening/audio/m95_* | wc -l)  Speaking: $(ls Speaking/audio/m95_* | wc -l)"
+      - name: Commit audio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
+          git add Listening/audio/m95_*.mp3 Speaking/audio/m95_*.mp3
+          git diff --cached --quiet || git commit -m "Mini95: add generated audio (edge-tts)"
+          git push
