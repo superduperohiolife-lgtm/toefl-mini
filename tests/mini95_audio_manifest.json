@@ -1,0 +1,1006 @@
+[
+ {
+  "audio": "Listening/audio/m95_resp_01.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "I was hoping to switch to the afternoon section of the biology lab. Is that still possible?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_02.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-RyanNeural",
+    "text": "Didn't the professor say the essay could be submitted online?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_03.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-NatashaNeural",
+    "text": "Why don't we split the presentation into three parts?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_04.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "How did your interview at the museum go?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_05.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "You've been working on that report all day. Want to take a break?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_06.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "Do you know whether the cafeteria accepts credit cards now?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_07.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-WilliamNeural",
+    "text": "I can't decide whether to take statistics this term or next."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_08.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-ClaraNeural",
+    "text": "Has anyone told you where the orientation is being held?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_09.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "The printer on this floor keeps jamming."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_10.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-RyanNeural",
+    "text": "Would it be all right if I recorded today's lecture?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_11.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-NatashaNeural",
+    "text": "I heard the concert was canceled because of the storm."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_12.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "Are you going to apply for the summer internship?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_13.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "The library extended its hours during exam week, didn't it?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_14.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "I'm not sure I understood the last part of the assignment."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_15.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-WilliamNeural",
+    "text": "Could you recommend a good place to study off campus?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_16.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-ClaraNeural",
+    "text": "I thought the deadline for the scholarship had already passed."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_17.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Wouldn't it make more sense to survey students before changing the schedule?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_18.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-RyanNeural",
+    "text": "I can't believe they're closing the campus bookstore."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_19.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-NatashaNeural",
+    "text": "If you'd told me earlier, I could have helped you move."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_20.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "So the results of the experiment didn't support your hypothesis?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_21.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "I'm surprised you chose the history seminar over the film course."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_22.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "Don't you think the committee's decision was a bit rushed?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_23.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-WilliamNeural",
+    "text": "The professor said our drafts were fine, but I'm still not confident about mine."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_24.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-ClaraNeural",
+    "text": "I wonder if the lab results will be ready before our presentation."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_25.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Hasn't the city already approved the new bike lanes?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_26.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-RyanNeural",
+    "text": "I'd rather not take the early train if there's any other option."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_27.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-NatashaNeural",
+    "text": "You seem to know a lot about renewable energy."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_28.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "I was told the course would focus on research methods, but it's mostly theory."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_29.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Is it true that the volunteer program needs more people for Saturday?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_30.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "I'm thinking of dropping chemistry, but I'm worried about my transcript."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_31.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-WilliamNeural",
+    "text": "Whose idea was it to hold the meeting on a Friday evening?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_32.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-ClaraNeural",
+    "text": "Didn't you say you'd already finished the reading for tomorrow?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_33.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "The data we collected doesn't quite match what the textbook predicts."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_34.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-RyanNeural",
+    "text": "It's a shame the guest speaker couldn't make it."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_35.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-NatashaNeural",
+    "text": "Wasn't the field trip supposed to be optional?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_36.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "I'm not convinced the new policy will reduce waste."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_37.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Why is the parking lot so empty today?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_38.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "Shouldn't we have heard back from the journal by now?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_39.mp3",
+  "segments": [
+   {
+    "voice": "en-AU-WilliamNeural",
+    "text": "I hope the professor doesn't mind that my paper is slightly over the word limit."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_resp_40.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-ClaraNeural",
+    "text": "Are you still planning to study abroad next year?"
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_cv01.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Professor Okafor, do you have a few minutes? I'm having second thoughts about my research topic."
+   },
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Of course. You were going to look at recycling habits in student housing, right?"
+   },
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Yes, but after reading more, I realized several studies have already covered it in detail. I'm worried I won't add anything new."
+   },
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "That's a reasonable concern. Have you considered narrowing the focus instead of starting over? For example, you could compare dorms that use different bin designs."
+   },
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Hmm, I hadn't thought of that. That would let me keep the survey I already wrote."
+   },
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Exactly. You'd just need to add a few questions about the bins. And it's a practical question—the housing office might even be interested in your results."
+   },
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "That makes me feel much better. I'll revise my proposal and send it to you by Friday."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_cv02.mp3",
+  "segments": [
+   {
+    "voice": "en-US-EricNeural",
+    "text": "Hi, I just got an email saying I owe a fine for a book that's three weeks overdue, but I'm sure I returned it."
+   },
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Let me look it up. Which book was it?"
+   },
+   {
+    "voice": "en-US-EricNeural",
+    "text": "It's a statistics textbook. I put it in the return box outside the building on a Sunday."
+   },
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "I see. The return box was out of service for a few days last month because the lock was broken. Some books were placed in the box by mistake and weren't checked in right away."
+   },
+   {
+    "voice": "en-US-EricNeural",
+    "text": "So the book might still be somewhere in the library?"
+   },
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Most likely. I'll ask our staff to search the back room. If we find it, the fine will be removed automatically."
+   },
+   {
+    "voice": "en-US-EricNeural",
+    "text": "Great. Should I do anything in the meantime?"
+   },
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "No, but please use the front desk for returns until the box is repaired."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_cv03.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Hi, Dr. Chen. I wanted to ask your advice about my lab partner."
+   },
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Sure. Is something wrong?"
+   },
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Well, he keeps missing our lab sessions, so I end up doing most of the experiments myself. I don't mind the work, but I'm worried our shared report will suffer."
+   },
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "I appreciate you telling me. Have you talked to him directly?"
+   },
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "I sent him a message, but he only said he's been busy with his job."
+   },
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "I see. Here's what I'll do. For the next report, each of you will write a separate analysis section. That way your grade reflects your own work."
+   },
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "That sounds fair. Should I keep doing the experiments with him?"
+   },
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Yes, but let me know if he misses another session, and I'll speak with him myself."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_cv04.mp3",
+  "segments": [
+   {
+    "voice": "en-US-EricNeural",
+    "text": "Hi. I'm planning to study in Spain next spring, and I want to make sure my courses there will count toward my degree."
+   },
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Good thinking. Many students wait until they come back, and then they discover some credits don't transfer."
+   },
+   {
+    "voice": "en-US-EricNeural",
+    "text": "That's what I'm afraid of. I found three courses I'd like to take, but I'm not sure about the economics one."
+   },
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "For major courses, you'll need approval from your department, not just from our office. Bring the course description and the syllabus to your adviser."
+   },
+   {
+    "voice": "en-US-EricNeural",
+    "text": "What if the syllabus isn't available yet?"
+   },
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Then ask the university in Spain for last year's version. Departments usually accept that as long as the content hasn't changed much."
+   },
+   {
+    "voice": "en-US-EricNeural",
+    "text": "Okay, I'll email them today."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_an01.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Attention, students. This Thursday's career fair has been moved from the gymnasium to the student center because of a scheduling conflict. Over forty companies will attend, including several engineering and technology firms that are hiring summer interns. We strongly recommend bringing printed copies of your résumé, as some employers will not accept digital versions. If you'd like feedback on your résumé before the fair, the career office is offering fifteen-minute review sessions on Tuesday and Wednesday afternoons. Sign up on the career office website."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_an02.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Good morning, residents. Starting next Monday, our dormitory will begin a new food-waste collection program. Green bins will be placed in each kitchen for fruit and vegetable scraps, coffee grounds, and eggshells. Please do not put meat, plastic, or paper towels in these bins, as they cannot be composted. The collected waste will be turned into compost for the campus garden. Our goal is to reduce the amount of trash sent to landfills by thirty percent this year. Thank you for your cooperation."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_an03.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Welcome to the first event of this year's Science and Society lecture series. Before we begin, a few announcements. Tonight's talk will be recorded and posted online within a week, so if you have friends who couldn't attend, please let them know. After the lecture, there will be a twenty-minute question-and-answer session. Because of time limits, we ask that you keep questions brief and avoid making long statements. Finally, our next speaker, a marine biologist, has had to postpone her visit, so the November event will now take place in early December. Updated details will be emailed to everyone on our mailing list."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_an04.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "May I have your attention, please. The final exam will begin in ten minutes. Please place all bags at the front of the room and make sure your phones are completely turned off, not just silenced. Any device that makes a sound during the exam will result in an automatic penalty. You may keep a clear water bottle on your desk, but no food is allowed. If you finish early, you may leave quietly during the first ninety minutes, but not during the final fifteen minutes, so that students who are still working are not disturbed. Please write your student number, not your name, on every page."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_tk01.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Today I'd like to talk about how habits form. Researchers often describe a habit as a loop with three parts: a cue, a routine, and a reward. The cue is a trigger—say, feeling tired in the afternoon. The routine is the behavior, like buying a coffee. And the reward is the feeling that follows, perhaps more energy or a short break from work. Over time, the brain begins to connect the cue directly with the reward, so the behavior becomes almost automatic. Now, here's the interesting part. Studies suggest that it's very difficult to simply erase a habit. A more effective strategy is to keep the same cue and reward but replace the routine. So instead of buying coffee, you might take a short walk. You still get a break, but the behavior is healthier. One more thing: contrary to popular belief, habits don't form in exactly twenty-one days. In one study, it took participants anywhere from about two months to more than eight months."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_tk02.mp3",
+  "segments": [
+   {
+    "voice": "en-US-EricNeural",
+    "text": "Let's look at how some islands are formed. The Hawaiian Islands, for example, sit in the middle of the Pacific Plate, far from any plate boundary. So why are there volcanoes there? Geologists explain this with the idea of a hot spot—a plume of extremely hot material rising from deep within the Earth. As the plate moves slowly over the hot spot, magma breaks through the crust and builds a volcano. Over millions of years, the plate carries that volcano away, and a new one forms over the hot spot. That's why the Hawaiian Islands form a chain, with the oldest islands in the northwest and the youngest, the Big Island, in the southeast. The older islands are also smaller and more eroded, because they're no longer receiving fresh lava. In fact, a new volcano is already forming underwater southeast of the Big Island. It won't reach the surface for tens of thousands of years, though."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_tk03.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Companies spend enormous amounts of money choosing colors for their products and logos. Why? Research suggests that people form a first impression of a product within about ninety seconds, and color plays a major role in that judgment. However, I want to be careful here, because many popular claims about color are oversimplified. You may have read that blue always signals trust or that red always increases excitement. The reality is more complicated. The effect of a color depends heavily on context and on whether it seems to fit the product. A bright pink might work well for a toy but seem strange for a bank. Culture matters too: white is associated with weddings in some countries and with mourning in others. So rather than looking for one perfect color, marketers are better off testing how well a color matches the personality of their brand and the expectations of their customers."
+   }
+  ]
+ },
+ {
+  "audio": "Listening/audio/m95_tk04.mp3",
+  "segments": [
+   {
+    "voice": "en-US-EricNeural",
+    "text": "Many structures built by the ancient Romans are still standing after two thousand years, while some modern concrete begins to crack within decades. For a long time, scientists weren't sure why. Recent studies of Roman harbor walls have provided some answers. The Romans mixed lime with volcanic ash, and when seawater soaked into the structures, it triggered chemical reactions that formed new minerals. These minerals actually filled small cracks and made the material stronger over time. Researchers also found small white chunks of lime in Roman concrete. These were once thought to be signs of poor mixing, but now it appears they may have helped the concrete repair itself when water entered a crack. Modern engineers are interested in these findings because self-repairing concrete could make buildings last longer and reduce the large carbon emissions associated with producing new cement."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr01.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "The museum will be closed on Monday for maintenance work."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr02.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Students must register for next semester's classes by Friday."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr03.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "The professor asked us to read two chapters before the seminar."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr04.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "Our team finally finished the project two days ahead of schedule."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr05.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Please leave your bags in the lockers near the main entrance."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr06.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "The bus to the airport leaves every thirty minutes from here."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr07.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "She spent the whole weekend preparing for her chemistry exam."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr08.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "The new café on campus serves breakfast until eleven o'clock."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr09.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "If you have any questions, please contact the front desk."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr10.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "The library offers free workshops on writing research papers."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr11.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "Many volunteers helped clean the beach after the summer festival."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr12.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "The lecture on climate change was moved to the larger auditorium."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr13.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Although the weather was terrible, hundreds of fans waited outside the stadium for hours."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr14.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "The research team discovered that the ancient city was much larger than historians had believed."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr15.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "Students who want to study abroad should meet with their academic advisers early in the year."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr16.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "The company decided to delay the launch of its new product because of supply problems."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr17.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Before you submit your application, make sure that all of the required documents are attached."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr18.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "The professor explained that the experiment had failed because the samples were not stored properly."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr19.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "Because the train was delayed by heavy snow, many passengers missed their connecting flights."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr20.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "The city plans to plant ten thousand trees along major roads over the next five years."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr21.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Several students complained that the online system crashed just before the assignment deadline."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr22.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "The documentary shows how rising ocean temperatures are affecting coral reefs around the world."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr23.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "If the committee approves the proposal, construction of the new library will begin next spring."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr24.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "Scientists believe that the bird's bright feathers help it attract a mate during the breeding season."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr25.mp3",
+  "segments": [
+   {
+    "voice": "en-US-JennyNeural",
+    "text": "Visitors are reminded that photography is not permitted inside the gallery during special exhibitions."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr26.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "The volunteers continued working through the night until every family had a safe place to stay."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr27.mp3",
+  "segments": [
+   {
+    "voice": "en-GB-SoniaNeural",
+    "text": "Our manager suggested that we hold the meeting online so that everyone could attend."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_lr28.mp3",
+  "segments": [
+   {
+    "voice": "en-CA-LiamNeural",
+    "text": "The results of the survey surprised the researchers, who had expected very different answers."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv01.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Think about a skill you would like to learn in the next few years. What is it, and why is it important to you?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv02.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Some people say that teenagers today spend too much time on their phones. Do you agree? Why or why not?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv03.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Describe a teacher or coach who has influenced you. What did that person do that made a difference?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv04.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "If your school could add one new class, what class should it be, and how would it help students?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv05.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Many students work part-time while they are in school. What are the advantages and disadvantages of doing this?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv06.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Tell me about a time when you had to solve a difficult problem. What did you do?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv07.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Would you rather live in a big city or in a small town in the future? Explain your reasons."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv08.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Some people prefer to learn new things by reading, while others prefer watching videos. Which do you prefer, and why?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv09.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "What is one change your city or town could make to protect the environment? How would it help?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv10.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Describe an event or tradition that is important in your family. Why is it meaningful to you?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv11.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Do you think it is better to have a few close friends or many friends? Why?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv12.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Imagine you could spend one year living in another country. Which country would you choose, and what would you hope to learn?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv13.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Some schools are replacing printed textbooks with digital ones. Do you think this is a good idea? Explain."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv14.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "What qualities make someone a good leader? Give an example from your own experience."
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv15.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "Tell me about a goal you achieved that you are proud of. How did you achieve it?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv16.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Should students be required to do volunteer work before they graduate? Why or why not?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv17.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "What do you usually do to relax when you feel stressed? Why does it work for you?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv18.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "Some people think team sports teach more important lessons than individual sports. What is your opinion?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv19.mp3",
+  "segments": [
+   {
+    "voice": "en-US-AriaNeural",
+    "text": "If you could interview any person from history, who would it be, and what would you ask?"
+   }
+  ]
+ },
+ {
+  "audio": "Speaking/audio/m95_iv20.mp3",
+  "segments": [
+   {
+    "voice": "en-US-GuyNeural",
+    "text": "In your opinion, what is the biggest challenge that young people face today? Explain why."
+   }
+  ]
+ }
+]
