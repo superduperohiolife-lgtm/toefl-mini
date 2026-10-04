@@ -150,12 +150,13 @@
   <div class="card" style="text-align:center">
     <h2>通しミニテスト（4技能）</h2>
     <p>本番と同じ順番で受験します：<br><b>Reading → Listening → Speaking → Writing</b></p>
-    <p class="muted">所要 約33分 ／ 終了後にスコア（推定）を表示</p>
+    <p class="muted">所要 約42〜45分 ／ 終了後にスコア（推定）と<b>目標95までの差</b>を表示</p>
+    <p style="font-size:13px;margin:6px 0 0">🎯 <b>Mini95</b>: 目標 iBT 95（総合5.0）／ 本番 2026-10-31。<b>易しい問題は出ません</b>（中〜難のみ）。</p>
     <p style="margin:20px 0"><button class="primary" style="font-size:17px;padding:14px 30px" onclick="startPreCheck()">テストを始める</button></p>
     <p class="muted">🎤 マイクと🔊音量をオンにしてください（Speaking・Listeningで使用します）<br>開始前に<b>音声・マイクチェック</b>があります（本番同様・<b>任意</b>。音を出せない場所ではスキップ可）。</p>
   </div>
 
-  <div class="card" style="text-align:center">
+  <div class="card" id="fullTestCard" style="text-align:center">
     <h2>本番形式フルテスト（4技能・本番と同じ問題数）</h2>
     <p class="muted">本番と同じ順（R→L→S→W）・本番相当の問題数と制限時間。<b>毎回同じ固定問題</b>で、3回とも<b>結愛が未着手の新規問題</b>。所要 約2時間。</p>
     <p class="muted" style="font-size:13px">Reading 49問・Listening 46問・Speaking 11（LR7＋Interview4）・Writing 12（BS10＋Email＋Discussion）。<br><b>開始時に採点方法を選びます（必須）</b>：<b>AI判定あり</b>＝Speaking・Writingの全項目をAI(Sonnet)が採点し解説（従量課金・数十円/回・1〜2分）／<b>AI判定なし</b>＝AI採点を使わず、解いた順に設問・正解・答案を並べる答え合わせのみ（無料・すぐ表示）。答案は記録に残ります。</p>
@@ -171,7 +172,7 @@
     <summary class="muted" style="cursor:pointer">その他（じっくり版・AI採点の設定・テストの詳細）</summary>
     <div style="margin-top:14px">
       <h4>R/L じっくり版</h4>
-      <p class="muted">Reading・Listeningだけを2モジュール適応でじっくり（約19分）。</p>
+      <p class="muted">Reading・Listeningだけを2モジュール適応でじっくり（易問なし・本番ペース。約20〜25分）。</p>
       <p><button class="ghost" onclick="startTest('full')">R/L じっくり版を始める</button></p>
 
       <h4 style="margin-top:16px">AI採点の接続（Speaking Interview ／ Writing Email・Discussion）</h4>
@@ -201,7 +202,7 @@
       <p class="muted" id="syncStatus"></p>
 
       <h4 style="margin-top:16px">テストの詳細</h4>
-      <p class="muted">R/Lは本番同様の2段階適応（モジュール1の出来で難化／易化）。回答約33分（R 2.5分×2／L 2分×2／S 4分／W Build a Sentence 3分＋Email 7分＋Discussion 10分）。回答後にSpeaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点（従量課金・数円/回）、R/L/復唱／Build a Sentenceは機械採点。スコアは推定値です。</p>
+      <p class="muted"><b>v1.11.0 Mini95</b>: R 約6〜7分×2（1問36秒の本番ペース）／L 1問ずつ・設問タイマー20秒（講義30秒）／S 復唱5＋面接2（各45秒）／W Build a Sentence 10問7分＋Email・Discussionを交互。易問なし。<br>（旧）R/Lは本番同様の2段階適応（モジュール1の出来で難化／易化）。回答約33分（R 2.5分×2／L 2分×2／S 4分／W Build a Sentence 3分＋Email 7分＋Discussion 10分）。回答後にSpeaking InterviewとWriting（Email・Discussion）をAI(Sonnet)で採点（従量課金・数円/回）、R/L/復唱／Build a Sentenceは機械採点。スコアは推定値です。</p>
       <p class="muted"><b>各セクションの出題数 ／ バンク保有数</b>（すべて毎回ランダム抽選）<br>
       ・Reading: Complete the Words 2 ＋ Academic 1 ＋ Daily Life 1（モジュール1=Academic／モジュール2=Daily Life）／ バンク CtW 27・Academic 27・Daily 27（各レベル9問）<br>
       ・Listening: Choose a Response 4 ＋ 長文 2（2モジュール）／ 長文の種別（会話／告知／講義）は毎回ランダム／ バンク 応答 72・長文（会話6・告知6・講義6）<br>
@@ -280,7 +281,7 @@
       <h2 style="margin:0">Listening <span class="pill" id="lModInfo"></span></h2>
       <span>残り <span class="timer" id="lTimer">04:30</span></span>
     </div>
-    <p class="muted">各「▶ 再生」で音声が流れます（スクリプト非表示）。本番同様、再生は1回が目安。<b>モジュール2に進むと前問には戻れません</b>。</p>
+    <p class="muted">本番同様、<b>1問ずつ</b>進みます。音声は<b>1回だけ</b>流れ、<b>設問は音声のあと</b>に表示されます。設問ごとに制限時間（20秒・講義は30秒）があり、<b>前の問題には戻れません</b>。</p>
   </div>
   <div id="listeningArea"></div>
   <div class="row" style="justify-content:space-between">
@@ -296,7 +297,7 @@
       <h2 style="margin:0">Speaking <span class="pill">Listen and Repeat ＋ Interview</span></h2>
       <span>残り <span class="timer" id="sTimer">04:00</span></span>
     </div>
-    <p class="muted">各設問の「▶ 開始」でお手本／質問が<b>1回だけ</b>流れ、<b>直後に自動で録音</b>（復唱12秒／面接35秒）。再生し直し・準備時間はありません（本番同様）。採点は<b>回答後</b>（復唱は自動・語一致／InterviewはAI）。音声認識は <b>パソコンの Chrome / Edge が必要</b>（iPad・iPhoneは全ブラウザがWebKitのため2問目以降が動きません）。</p>
+    <p class="muted">各設問の「▶ 開始」でお手本／質問が<b>1回だけ</b>流れ、<b>直後に自動で録音</b>（復唱8〜12秒／面接45秒）。録音が終わると<b>自動で次の問題</b>へ進みます（録り直しは1回まで）。再生し直し・準備時間はありません（本番同様）。採点は<b>回答後</b>（復唱は自動・語一致／InterviewはAI）。音声認識は <b>パソコンの Chrome / Edge が必要</b>（iPad・iPhoneは全ブラウザがWebKitのため2問目以降が動きません）。</p>
   </div>
   <div id="speakingArea"></div>
   <div class="row" style="justify-content:space-between">
@@ -404,6 +405,7 @@
 <script src="Listening/long-form_bank.js"></script>
 <script src="Speaking/speaking_bank.js"></script>
 <script src="writing_bank.js"></script>
+<script src="mini95_bank.js"></script>
 <!-- 本番形式フルテスト（固定フォーム3回分） -->
 <script src="tests/form1_reading.js"></script>
 <script src="tests/form1_listening.js"></script>
@@ -789,8 +791,15 @@ function orderedTasks(byTask){return TASK_ORDER.filter(k=>byTask[k]).map(k=>[k,b
    そこで: 配信中の実ファイルを cache:'no-store' で取りに行き、その中の APP_VERSION と
      いま動いている APP_VERSION を突き合わせる。食い違えば「古い版」と断定できる。
    ★デプロイのたびに APP_VERSION と APP_DATE を必ず上げること（上げ忘れると「最新」と誤表示する）。 */
-const APP_VERSION = '1.10.3';
-const APP_DATE    = '2026-07-20';
+const APP_VERSION = '1.11.0';
+const APP_DATE    = '2026-10-04';
+/* v1.11.0 (2026-10-04): Mini95（目標iBT 95＝総合5.0、本番 2026-10-31）へ刷新。
+   ・本番形式フルテストを非表示（FULL_TEST_ENABLED=false。データ・コードは残置）
+   ・易問を出題しない（R/L/S/Wとも中〜難のみ）。mini95_bank.js で中〜難を大量追加（R40・L52・S48・W42）
+   ・Reading: 1問36秒の本番ペースでモジュール時間を算出 ／ Listening: 1問ずつ・音声の後に設問・戻れない・設問タイマー20秒（講義30秒）
+   ・Speaking: 復唱5（後半は長文）＋面接2（各45秒）、自動で次へ、録り直し1回まで
+   ・Writing: Build a Sentence 10問7分＋Email／Discussionを交互
+   ・採点を2026-07-22の実スコアで暫定較正（R/L経路別換算を厳格化、S+0.5、W−1.0）。結果に「目標95まで」を表示 */
 /* v1.10.3: 事前の音声・マイクチェックを【任意】に変更。未通過でも「テストを開始」が押せる
    （スタバ等、音を出せない場所で受験するため）。チェック機能自体は残置。文言を任意化。
    v1.10.2: AI判定なし（答え合わせ）でも記録を残す。答案をローカル履歴＋結果同期シートへ保存（AI採点は使わない）。
@@ -899,26 +908,33 @@ const L_MOD_SEC = 270;          // Listening 1モジュール=4.5分（公式29�
 
 function pickByLevel(bank, level, key){ const p=bank.filter(x=>x.level===level); const pool=p.length?p:bank; return key?pickAvoid(pool,key):pick(pool); }
 function sampleByLevel(bank, level, n, key){ const p=bank.filter(x=>x.level===level); const pool=p.length>=n?p:bank; return key?sampleAvoid(pool,n,key):sample(pool,n); }
+function m95Level(level){ return level==='easy'?'med':level; }   // 易経路でも易問は出さない（中を出す）
 function buildReadingModule(level){
+  level=m95Level(level);
   const ctw=pickByLevel(READING_CTW, level, 'ctw_'+level);
   return [ {kind:'ctw', t:ctw, parts:parseCtw(ctw.text)},
            {kind:'text', t:pickBagByLevel(READING_DAILY, level, 'daily_'+level)},
            {kind:'text', t:pickBagByLevel(READING_ACADEMIC, level, 'acad_'+level)} ];
 }
 function buildListeningModule(level){
+  level=m95Level(level);
   const resp=sampleByLevel(LIS_RESPONSE, level, 3, 'resp_'+level).map(t=>({kind:'audio',t}));
   return [ ...resp, {kind:'audio', t:pickLong(level)} ];   // 種別は3種からランダム（経路と切り離す）
 }
 /* 通しミニ用の短縮モジュール（2段階適応を維持しつつ各モジュールを軽量化） */
 /* Complete the Words は毎モジュール固定。もう1問は Academic / Daily Life から交互に出す。
    旧実装は Academic 固定で、Read in Daily Life（バンク27問）が通しミニで一度も出題されなかった。 */
+/* Mini95: モジュール1（ルーター）＝CtW中＋Academic難、モジュール2＝上位: CtW難＋(Daily/Academic)難 ／ 下位: CtW中＋(Daily/Academic)中。
+   モジュール2の2題目は回ごとに Daily と Academic を交互に出す。易問は出さない。 */
 function buildReadingModuleMini(level){
-  const ctw=pickByLevel(READING_CTW, level, 'ctw_'+level);
-  const useDaily = (state.stage===2);   // モジュール1=Academic / モジュール2=Daily（1回の受験で両方に触れる）
-  const second = useDaily ? pickBagByLevel(READING_DAILY, level, 'daily_'+level)
-                          : pickBagByLevel(READING_ACADEMIC, level, 'acad_'+level);
-  return [ {kind:'ctw', t:ctw, parts:parseCtw(ctw.text)},
-           {kind:'text', t:second} ];
+  const stage1=(state.stage===1);
+  const lv = stage1 ? 'med' : (level==='hard'?'hard':'med');
+  const ctw=pickBag(m95Lv(READING_CTW, lv), 'm95ctw_'+lv);
+  let second;
+  if(stage1) second=pickBag(m95Lv(READING_ACADEMIC,'hard'), 'm95acad_hard');
+  else if(m95Session()%2===0) second=pickBag(m95Lv(READING_DAILY, lv), 'm95daily_'+lv);
+  else second=pickBag(m95Lv(READING_ACADEMIC, lv), 'm95acad_'+lv);
+  return [ {kind:'ctw', t:ctw, parts:parseCtw(ctw.text)}, {kind:'text', t:second} ];
 }
 /* 長文タスクの種別を「経路」から切り離す。
    旧実装は level が種別を決めており（med→必ずConversation / easy→必ずAnnouncement / hard→必ずAcademic Talk）、
@@ -930,6 +946,7 @@ const LIS_LONG_BANKS = ()=>[
   {task:'talk',     bank:(typeof LIS_TALK!=='undefined')?LIS_TALK:[]}
 ].filter(x=>x.bank && x.bank.length);
 function pickLong(level){
+  level=m95Level(level);
   const cands=LIS_LONG_BANKS();
   if(!cands.length) return undefined;
   // 種別（会話/告知/講義）を完全ローテーション＝3種を1周ずつ出し切ってから次の周へ
@@ -938,14 +955,21 @@ function pickLong(level){
   // 種別×レベル内も一巡するまで重複なし（該当levelが無ければ種別全体にフォールバック）
   return pickBagByLevel(chosen.bank, level, chosen.task+'_'+level);
 }
+/* Mini95: 応答4＋長文1。ルーター＝応答 中2・難2＋長文 難、上位＝難4＋長文難、下位＝中4＋長文中。易問は出さない。 */
 function buildListeningModuleMini(level){
-  const resp=sampleByLevel(LIS_RESPONSE, level, 2, 'resp_'+level).map(t=>({kind:'audio',t}));
-  return [ ...resp, {kind:'audio', t:pickLong(level)} ];
+  let resp;
+  if(state.stage===1){ resp=sampleBag(m95Lv(LIS_RESPONSE,'med'),2,'m95resp_med').concat(sampleBag(m95Lv(LIS_RESPONSE,'hard'),2,'m95resp_hard')); level='hard'; }
+  else { const lv=(level==='hard')?'hard':'med'; resp=sampleBag(m95Lv(LIS_RESPONSE,lv),4,'m95resp_'+lv); level=lv; }
+  return [ ...resp.map(t=>({kind:'audio',t})), {kind:'audio', t:pickLong(level)} ];
 }
 function rdgModule(level){ if(state.fixed) return fixedReadingModule(state.stage); return state.mode==='mini4' ? buildReadingModuleMini(level) : buildReadingModule(level); }
 function lisModule(level){ if(state.fixed) return fixedListeningModule(state.stage); return state.mode==='mini4' ? buildListeningModuleMini(level) : buildListeningModule(level); }
-function rSecNow(){ if(state.fixed) return 15*60; return state.mode==='mini4' ? 150 : R_MOD_SEC; }   // fixed: 本番相当 Reading 15分/モジュール（×2=30分）
-function lSecNow(){ if(state.fixed) return 870; return state.mode==='mini4' ? 120 : L_MOD_SEC; }   // fixed: 本番一致 Listening 14.5分/モジュール（×2=29分）
+function rItemCount(mod){ return (mod||[]).reduce((n,it)=> n + (it.kind==='ctw' ? it.parts.filter(p=>p.t==='blank').length : ((it.t&&it.t.q)?it.t.q.length:0)), 0); }
+/* 本番ペース: Reading 30分/50問＝1問約36秒。モジュールの問題数から算出（30秒単位・最低3分） */
+function rSecNow(){ if(state.fixed) return 15*60; return Math.max(180, Math.round(rItemCount(state.reading)*36/30)*30); }   // fixed: 本番相当 Reading 15分/モジュール（×2=30分）
+/* Listening は設問ごとのタイマーで進むため、モジュール時間は安全上限（音声長の目安＋設問タイマー合計＋1分） */
+function lSecNow(){ if(state.fixed) return 870;
+  return (state.listening||[]).reduce((s,it)=>{ const t=it.t||{}; const w=(t.script||'').split(/\s+/).length; return s + Math.ceil(w/2.3) + 4 + (t.q||[]).length*lqSec(t); }, 60); }   // fixed: 本番一致 Listening 14.5分/モジュール（×2=29分）
 /* 経路別換算（数値は推定・要較正）。
    旧実装は easy=min(b,4.0) / hard=max(b,3.5) というクリップだったため、
    easy経路は60〜100%が全部4.0、hard経路は0〜50%が全部3.5となり、
@@ -954,9 +978,14 @@ function lSecNow(){ if(state.fixed) return 870; return state.mode==='mini4' ? 12
      easy経路 → band 1.0〜4.5 ／ hard経路 → band 3.0〜6.0 ／ 経路不明 → 素の換算
    境界の重なり（3.0〜4.5）は、易で満点＞難で全滅 を避けるために意図的に設けている。 */
 function _lerpBand(pct, lo, hi){ const b=lo+(hi-lo)*Math.max(0,Math.min(1,pct)); return Math.round(b*2)/2; }
+/* v1.11.0 暫定較正: 2026-07-22 実スコア（R3.5・L5.0）に対しアプリが R+2.0・L+1.0 過大だったため厳格化。
+   出題も易問を廃止（下位経路＝中、上位経路＝難）。値は推定・本番ごとに再較正。 */
+const M95_UPPER=[[0.95,6.0],[0.88,5.5],[0.80,5.0],[0.70,4.5],[0.60,4.0],[0.50,3.5],[0,3.0]];
+const M95_LOWER=[[0.90,4.5],[0.80,4.0],[0.65,3.5],[0.50,3.0],[0.35,2.5],[0,2.0]];
+function _tblBand(p,t){ for(const [m,b] of t){ if(p>=m) return b; } return t[t.length-1][1]; }
 function pathBand(pct, path){
-  if(path==='easy') return _lerpBand(pct, 1.0, 4.5);
-  if(path==='hard') return _lerpBand(pct, 3.0, 6.0);
+  if(path==='easy') return _tblBand(pct, M95_LOWER);
+  if(path==='hard') return _tblBand(pct, M95_UPPER);
   return pctToBand(pct);
 }
 function setModInfo(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; }
@@ -1005,7 +1034,7 @@ function startListeningStage1(){
   startTimer('l',lSecNow(),listeningNext);
 }
 function listeningNext(){
-  stopAudio(); stopTimer();
+  stopAudio(); stopTimer(); lseqStop();
   if(state.stage===1){
     state.lMod.res1=scoreListeningItems(state.listening);
     state.lMod.path = routerGoesHard(state.lMod.res1.c, state.lMod.res1.n) ? 'hard' : 'easy';
@@ -1048,7 +1077,49 @@ function renderReading(){
 }
 
 /* ---- Listening描画 ---- */
+/* ===== Listening（Mini95・じっくり版）: 本番同様 1問ずつ表示／音声の後に設問／戻れない／設問タイマー ===== */
+function lqSec(t){ return (t&&t.taskType==='talk')?30:20; }   // 本番: 設問ごと約20秒、講義は約30秒（二次情報）
+let lqTimerId=null;
+function lseqStop(){ if(lqTimerId){ clearInterval(lqTimerId); lqTimerId=null; } }
+function lseqStart(){ lseqStop(); state.lseq={li:0}; const nb=document.getElementById('listeningNextBtn'); if(nb) nb.style.display='none'; lseqItem(); }
+function lseqItem(){
+  lseqStop();
+  const li=state.lseq.li, item=state.listening[li];
+  if(!item){ const nb=document.getElementById('listeningNextBtn'); if(nb) nb.style.display=''; listeningNext(); return; }
+  const t=item.t, N=state.listening.length;
+  const label = t.taskType==='response' ? 'Choose a Response' : (TASK_JP[t.taskType]||'').split('（')[0];
+  const first=(li===0 && state.stage===1);
+  document.getElementById('listeningArea').innerHTML=
+    `<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px">
+       <span class="tasktag">${esc(label)}</span><span class="muted">${li+1} / ${N}</span></div>
+     <div class="row" style="margin-bottom:6px"><button class="play" id="lseqPlay" onclick="lseqPlay()">▶ 再生（1回のみ）</button>
+       <span class="muted" id="lseqSt">${first?'「▶ 再生」を押すと始まります。':'まもなく自動で再生します…'}</span></div>
+     <p class="muted" style="font-size:12px;margin:0">設問は<b>音声のあと</b>に表示されます（本番同様）。答えたら次へ進み、<b>前の問題には戻れません</b>。</p></div>`;
+  if(!first) setTimeout(()=>{ if(state.lseq && state.lseq.li===li && !state.played[li]) lseqPlay(); }, 900);
+}
+function lseqPlay(){
+  const li=state.lseq.li; if(state.played[li] || state.lseq.playing===li) return;
+  state.lseq.playing=li;
+  const btn=document.getElementById('lseqPlay'); const st=document.getElementById('lseqSt');
+  if(st) st.textContent='🔊 再生中…';
+  playIdx(li, btn, ()=>{ if(state.lseq && state.lseq.li===li) lseqQ(li,0); });
+}
+function lseqQ(li,qi){
+  lseqStop();
+  const t=state.listening[li].t, q=t.q[qi];
+  if(!q){ state.lseq.li=li+1; lseqItem(); return; }
+  let sec=lqSec(t);
+  document.getElementById('listeningArea').innerHTML=
+    `<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px">
+       <span class="muted">${li+1} / ${state.listening.length}　設問 ${qi+1} / ${t.q.length}</span>
+       <span>残り <b class="timer" id="lqT">${sec}</b> 秒</span></div>
+     ${qMC('l'+li,q,qi)}
+     <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="primary" onclick="lseqNext(${li},${qi})">次へ →</button></div></div>`;
+  lqTimerId=setInterval(()=>{ sec--; const el=document.getElementById('lqT'); if(el) el.textContent=sec; if(sec<=0) lseqNext(li,qi); },1000);
+}
+function lseqNext(li,qi){ if(!state.lseq || state.lseq.li!==li) return; lseqStop(); lseqQ(li,qi+1); }
 function renderListening(){
+  if(!state.fixed) return lseqStart();
   let html='';
   state.listening.forEach((item,li)=>{
     const t=item.t;
@@ -1106,11 +1177,12 @@ function speakItem(t,btn,finalize){
   };
   next();
 }
-function playIdx(li,btn){
+function playIdx(li,btn,onDone){
   const item=state.listening[li]; if(!item) return;
   if(!state.played) state.played={};
   if(state.played[li]) return;                       // 1回再生の強制（再生済みは無効）
-  const finalize=()=>{ state.played[li]=true; if(btn){ btn.disabled=true; btn.textContent='再生済み'; } };
+  let fin=false;
+  const finalize=()=>{ if(fin) return; fin=true; state.played[li]=true; if(btn){ btn.disabled=true; btn.textContent='再生済み'; } if(onDone) onDone(); };
   const src = item.t.audio ? ('Listening/'+item.t.audio) : null;
   if(src){                                           // 実音声ファイル(話者別ボイス)があれば優先
     if(btn) btn.disabled=true;
@@ -1206,7 +1278,40 @@ const IV_ITEMS_MINI = window.SPK_IV || [
 let mini={};
 function shuffleArr(a){return sample(a,a.length);}
 
+/* ===================== Mini95（目標 iBT 95＝総合5.0） ===================== */
+const FULL_TEST_ENABLED = false;   // 本番形式フルテスト（form1〜3）を表示するか。データ・コードは残置
+const M95 = { overall:5.0, o120:95, testDate:'2026-10-31',
+  targets:{ R:4.5, L:5.5, S:5.0, W:4.5 },          // 戦略資料（2026-10-04）の目標配分（平均4.875→丸め5.0）
+  actual0:{ R:3.5, L:5.0, S:4.5, W:3.0, overall:4.0, o120:80, date:'2026-07-22' } };   // ETSスコアレポート
+/* 暫定較正（2026-07-22 実スコア基準。1点の基準のため本番ごとに再較正）。
+   R/L は経路別換算（pathBand）自体を厳格化。S は音声認識の誤認識による過小分を補正、W は AI 採点の甘さを補正。 */
+const M95_CAL = { S:+0.5, W:-1.0 };
+function m95Cal(k,b){ if(b==null) return null; const v=b+(M95_CAL[k]||0); return Math.max(1,Math.min(6,Math.round(v*2)/2)); }
+function m95NoEasy(bank){ return (bank||[]).filter(x=>{ const l=x.level||x.diff; return l!=='easy'; }); }
+function m95Lv(bank,lv){ const p=(bank||[]).filter(x=>(x.level||x.diff)===lv); return p.length?p:m95NoEasy(bank); }
+function m95Session(){ let n=0; try{ n=parseInt(localStorage.getItem('m95_session')||'0',10)||0; }catch(e){} return n; }
+function m95NextSession(){ const n=m95Session()+1; try{ localStorage.setItem('m95_session',String(n)); }catch(e){} return n; }
+/* 追加バンクを既存バンクへ統合（重複idは追加しない） */
+(function initMini95Bank(){
+  const M=window.MINI95; if(!M) return;
+  const add=(arr,items)=>{ if(!arr||!items) return; const ids=new Set(arr.map(_idOf)); items.forEach(x=>{ if(!ids.has(_idOf(x))) arr.push(x); }); };
+  add(READING_CTW, M.ctw); add(READING_DAILY, M.daily); add(READING_ACADEMIC, M.academic);
+  if(typeof LIS_RESPONSE!=='undefined') add(LIS_RESPONSE, M.response);
+  if(typeof LIS_CONVO!=='undefined') add(LIS_CONVO, M.convo);
+  if(typeof LIS_ANNOUNCE!=='undefined') add(LIS_ANNOUNCE, M.announce);
+  if(typeof LIS_TALK!=='undefined') add(LIS_TALK, M.talk);
+  add(LR_POOL, M.lr); add(IV_ITEMS_MINI, M.iv);
+  if(typeof WBANK_BS!=='undefined') add(WBANK_BS, M.bs);
+  if(typeof WBANK_EMAIL!=='undefined') add(WBANK_EMAIL, M.email);
+  if(typeof WBANK_DISC!=='undefined') add(WBANK_DISC, M.disc);
+})();
+/* 復唱の語数→レベル（既存プールは level 無し） */
+function lrLevel(it){ if(it.level) return it.level; const n=(it.target||'').split(/\s+/).length; return n>=13?'hard':'med'; }
+function lrLimitSec(it){ const n=(it.target||'').split(/\s+/).length; return n<=10?8:(n<=12?10:12); }   // 本番: 短文8秒→長文12秒（二次情報）
+
+
 function startMini4(){
+  m95NextSession();
   mini={ ivTranscript:'', emailText:'', skipEmail:false, skipDisc:false };
   state={ mode:'mini4', stage:1, section:'reading', reading:null, listening:null, rMod:{}, lMod:{}, ans:{}, ctwResp:[], played:{},
           skip:{reading:false, listening:false, speaking:false} };
@@ -1337,19 +1442,19 @@ function skipSection(sec){
   if(!state || state.mode!=='mini4'){    // R/Lじっくり版ではスキップの意味が無いので何もしない
     if(!confirm(SKIP_LABEL[sec]+'をスキップしますか？')) return;
   } else if(!confirm(SKIP_LABEL[sec]+' をスキップします。\n\nこのセクションは【採点対象外】になり、総合スコアの計算から除外されます（0点にはなりません）。\n\nよろしいですか？')) return;
-  stopAudio(); stopTimer(); spkAbort();
+  stopAudio(); stopTimer(); spkAbort(); lseqStop();
   if(state.skip) state.skip[sec]=true;
   if(sec==='reading'){ state.rMod={}; startListeningStage1(); }
   else if(sec==='listening'){ state.lMod={}; if(state.mode==='mini4') startMini4Speaking(); else finishTest(); }
-  else if(sec==='speaking'){ mini.lrItems=[]; mini.lrAvg=null; mini.lrN=0; mini.iv=null; mini.ivTranscript=''; for(const k in SP) delete SP[k]; startMini4Writing(); }
+  else if(sec==='speaking'){ mini.lrItems=[]; mini.lrAvg=null; mini.lrN=0; mini.iv=null; mini.ivTranscript=''; mini.ivItems=[]; mini.ivTr=[]; for(const k in SP) delete SP[k]; startMini4Writing(); }
 }
 function skipWritingTask(){
   const st=mini.wStage;
   const name = st==='bs' ? 'Build a Sentence' : (st==='email' ? 'Write an Email' : 'Write for an Academic Discussion');
   if(!confirm(name+' をスキップします。\n\nこの課題は【採点対象外】になり、Writingスコアの計算から除外されます（0点にはなりません）。\n\nよろしいですか？')) return;
   stopTimer();
-  if(st==='bs'){ mini.skipBS=true; mini.bsC=null; mini.bsN=null; mini.bsAns={}; startMini4Email(); }
-  else if(st==='email'){ mini.skipEmail=true; mini.emailText=''; startMini4Discussion(); }
+  if(st==='bs'){ mini.skipBS=true; mini.bsC=null; mini.bsN=null; mini.bsAns={}; if(mini.m95W==='disc') startMini4Discussion(); else startMini4Email(); }
+  else if(st==='email'){ mini.skipEmail=true; mini.emailText=''; if(mini.m95W==='email') finishMini4(); else startMini4Discussion(); }
   else { mini.skipDisc=true; mini.discText=''; finishMini4(); }
 }
 /* （削除）startMini4Listening(): 呼び出し元ゼロのデッドコードだった。
@@ -1543,30 +1648,33 @@ const SP={};
 function startMini4Speaking(){
   if(state.fixed) return startFixedSpeaking();
   for(const k in SP) delete SP[k];
-  mini.lrItems = sampleBag(LR_POOL, 3, 'lr');   // 完全ローテーション（プール10を一巡するまで重複なし）
-  mini.iv = pickBag(IV_ITEMS_MINI, 'iv'); mini.ivTranscript='';   // Interview 4問を1周ずつ出し切る
+  /* Mini95: 復唱5（中3＋長文2、短い順）＋面接2（各45秒） */
+  const lrMed=LR_POOL.filter(x=>lrLevel(x)==='med'), lrHard=LR_POOL.filter(x=>lrLevel(x)==='hard');
+  mini.lrItems = sampleBag(lrMed,3,'m95lr_med').concat(sampleBag(lrHard,2,'m95lr_hard'));
+  mini.ivItems = sampleBag(IV_ITEMS_MINI, 2, 'm95iv'); mini.ivTr = mini.ivItems.map(()=> '');
+  mini.iv = null; mini.ivTranscript='';
   const lrCards = mini.lrItems.map((it,i)=>`
     <div class="card">
       <div><b>Listen and Repeat ${i+1}</b></div>
-      <p class="muted">「▶ 開始」でお手本が<b>1回だけ</b>流れ、直後に<b>自動で録音（約12秒）</b>。再生し直しはできません（本番同様）。</p>
+      <p class="muted">お手本が<b>1回だけ</b>流れ、直後に<b>自動で録音（${lrLimitSec(it)}秒）</b>。再生し直しはできません（本番同様）。${i===0?'<b>「▶ 開始」を押すと、以降は自動で次へ進みます。</b>':''}</p>
       <div class="row" style="margin:8px 0">
         <button class="play" id="lrbtn_${i}" onclick="lrStart(${i})">▶ 開始（1回再生→自動録音）</button></div>
       <div class="muted" id="lrst_${i}" style="font-size:12px;min-height:16px"></div>
       <div class="muted" id="lrtr_${i}" style="font-size:12px;min-height:16px"></div>
     </div>`).join('');
-  const ivCard = `
+  const ivCard = mini.ivItems.map((it,i)=>`
     <div class="card">
-      <div><b>Take an Interview</b> <span class="pill">AI採点（回答後）</span></div>
+      <div><b>Take an Interview ${i+1}</b> <span class="pill">AI採点（回答後）</span></div>
       <div class="muted" style="margin:6px 0">🔊 質問は<b>音声のみ</b>（画面に表示されません・本番同様）。内容は採点後のレビューで確認できます。</div>
-      <p class="muted">「▶ 開始」で質問が<b>1回だけ</b>流れ、直後に<b>自動で録音（約35秒）</b>。再生し直し・準備時間はありません（本番同様）。</p>
+      <p class="muted">質問が<b>1回だけ</b>流れ、直後に<b>自動で録音（45秒）</b>。再生し直し・準備時間はありません（本番同様）。</p>
       <div class="row" style="margin:8px 0">
-        <button class="play" id="ivbtn" onclick="ivStart()">▶ 開始（1回再生→自動録音）</button></div>
-      <div class="muted" id="ivst" style="font-size:12px;min-height:16px"></div>
-      <div class="muted" id="ivtr" style="font-size:12px;min-height:16px"></div>
-    </div>`;
+        <button class="play" id="ivbtn_${i}" onclick="ivStartM95(${i})">▶ 開始（1回再生→自動録音）</button></div>
+      <div class="muted" id="ivst_${i}" style="font-size:12px;min-height:16px"></div>
+      <div class="muted" id="ivtr_${i}" style="font-size:12px;min-height:16px"></div>
+    </div>`).join('');
   document.getElementById('speakingArea').innerHTML = lrCards + ivCard;
   show('speaking'); window.scrollTo(0,0);
-  startTimer('s',4*60,speakingNext);
+  startTimer('s',6*60,speakingNext);
 }
 /* ===== 1回再生→自動録音エンジン（カンニング防止：再生完了後にのみ録音開始・再生中は録音しない・再生し直し不可） ===== */
 let spkRecog=null, spkBusy=false, spkUtter=null, spkLastErr='';
@@ -1614,7 +1722,10 @@ function beginRecognition(cfg, isRetry){
   r.onresult=e=>{ got=true; let itm=''; for(let k=e.resultIndex;k<e.results.length;k++){const t=e.results[k][0].transcript; if(e.results[k].isFinal)fin+=t+' '; else itm+=t;} cfg.onText((fin+itm).trim()); };
   r.onerror=e=>{ const err=(e&&e.error)||''; if(err && err!=='aborted') spkLastErr=err; };  // onendで上書きされないよう保持
   r.onend=()=>{ if(ivid) clearInterval(ivid); spkRecog=null; spkBusy=false;
-    if(got){ if(btn){btn.disabled=true;btn.textContent='✅ 完了';} if(cfg.statusEl) cfg.statusEl.textContent='✅ 録音完了'; }
+    if(got){ if(btn){btn.disabled=true;btn.textContent='✅ 完了';} if(cfg.statusEl) cfg.statusEl.textContent='✅ 録音完了'; if(cfg.onDone) setTimeout(cfg.onDone, 1500); }
+    else if(cfg.maxRetry!=null && (cfg.retries||0)>=cfg.maxRetry){
+      if(btn){btn.disabled=true;btn.textContent='— 回答なし';} if(cfg.statusEl) cfg.statusEl.textContent='⚠️ 声を認識できなかったため、次の問題へ進みます（録り直しは1回まで）。';
+      if(cfg.onDone) setTimeout(cfg.onDone, 1500); }
     else { offerRerecord(cfg, spkLastErr); } };
   spkRecog=r;
   try{ r.start(); }
@@ -1630,7 +1741,7 @@ function offerRerecord(cfg, err){
     ? '⚠️ 音声を認識できませんでした（声が拾えませんでした）。「🎤 もう一度録音」を押して、マイクに近づいてはっきり話してください（お手本は再生されません）。'
     : micErrText(err);
   const btn=cfg.btn;
-  if(btn){ btn.disabled=false; btn.textContent='🎤 もう一度録音'; btn.onclick=()=>{ if(spkBusy) return; spkBusy=true; btn.disabled=true; btn.textContent='🔴 準備中…';
+  if(btn){ btn.disabled=false; btn.textContent='🎤 もう一度録音'; btn.onclick=()=>{ if(spkBusy) return; spkBusy=true; btn.disabled=true; btn.textContent='🔴 準備中…'; cfg.retries=(cfg.retries||0)+1;
     ensureMic().then(()=>beginRecognition(cfg,false)).catch(e=>{ spkBusy=false; offerRerecord(cfg,(e&&e.name)||(e&&e.message)||'not-allowed'); }); }; }
 }
 function spkRun(cfg){   // cfg:{audio,text,limitSec,btn,statusEl,onText}
@@ -1665,8 +1776,21 @@ function spkRunAfterMic(cfg){
   if(src){ stopAudio(); const a=new Audio(src); curAudio=a; a.onended=()=>{ curAudio=null; go(); }; a.onerror=doTTS; a.play().catch(doTTS); }
   else doTTS();
 }
+/* Mini95: 次の設問を自動で開始（復唱→面接）。本番形式（fixed）は従来どおり手動 */
+function m95SpkNext(kind,i){
+  if(state.fixed) return;
+  if(kind==='lr' && i+1<(mini.lrItems||[]).length) return lrStart(i+1);
+  if(kind==='lr') return ivStartM95(0);
+  if(kind==='iv' && i+1<(mini.ivItems||[]).length) return ivStartM95(i+1);
+  const st=document.getElementById('ivst_'+i); if(st) st.innerHTML+='<br>✅ Speaking はこれで終わりです。「Writingへ進む →」を押してください。';
+}
+function ivStartM95(i){ const it=mini.ivItems[i]; if(!it) return;
+  spkRun({ audio:it.audio, text:it.q, limitSec:45, maxRetry:1, onDone:()=>m95SpkNext('iv',i),
+    btn:document.getElementById('ivbtn_'+i), statusEl:document.getElementById('ivst_'+i),
+    onText:v=>{ mini.ivTr[i]=v; const el=document.getElementById('ivtr_'+i); if(el) el.textContent='🎤 認識語数 '+((v.match(/\S+/g)||[]).length)+'（内容は非表示・採点後に確認）'; } }); }
 function lrStart(i){ const it=mini.lrItems[i];
-  spkRun({ audio:it.audio, text:it.target, limitSec:(i<2?8:i<5?10:12),   // 本番一致 LR応答 1-2問=8秒/3-5問=10秒/6-7問=12秒（二次情報）
+  spkRun({ audio:it.audio, text:it.target, limitSec:(state.fixed?(i<2?8:i<5?10:12):lrLimitSec(it)),
+    maxRetry:(state.fixed?null:1), onDone:(state.fixed?null:()=>m95SpkNext('lr',i)),   // 本番一致 LR応答 1-2問=8秒/3-5問=10秒/6-7問=12秒（二次情報）
     btn:document.getElementById('lrbtn_'+i), statusEl:document.getElementById('lrst_'+i),
     onText:v=>{ SP[i]=SP[i]||{}; SP[i].transcript=v; const el=document.getElementById('lrtr_'+i); if(el) el.textContent='🎤 認識語数 '+((v.match(/\S+/g)||[]).length)+'（内容は本番同様に非表示・採点後に確認できます）'; } }); }
 function ivStart(){
@@ -1691,6 +1815,7 @@ function speakingNext(){
      STTが空文字を返すと、このラベルが「結愛さんの英語の発話」としてAI採点に送られていた。
      無音のときは null のまま＝未採点が正しい。 */
   if(!mini.ivTranscript) mini.ivTranscript='';
+  if(!state.fixed && mini.ivItems) mini.ivTranscript=(mini.ivTr||[]).filter(Boolean).join(' / ');
   startMini4Writing();
 }
 
@@ -1703,15 +1828,16 @@ function emailScoringText(it){ const base=emailDisplayText(it); return (it&&it.t
    公式形式: 文脈文＋骨組み（固定アンカー＋空欄）に語群を正しい順で並べる。使わないダミー語が混じる。
    出典: TOEFL_4技能_詳細仕様書_公式検証.md:112（10問・1点・機械）／ question-blueprint_2026.md:18（Writingは線形・非適応）。
    Writingは非適応なので難易度による経路選択はせず、100問からランダム抽選する。 */
-const BS_N = 5, BS_SEC = 3*60;
+const BS_N = 10, BS_SEC = 7*60;   // Mini95: 本番同数 10問・7分
 function startMini4Writing(){          // ① Build a Sentence（Writingの先頭・公式の順番）
   mini.wStage='bs';
-  mini.bsItems = state.fixed ? FF.writing.bs : sampleAvoid(window.WBANK_BS||[], BS_N, 'bs');   // fixed: 本番同数10問
+  mini.bsItems = state.fixed ? FF.writing.bs : sampleBag(m95NoEasy(window.WBANK_BS), BS_N, 'm95bs');   // Mini95: 易問なし10問
+  mini.m95W = state.fixed ? null : (m95Session()%2===1 ? 'email' : 'disc');   // Email と Discussion を回ごとに交互
   mini.bsAns = {};                      // {itemIdx: [語, ...]}（空欄に置かれた語）
   mini.bsC=null; mini.bsN=null;
   const pill=document.getElementById('wPill'); if(pill) pill.textContent='① Build a Sentence';
   const intro=document.getElementById('wIntro'); if(intro) intro.innerHTML='文脈に合うように、<b>語のかたまりを正しい順に並べて</b>文を完成させます。語群には<b>使わない語が混ざっている</b>ことがあります（本番同様）。制限時間3分・<b>機械採点（1問1点）</b>。（次は Write an Email）';
-  const btn=document.getElementById('wSubmitBtn'); if(btn) btn.textContent='Write an Email へ →';
+  const btn=document.getElementById('wSubmitBtn'); if(btn) btn.textContent=(mini.m95W==='disc')?'Academic Discussion へ →':'Write an Email へ →';
   bsRender();
   show('writing'); window.scrollTo(0,0);
   startTimer('w', state.fixed?7*60:BS_SEC, bsFinish);   // fixed: 10問=7分（本番推定約6分＋タイルUI操作分の折衷）
@@ -1789,14 +1915,14 @@ function bsScore(){                      // 完全一致で1点（公式: 機械
 function bsFinish(){
   stopTimer();
   const r=bsScore(); mini.bsC=r.c; mini.bsN=r.n;
-  startMini4Email();
+  if(mini.m95W==='disc') startMini4Discussion(); else startMini4Email();
 }
 function startMini4Email(){            // ② Write an Email（7分）
   mini.wStage='email';
-  mini.email = state.fixed ? FF.writing.email : pickAvoid(window.WBANK_EMAIL||[], 'email'); mini.emailText='';
+  mini.email = state.fixed ? FF.writing.email : pickBag(m95NoEasy(window.WBANK_EMAIL), 'm95email'); mini.emailText='';
   const pill=document.getElementById('wPill'); if(pill) pill.textContent='② Write an Email';
   const intro=document.getElementById('wIntro'); if(intro) intro.innerHTML='状況を読み、To／Subjectの相手にメールを書きます（3つの指示に触れる）。制限時間7分。<b>回答後にAI(Sonnet)が採点</b>。（次はAcademic Discussion）';
-  const btn=document.getElementById('wSubmitBtn'); if(btn) btn.textContent='Academic Discussionへ →';
+  const btn=document.getElementById('wSubmitBtn'); if(btn) btn.textContent=(mini.m95W==='email')?'採点する':'Academic Discussionへ →';
   document.getElementById('writingArea').innerHTML =
     `<div class="card">
        <div class="box passage" style="white-space:pre-wrap">${esc(emailDisplayText(mini.email))}</div>
@@ -1816,11 +1942,12 @@ function writingSubmit(){               // フッター「採点する/次へ」
 function writingFinishEmail(){
   stopTimer();
   const el=document.getElementById('miniEmailText'); mini.emailText = el?el.value.trim():'';
+  if(mini.m95W==='email') return finishMini4();
   startMini4Discussion();
 }
 function startMini4Discussion(){        // ③ Write for an Academic Discussion（10分）
   mini.wStage='disc';
-  mini.disc = state.fixed ? FF.writing.disc : pickAvoid(window.WBANK_DISC||[], 'disc'); mini.discText='';
+  mini.disc = state.fixed ? FF.writing.disc : pickBag(m95NoEasy(window.WBANK_DISC), 'm95disc'); mini.discText='';
   const pill=document.getElementById('wPill'); if(pill) pill.textContent='③ Write for an Academic Discussion';
   const intro=document.getElementById('wIntro'); if(intro) intro.innerHTML='教授の問いと学生2名の投稿を読み、自分の意見を<b>100語以上</b>で投稿します。制限時間10分。<b>回答後にAI(Sonnet)が採点</b>。';
   const btn=document.getElementById('wSubmitBtn'); if(btn) btn.textContent='採点する';
@@ -2031,7 +2158,12 @@ async function retryAiScore(){
 
   const toBand=p=>(p && p.band!=null)?p.band:((p && p.score!=null)?pctToBand(p.score/5):null);
   const runner={
-    interview: ()=> aiScore(url,'interview',(mini.iv&&mini.iv.q)||'',mini.ivTranscript||''),
+    interview: async()=>{ if(mini.ivItems&&mini.ivItems.length){
+        const out=await Promise.all(mini.ivItems.map((it,i)=>{ const fb=(mini.ivFbArr||[])[i]; const said=(mini.ivTr||[])[i]||'';
+          return (fb&&!fb.__err)?fb:(said.trim()?aiScore(url,'interview',it.q,said):null); }));
+        mini.ivFbArr=out; const bs=out.filter(p=>p&&!p.__err).map(p=>toBand(p)).filter(b=>b!=null);
+        return bs.length?{band:roundHalf(bs.reduce((a,b)=>a+b,0)/bs.length), _multi:true}:null; }
+      return aiScore(url,'interview',(mini.iv&&mini.iv.q)||'',mini.ivTranscript||''); },
     email:     ()=> aiScore(url,'email',emailScoringText(mini.email),mini.emailText||''),
     discussion:()=> aiScore(url,'discussion',(mini.disc&&mini.disc.prompt)||'',mini.discText||'')
   };
@@ -2044,19 +2176,20 @@ async function retryAiScore(){
       stillUnscored.push(k); return;
     }
     const p=r.value; fixed.push(k);
-    if(k==='interview'){ mini.ivFb=p; }
+    if(k==='interview'){ if(p._multi) mini.ivBandM=p.band; else mini.ivFb=p; }
     if(k==='email'){ mini.emailFb=p; }
     if(k==='discussion'){ mini.discFb=p; }
   });
 
   // band を組み直す（式は通常受験と同一。ここで採点方針を変えない）
-  const ivBand2 = mini.ivFb?toBand(mini.ivFb):(rec.data.iv&&rec.data.iv.band!=null?rec.data.iv.band:null);
+  const ivBand2 = (mini.ivBandM!=null)?mini.ivBandM:(mini.ivFb?toBand(mini.ivFb):(rec.data.iv&&rec.data.iv.band!=null?rec.data.iv.band:null));
   const emBand2 = mini.emailFb?toBand(mini.emailFb):null;
   const dsBand2 = mini.discFb?toBand(mini.discFb):null;
   const wB=[ctx.bsBand,emBand2,dsBand2].filter(b=>b!=null);
-  const wBand2=wB.length?roundHalf(wB.reduce((a,b)=>a+b,0)/wB.length):null;
+  let wBand2=wB.length?roundHalf(wB.reduce((a,b)=>a+b,0)/wB.length):null;
   const sB=[ctx.lrBand,ivBand2].filter(b=>b!=null);
-  const sBand2=sB.length?roundHalf(sB.reduce((a,b)=>a+b,0)/sB.length):null;
+  let sBand2=sB.length?roundHalf(sB.reduce((a,b)=>a+b,0)/sB.length):null;
+  if(!state.fixed){ sBand2=m95Cal('S',sBand2); wBand2=m95Cal('W',wBand2); }
   const secs2=[
     {k:'R',name:'Reading',  band:ctx.rBand, skipped:!!ctx.sk.reading},
     {k:'L',name:'Listening',band:ctx.lBand, skipped:!!ctx.sk.listening},
@@ -2337,12 +2470,12 @@ function finishFixedReview(rRes, lRes){
       lr: sk.speaking?{skipped:true}:{avg:mini.lrAvg, n:mini.lrN,
           items:(mini.lrItems||[]).map((it,i)=>({target:it.target, said:(SP[i]&&SP[i].transcript)||'', score:(SP[i]&&SP[i].score)!=null?SP[i].score:null}))},
       iv: sk.speaking?{skipped:true}:{mode:'review', items:(mini.ivItems||[]).map((it,i)=>({id:it.id, q:it.q, said:mini.ivTr[i]||''}))},
-      email: mini.skipEmail?{skipped:true}:{
+      email: (mini.m95W==='disc')?null:mini.skipEmail?{skipped:true}:{
           id:(mini.email&&mini.email.id)||null, diff:(mini.email&&mini.email.diff)||null,
           to:(mini.email&&mini.email.to)||'', subject:(mini.email&&mini.email.subject)||'',
           scenario:(mini.email&&mini.email.scenario)||'', bullets:(mini.email&&mini.email.bullets)||[],
           prompt:emailScoringText(mini.email), text:mini.emailText||''},
-      disc: mini.skipDisc?{skipped:true}:{
+      disc: (mini.m95W==='email')?null:mini.skipDisc?{skipped:true}:{
           id:(mini.disc&&mini.disc.id)||null, diff:(mini.disc&&mini.disc.diff)||null,
           prompt:(mini.disc&&mini.disc.prompt)||'', text:mini.discText||''}
     }
@@ -2360,6 +2493,27 @@ function finishFixedReview(rRes, lRes){
   }).catch(e=>{ setSync('<span class="muted">ローカルに保存済み・クラウド同期に失敗: '+esc(String(e))+'</span>'); });
 }
 
+/* ---- 目標95までのギャップ表示（Mini95） ---- */
+function m95RenderGap(b, overall, o120, partial){
+  let el=document.getElementById('m95Gap');
+  if(!el){ el=document.createElement('div'); el.id='m95Gap'; el.style.cssText='margin-top:12px;text-align:left';
+    const sc=document.getElementById('scoreCard'); if(sc) sc.appendChild(el); }
+  const days=Math.ceil((new Date(M95.testDate+'T00:00:00')-new Date())/86400000);
+  const row=(k,name)=>{ const v=b[k], t=M95.targets[k], a=M95.actual0[k];
+    const d=(v!=null)?(v-t):null;
+    const col=(d==null)?'var(--muted)':(d>=0?'var(--good)':(d>=-0.5?'var(--warn)':'var(--bad)'));
+    return `<tr><td>${name}</td><td class="en">${a.toFixed(1)}</td><td class="en"><b>${v!=null?v.toFixed(1):'–'}</b></td><td class="en">${t.toFixed(1)}</td>`
+      +`<td class="en" style="color:${col};font-weight:bold">${d==null?'–':(d>=0?'達成':(d.toFixed(1)))}</td></tr>`; };
+  const od=(overall!=null)?(overall-M95.overall):null;
+  el.innerHTML=`<div style="border:1px solid var(--accent);border-radius:10px;padding:10px">
+    <b>🎯 目標 iBT 95（総合5.0）まで</b>　<span class="muted" style="font-size:12px">本番 ${M95.testDate}${days>=0?'（あと'+days+'日）':''}</span><br>
+    <span style="font-size:14px">今回 総合 <b class="en">${overall!=null?overall.toFixed(1):'–'}</b>（<span class="en">${o120!=null?o120:'–'}</span>）／ 目標 <b class="en">5.0</b>（<span class="en">95+</span>）
+      ${od==null?'':(od>=0?'<b style="color:var(--good)">　目標ライン到達</b>':'　<b style="color:var(--warn)">あと '+(-od).toFixed(1)+'</b>')}
+      ${partial?'<span class="muted">（部分受験のため参考）</span>':''}</span>
+    <table style="margin-top:6px"><tr><th>技能</th><th>7/22本番</th><th>今回</th><th>目標</th><th>差</th></tr>
+      ${row('R','Reading')}${row('L','Listening')}${row('S','Speaking')}${row('W','Writing')}</table>
+    <p class="muted" style="font-size:11px;margin:4px 0 0">今回の値はアプリの推定（2026-07-22の実スコアで暫定較正: R/L換算を厳格化、Speaking +0.5、Writing −1.0）。ETS公式スコアではありません。</p></div>`;
+}
 async function finishMini4(){
   stopAudio(); stopTimer();
   resultCardsShow(true);   // 採点あり通常表示に戻す（前回が答え合わせ表示でも復帰）
@@ -2458,8 +2612,12 @@ async function finishMini4(){
     }
   } else if(url){
     const toBand=p=>(p && p.band!=null)?p.band:((p && p.score!=null)?pctToBand(p.score/5):null);
+    const ivs=(mini.ivItems&&mini.ivItems.length)?mini.ivItems:(mini.iv?[mini.iv]:[]);
+    const ivTrs=(mini.ivItems&&mini.ivItems.length)?(mini.ivTr||[]):[mini.ivTranscript||''];
     const jobs=[
-      { key:'interview',  run:()=> mini.ivTranscript ? aiScore(url,'interview',mini.iv.q,mini.ivTranscript) : null },
+      { key:'interview',  run:async()=>{ const out=await Promise.all(ivs.map((it,i)=> (ivTrs[i]||'').trim()? aiScore(url,'interview',it.q,ivTrs[i]).catch(e=>({__err:String(e&&e.message||e)})) : null));
+          mini.ivFbArr=out; const ok=out.filter(p=>p&&!p.__err); if(!ok.length){ if(out.some(p=>p&&p.__err)) throw new Error(out.find(p=>p&&p.__err).__err); return null; }
+          const bs=ok.map(p=>toBand(p)).filter(b=>b!=null); return { band: bs.length?roundHalf(bs.reduce((a,b)=>a+b,0)/bs.length):null, _multi:true }; } },
       { key:'email',      run:()=> mini.emailText    ? aiScore(url,'email',emailScoringText(mini.email),mini.emailText) : null },
       { key:'discussion', run:()=> mini.discText     ? aiScore(url,'discussion',(mini.disc&&mini.disc.prompt)||'',mini.discText) : null }
     ];
@@ -2473,7 +2631,7 @@ async function finishMini4(){
         return;
       }
       const p=r.value; if(!p) return;          // p===null は答案が無い（無音・未記入）＝穴ではない
-      if(k==='interview'){ ivBand=toBand(p); mini.ivFb=p; }
+      if(k==='interview'){ ivBand=toBand(p); mini.ivFb=p._multi?null:p; }
       if(k==='email'){ emBand=toBand(p); mini.emailFb=p; }
       if(k==='discussion'){ dsBand=toBand(p); mini.discFb=p; }
     });
@@ -2490,7 +2648,10 @@ async function finishMini4(){
     if(mini.discText)    { aiErrs.push('discussion: AI採点未接続（toefl_w_exec 未登録）');unscoredTasks.push('discussion'); }
   }
   const sBands=[lrBand,ivBand].filter(b=>b!=null);
-  const sBand=sBands.length?roundHalf(sBands.reduce((a,b)=>a+b,0)/sBands.length):null;
+  let sBand=sBands.length?roundHalf(sBands.reduce((a,b)=>a+b,0)/sBands.length):null;
+  /* Mini95 暫定較正（S/W）。R/L は pathBand 側で較正済み。本番形式（fixed）には適用しない */
+  const sBandRaw=sBand, wBandRaw=wBand;
+  if(!state.fixed){ sBand=m95Cal('S',sBand); wBand=m95Cal('W',wBand); }
 
   /* ===== 総合スコア: 部分受験を「完走」と偽らない =====
      旧実装は存在するbandだけを平均していたため、Speaking無音＋AI未接続だと
@@ -2600,7 +2761,12 @@ async function finishMini4(){
     (mini.lrItems||[]).forEach((it,i)=>{ const said=(SP[i]&&SP[i].transcript)||'';
       spkHtml+=taskCard('Listen and Repeat '+(i+1), (SP[i]&&SP[i].score!=null)?SP[i].score+'/5':null,
         esc(it.target), said?esc(said):'<span class="muted">（無音・採点対象外）</span>', ''); });
-    if(mini.iv){
+    if(mini.ivItems&&mini.ivItems.length){
+      mini.ivItems.forEach((it,i)=>{ const fb=(mini.ivFbArr||[])[i]; const said=(mini.ivTr||[])[i]||'';
+        spkHtml+=taskCard('Take an Interview '+(i+1), (fb&&!fb.__err&&fb.band!=null)?'band '+fb.band:null, esc(it.q),
+          said?esc(said):'<span class="muted">（無音・採点対象外）</span>',
+          (fb&&!fb.__err)?aiFbBlock('AI採点', fb):'<p class="muted" style="margin:4px 0">未採点（無音、またはAI採点が未接続）。</p>'); });
+    } else if(mini.iv){
       spkHtml+=taskCard('Take an Interview', null, esc(mini.iv.q),
         mini.ivTranscript?esc(mini.ivTranscript):'<span class="muted">（無音・採点対象外）</span>',
         mini.ivFb?aiFbBlock('AI採点', mini.ivFb):'<p class="muted" style="margin:4px 0">未採点（無音、またはAI採点が未接続）。</p>');
@@ -2658,11 +2824,11 @@ async function finishMini4(){
   const wFbNote=(fb,text)=> fb ? aiFbBlock('AI採点', fb)
     : (state.fixed && text ? '<p class="muted" style="margin:4px 0">保存済み。Cowork で採点します（アプリ内AI採点は使いません）。</p>'
                            : '<p class="muted" style="margin:4px 0">未採点（未記入、またはAI採点が未接続）。</p>');
-  wrtHtml+= mini.skipEmail ? '<div style="margin:12px 0"><h4 style="margin:0">Write an Email</h4><p class="muted">⏭ スキップ（採点対象外）</p></div>'
+  if(mini.m95W!=='disc') wrtHtml+= mini.skipEmail ? '<div style="margin:12px 0"><h4 style="margin:0">Write an Email</h4><p class="muted">⏭ スキップ（採点対象外）</p></div>'
     : taskCard('Write an Email', null, esc(emailDisplayText(mini.email)),
         mini.emailText?esc(mini.emailText):'<span class="muted">（未記入・採点対象外）</span>',
         wFbNote(mini.emailFb, mini.emailText));
-  wrtHtml+= mini.skipDisc ? '<div style="margin:12px 0"><h4 style="margin:0">Write for an Academic Discussion</h4><p class="muted">⏭ スキップ（採点対象外）</p></div>'
+  if(mini.m95W!=='email') wrtHtml+= mini.skipDisc ? '<div style="margin:12px 0"><h4 style="margin:0">Write for an Academic Discussion</h4><p class="muted">⏭ スキップ（採点対象外）</p></div>'
     : taskCard('Write for an Academic Discussion', null, esc((mini.disc&&mini.disc.prompt)||''),
         mini.discText?esc(mini.discText):'<span class="muted">（未記入・採点対象外）</span>',
         wFbNote(mini.discFb, mini.discText));
@@ -2671,6 +2837,7 @@ async function finishMini4(){
 
   document.getElementById('review').innerHTML=(rRes.review||[]).concat(lRes.review||[]).join('')
     || '<p class="muted">（Reading / Listening をスキップしたため、確認する解答はありません）</p>';
+  if(!state.fixed) m95RenderGap({R:rBand,L:lBand,S:sBand,W:wBand}, overall, o120, partial);
   /* ---- 弱点レポート用の同期データ ----
      タスク別正答率／誤答の明細／AI所見 を1レコードにまとめる。
      誰の記録かは受験者名でしか決まらない（IPや端末では判別できない）。 */
@@ -2695,6 +2862,7 @@ async function finishMini4(){
       unscoredTasks,                                        // 答案はあるのに採点されなかったタスク
       aiErrs,                                               // その理由（HTTPステータス・切れた位置・末尾など）
       bands:{r:rBand, l:lBand, s:sBand, w:wBand},
+      bandsRaw: state.fixed?null:{s:sBandRaw, w:wBandRaw}, cal: state.fixed?null:M95_CAL, m95: state.fixed?null:{session:m95Session(), wTask:mini.m95W},
       path:{r:state.rMod.path||null, l:state.lMod.path||null},
       raw:{rC:rRes.c, rN:rRes.n, lC:lRes.c, lN:lRes.n},
       byTask,                                              // タスク別の正答率と推移に使う
@@ -2721,15 +2889,18 @@ async function finishMini4(){
                   band:(fb&&fb.band!=null)?fb.band:null, content:(fb&&fb.content!=null)?fb.content:null,
                   organization:(fb&&fb.organization!=null)?fb.organization:null, language:(fb&&fb.language!=null)?fb.language:null,
                   fb:(fb&&!fb.__err)?fbSlim(fb):null, err:(fb&&fb.__err)?fb.__err:null}; })}
-            : {id:(mini.iv&&mini.iv.id)||null, q:mini.iv?mini.iv.q:'', said:mini.ivTranscript||'', band:ivBand, fb:fbSlim(mini.ivFb)}),
-      email: mini.skipEmail?{skipped:true}:{
+            : (mini.ivItems&&mini.ivItems.length
+              ? {mode:'m95', band:ivBand, items:mini.ivItems.map((it,i)=>{ const fb=(mini.ivFbArr&&mini.ivFbArr[i])||null;
+                  return {id:it.id||null, q:it.q, said:(mini.ivTr||[])[i]||'', band:(fb&&fb.band!=null)?fb.band:null, fb:(fb&&!fb.__err)?fbSlim(fb):null, err:(fb&&fb.__err)?fb.__err:null}; })}
+              : {id:(mini.iv&&mini.iv.id)||null, q:mini.iv?mini.iv.q:'', said:mini.ivTranscript||'', band:ivBand, fb:fbSlim(mini.ivFb)})),
+      email: (mini.m95W==='disc')?null:mini.skipEmail?{skipped:true}:{
           id:(mini.email&&mini.email.id)||null,
           diff:(mini.email&&mini.email.diff)||null,
           to:(mini.email&&mini.email.to)||'', subject:(mini.email&&mini.email.subject)||'',
           scenario:(mini.email&&mini.email.scenario)||'', bullets:(mini.email&&mini.email.bullets)||[],
           prompt:emailScoringText(mini.email),               // AIに送ったものと同一の設問文
           text:mini.emailText||'', band:(mini.emailFb?(mini.emailFb.band!=null?mini.emailFb.band:null):null), fb:fbSlim(mini.emailFb)},
-      disc: mini.skipDisc?{skipped:true}:{
+      disc: (mini.m95W==='email')?null:mini.skipDisc?{skipped:true}:{
           id:(mini.disc&&mini.disc.id)||null,
           diff:(mini.disc&&mini.disc.diff)||null,
           prompt:(mini.disc&&mini.disc.prompt)||'',          // AIに送ったものと同一の設問文
@@ -2913,6 +3084,7 @@ function goHub(){
   window._testActive=false; location.href='index.html';
 }
 /* ---- 受験中の誤操作リロード/離脱を警告（本番=1回完結） ---- */
+(function(){ if(!FULL_TEST_ENABLED){ const c=document.getElementById('fullTestCard'); if(c) c.style.display='none'; } })();
 window.addEventListener('beforeunload',function(e){ if(window._testActive){ e.preventDefault(); e.returnValue=''; } });
 renderConvTable();
 initExec();
